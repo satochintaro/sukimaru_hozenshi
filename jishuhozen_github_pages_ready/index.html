@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>自主保全士2級 ○×道場</title>
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#2B4C7E">
+<!-- iOS(Safari)用: ホーム画面追加で全画面アプリ化 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="○×道場">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+
+<style>
+/* ============================================================
+   マルバツ道場 — 紙と朱肉のデザイン
+   ○=朱色 / ×=藍色(日本の採点文化の色)
+   ============================================================ */
+:root{
+  --paper:#F7F6F2;        /* 答案用紙の白 */
+  --card:#FFFFFF;
+  --ink:#22242B;          /* 墨色 */
+  --ink-soft:#6B6E78;
+  --line:#E4E2DB;
+  --shu:#D93B2B;          /* 朱色(○) */
+  --shu-soft:#FBEAE7;
+  --ai:#2B4C7E;           /* 藍色(×) */
+  --ai-soft:#E8EEF6;
+  --gold:#C79A3B;         /* ストリークの金 */
+  --radius:16px;
+  --shadow:0 2px 10px rgba(34,36,43,.07);
+  --serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;
+  --sans:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--sans);
+  background:var(--paper);
+  color:var(--ink);
+  max-width:480px;
+  margin:0 auto;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  /* 便箋のような罫線をうっすら */
+  background-image:repeating-linear-gradient(transparent 0 31px, rgba(34,36,43,.03) 31px 32px);
+}
+
+/* ---------- 画面切り替え ---------- */
+section{display:none;flex:1;flex-direction:column;padding:20px;animation:fadeIn .25s ease}
+section.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+
+button{font-family:inherit;border:none;cursor:pointer;background:none;color:inherit}
+button:focus-visible{outline:3px solid var(--ai);outline-offset:2px;border-radius:8px}
+
+/* ============ S1 ホーム ============ */
+.home-header{text-align:center;padding:28px 0 10px}
+.app-title{
+  font-family:var(--serif);
+  font-size:34px;font-weight:700;letter-spacing:.14em;
+}
+.app-title .maru{color:var(--shu)}
+.app-title .batsu{color:var(--ai)}
+.app-sub{font-size:12px;color:var(--ink-soft);letter-spacing:.3em;margin-top:6px}
+
+.streak-card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:18px 20px;margin-top:22px;
+  display:flex;align-items:center;justify-content:space-between;
+  border:1px solid var(--line);
+}
+.streak-flame{font-size:30px}
+.streak-num{font-size:32px;font-weight:800;color:var(--gold)}
+.streak-num small{font-size:13px;font-weight:600;color:var(--ink-soft);margin-left:2px}
+.streak-label{font-size:12px;color:var(--ink-soft)}
+.home-stats{display:flex;gap:10px;margin-top:12px}
+.stat-chip{
+  flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px;text-align:center;box-shadow:var(--shadow);
+}
+.stat-chip b{display:block;font-size:20px;font-weight:800}
+.stat-chip span{font-size:11px;color:var(--ink-soft)}
+
+.home-actions{margin-top:auto;padding-top:24px;display:flex;flex-direction:column;gap:12px}
+.btn-main{
+  background:var(--ink);color:#fff;border-radius:var(--radius);
+  padding:20px;font-size:18px;font-weight:700;letter-spacing:.08em;
+  box-shadow:0 4px 14px rgba(34,36,43,.25);
+  transition:transform .1s;
+}
+.btn-main:active{transform:scale(.97)}
+.btn-sub{
+  background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+  padding:16px;font-size:15px;font-weight:600;color:var(--ink);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .1s;
+}
+.btn-sub:active{transform:scale(.97)}
+.badge{
+  background:var(--shu);color:#fff;border-radius:999px;
+  font-size:12px;font-weight:700;padding:2px 10px;
+}
+.hidden{display:none !important}
+
+/* ============ S2 クイズ ============ */
+.quiz-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.btn-quit{font-size:13px;color:var(--ink-soft);padding:6px 4px}
+.progress-wrap{flex:1;height:6px;background:var(--line);border-radius:999px;overflow:hidden}
+.progress-bar{height:100%;background:var(--ink);border-radius:999px;transition:width .3s ease;width:0%}
+.q-counter{font-size:13px;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+
+.q-card{
+  position:relative;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:26px 22px;
+  flex:1;display:flex;flex-direction:column;
+  min-height:220px;
+  overflow:hidden;
+}
+.q-tag{
+  align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.1em;
+  color:var(--ai);background:var(--ai-soft);border-radius:6px;padding:4px 10px;
+}
+.q-text{
+  font-family:var(--serif);
+  font-size:21px;line-height:1.9;font-weight:600;
+  margin-top:18px;
+  flex:1;
+}
+
+/* --- 判定スタンプ(シグネチャー演出) --- */
+.stamp{
+  position:absolute;top:50%;left:50%;
+  width:150px;height:150px;
+  transform:translate(-50%,-50%) rotate(-8deg) scale(2.4);
+  opacity:0;pointer-events:none;
+}
+.stamp.show{animation:stampIn .32s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes stampIn{
+  0%{opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(2.4)}
+  100%{opacity:.92;transform:translate(-50%,-50%) rotate(-8deg) scale(1)}
+}
+.stamp circle,.stamp line{stroke-width:14;stroke-linecap:round;fill:none}
+.stamp.maru circle{stroke:var(--shu)}
+.stamp.batsu line{stroke:var(--ai)}
+
+/* --- 解説パネル --- */
+.judge-panel{margin-top:14px;display:none;flex-direction:column;gap:10px}
+.judge-panel.show{display:flex;animation:fadeIn .25s ease}
+.judge-head{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px}
+.judge-head.ok{color:var(--shu)}
+.judge-head.ng{color:var(--ai)}
+.judge-exp{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px;font-size:14px;line-height:1.8;color:var(--ink);
+  box-shadow:var(--shadow);
+}
+.judge-exp b{font-weight:800}
+
+/* --- 要注意バナー --- */
+.judge-alert{
+  display:none;
+  background:#FDF3E7;border:1px solid #E9C89A;border-left:4px solid #C79A3B;
+  border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:#7a5a1e;
+}
+.judge-alert.show{display:block;animation:fadeIn .25s ease}
+
+/* --- 確信度パネル --- */
+.confidence-panel{
+  margin-top:16px;display:none;flex-direction:column;gap:12px;
+}
+.confidence-panel.show{display:flex;animation:fadeIn .25s ease}
+.conf-q{font-size:16px;font-weight:800;color:var(--shu);text-align:center}
+.conf-btns{display:flex;gap:12px}
+.conf-btn{
+  flex:1;border-radius:var(--radius);padding:18px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  box-shadow:var(--shadow);transition:transform .08s;border:2px solid;
+}
+.conf-btn:active{transform:scale(.96)}
+.conf-btn b{font-size:16px;font-weight:800}
+.conf-btn small{font-size:11px;opacity:.8}
+.conf-btn.sure{background:var(--shu-soft);border-color:var(--shu);color:var(--shu)}
+.conf-btn.guess{background:#F3F0E8;border-color:#C9A85E;color:#8a6a24}
+
+/* --- ○×ボタン --- */
+.answer-area{display:flex;gap:14px;margin-top:16px;height:150px}
+.btn-answer{
+  flex:1;border-radius:var(--radius);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  font-weight:800;transition:transform .08s;
+  box-shadow:var(--shadow);
+}
+.btn-answer:active{transform:scale(.95)}
+.btn-answer svg{width:64px;height:64px}
+.btn-answer span{font-size:13px;letter-spacing:.15em}
+.btn-maru{background:var(--shu-soft);border:2px solid var(--shu);color:var(--shu)}
+.btn-batsu{background:var(--ai-soft);border:2px solid var(--ai);color:var(--ai)}
+.btn-next{
+  margin-top:16px;height:64px;
+  background:var(--ink);color:#fff;border-radius:var(--radius);
+  font-size:17px;font-weight:700;letter-spacing:.1em;
+  box-shadow:0 4px 14px rgba(34,36,43,.25);
+  transition:transform .1s;
+}
+.btn-next:active{transform:scale(.97)}
+
+/* ============ S4 結果 ============ */
+.result-title{font-family:var(--serif);font-size:22px;font-weight:700;text-align:center;padding-top:16px;letter-spacing:.12em}
+.score-ring-wrap{display:flex;justify-content:center;margin:24px 0 8px}
+.score-ring{position:relative;width:170px;height:170px}
+.score-ring svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--line);stroke-width:12}
+.ring-fg{fill:none;stroke:var(--shu);stroke-width:12;stroke-linecap:round;
+  transition:stroke-dashoffset .8s ease .2s}
+.score-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.score-center b{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums}
+.score-center span{font-size:12px;color:var(--ink-soft)}
+.result-msg{text-align:center;font-size:14px;color:var(--ink-soft);margin-bottom:14px}
+.wrong-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.wrong-item{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;font-size:13px;line-height:1.6;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.wrong-item .mark{color:var(--ai);font-weight:800;flex-shrink:0}
+.result-actions{margin-top:auto;padding-top:20px;display:flex;flex-direction:column;gap:10px}
+
+/* ============ S6 成績 ============ */
+.stats-title{font-family:var(--serif);font-size:22px;font-weight:700;text-align:center;padding:16px 0;letter-spacing:.12em}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat-section{margin-top:22px}
+.cat-section h3{font-size:13px;color:var(--ink-soft);letter-spacing:.1em;margin-bottom:10px}
+.cat-row{margin-bottom:14px}
+.cat-name{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:5px}
+.cat-name span{color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.cat-bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
+.cat-fill{height:100%;background:var(--shu);border-radius:999px;transition:width .6s ease}
+.empty-note{color:var(--ink-soft);font-size:13px;text-align:center;padding:30px 0}
+
+/* ============ 要注意リスト ============ */
+.alert-lead{font-size:12px;color:var(--ink-soft);line-height:1.6;margin-bottom:12px}
+.alert-card{
+  background:#FDF3E7;border:1px solid #E9C89A;border-left:4px solid #C79A3B;
+  border-radius:10px;padding:12px 14px;margin-bottom:9px;
+}
+.alert-card .ac-text{font-size:13px;line-height:1.7;color:var(--ink)}
+.alert-card .ac-meta{
+  display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;
+  font-size:11px;color:#8a6a24;
+}
+.alert-card .ac-tag{
+  background:rgba(199,154,59,.16);border-radius:5px;padding:2px 7px;font-weight:700;
+}
+.alert-card .ac-reason{color:#b5502a;font-weight:700}
+
+/* ============ 科目選択 ============ */
+.subj-title{font-family:var(--serif);font-size:22px;font-weight:700;text-align:center;padding:16px 0 4px;letter-spacing:.12em}
+.subj-lead{font-size:12px;color:var(--ink-soft);text-align:center;margin-bottom:18px;line-height:1.6}
+.subj-list{display:flex;flex-direction:column;gap:10px}
+.subj-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 18px;text-align:left;
+  display:flex;align-items:center;gap:14px;transition:transform .1s;
+}
+.subj-card:active{transform:scale(.98)}
+.subj-card.mix{background:linear-gradient(135deg,#2B4C7E,#1a3358);border-color:transparent}
+.subj-card.mix .subj-name,.subj-card.mix .subj-meta{color:#fff}
+.subj-card.mix .subj-meta{opacity:.85}
+.subj-badge{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:20px;font-weight:800;
+  background:var(--shu-soft);color:var(--shu);
+}
+.subj-card.mix .subj-badge{background:rgba(255,255,255,.18);color:#fff}
+.subj-body{flex:1;min-width:0}
+.subj-name{font-size:15px;font-weight:700;letter-spacing:.04em}
+.subj-meta{font-size:11px;color:var(--ink-soft);margin-top:3px}
+.subj-acc{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink-soft);flex-shrink:0}
+.subj-card.mix .subj-acc{color:#fff}
+
+.footer-space{padding-bottom:env(safe-area-inset-bottom)}
+</style>
+</head>
+<body>
+
+<!-- ============ S1 ホーム ============ -->
+<section id="screen-home" class="active">
+  <div class="home-header">
+    <h1 class="app-title"><span class="maru">自主</span><span class="batsu">保全士</span></h1>
+    <p class="app-sub">2級 学科 ○×道場</p>
+  </div>
+
+  <div class="streak-card">
+    <div>
+      <div class="streak-label">連続学習</div>
+      <div class="streak-num"><span id="home-streak">0</span><small>日</small></div>
+    </div>
+    <div class="streak-flame">🔥</div>
+  </div>
+
+  <div class="home-stats">
+    <div class="stat-chip"><b id="home-today">0</b><span>今日の回答</span></div>
+    <div class="stat-chip"><b id="home-acc">–</b><span>総合正答率</span></div>
+    <div class="stat-chip"><b id="home-total">0</b><span>総回答数</span></div>
+  </div>
+
+  <div class="home-actions">
+    <button class="btn-main" onclick="showSubjects()">科目を選んで挑戦</button>
+    <button class="btn-sub" id="btn-review" onclick="startQuiz('review')">
+      間違いを復習する <span class="badge" id="review-badge">0問</span>
+    </button>
+    <button class="btn-sub" onclick="showStats()">成績を見る</button>
+  </div>
+  <div class="footer-space"></div>
+</section>
+
+<!-- ============ 科目選択 ============ -->
+<section id="screen-subjects">
+  <h2 class="subj-title">科目を選ぶ</h2>
+  <p class="subj-lead">1回10問。科目別で弱点を集中的に、ミックスで総合力を。</p>
+  <div class="subj-list" id="subj-list"><!-- JSで生成 --></div>
+  <div class="result-actions">
+    <button class="btn-sub" onclick="goHome()">ホームへ戻る</button>
+  </div>
+  <div class="footer-space"></div>
+</section>
+
+<!-- ============ S2 クイズ / S5 復習 ============ -->
+<section id="screen-quiz">
+  <div class="quiz-top">
+    <button class="btn-quit" onclick="quitQuiz()">やめる</button>
+    <div class="progress-wrap"><div class="progress-bar" id="progress"></div></div>
+    <div class="q-counter" id="q-counter">1/10</div>
+  </div>
+
+  <div class="q-card">
+    <span class="q-tag" id="q-tag">カテゴリ</span>
+    <p class="q-text" id="q-text">問題文</p>
+    <!-- 判定スタンプ -->
+    <svg class="stamp maru" id="stamp-maru" viewBox="0 0 150 150" aria-hidden="true">
+      <circle cx="75" cy="75" r="58"/>
+    </svg>
+    <svg class="stamp batsu" id="stamp-batsu" viewBox="0 0 150 150" aria-hidden="true">
+      <line x1="30" y1="30" x2="120" y2="120"/>
+      <line x1="120" y1="30" x2="30" y2="120"/>
+    </svg>
+  </div>
+
+  <!-- 正解時:確信度を尋ねる -->
+  <div class="confidence-panel" id="confidence-panel">
+    <div class="conf-q">正解！ どのくらい自信があった？</div>
+    <div class="conf-btns">
+      <button class="conf-btn sure" onclick="setConfidence(true)">
+        <b>確信あり</b><small>理解して答えた</small>
+      </button>
+      <button class="conf-btn guess" onclick="setConfidence(false)">
+        <b>なんとなく</b><small>勘・あいまい</small>
+      </button>
+    </div>
+  </div>
+
+  <!-- 判定後の解説 -->
+  <div class="judge-panel" id="judge-panel">
+    <div class="judge-head" id="judge-head"></div>
+    <div class="judge-alert" id="judge-alert"></div>
+    <div class="judge-exp" id="judge-exp"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">次へ</button>
+  </div>
+
+  <!-- ○×ボタン -->
+  <div class="answer-area" id="answer-area">
+    <button class="btn-answer btn-maru" onclick="answer(true)" aria-label="マル">
+      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="8"/></svg>
+      <span>マル</span>
+    </button>
+    <button class="btn-answer btn-batsu" onclick="answer(false)" aria-label="バツ">
+      <svg viewBox="0 0 64 64">
+        <line x1="12" y1="12" x2="52" y2="52" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+        <line x1="52" y1="12" x2="12" y2="52" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+      </svg>
+      <span>バツ</span>
+    </button>
+  </div>
+  <div class="footer-space"></div>
+</section>
+
+<!-- ============ S4 結果 ============ -->
+<section id="screen-result">
+  <h2 class="result-title" id="result-title">本日の結果</h2>
+  <div class="score-ring-wrap">
+    <div class="score-ring">
+      <svg width="170" height="170" viewBox="0 0 170 170">
+        <circle class="ring-bg" cx="85" cy="85" r="72"/>
+        <circle class="ring-fg" id="ring-fg" cx="85" cy="85" r="72"/>
+      </svg>
+      <div class="score-center">
+        <b id="score-text">0/10</b>
+        <span id="score-pct">正答率 0%</span>
+      </div>
+    </div>
+  </div>
+  <p class="result-msg" id="result-msg"></p>
+  <div class="wrong-list" id="wrong-list"></div>
+  <div class="result-actions">
+    <button class="btn-main hidden" id="btn-retry-wrong" onclick="startQuiz('review-now')">間違いをすぐ復習</button>
+    <button class="btn-sub" id="btn-again" onclick="retrySameSubject()">同じ科目でもう10問</button>
+    <button class="btn-sub" onclick="showSubjects()">別の科目を選ぶ</button>
+    <button class="btn-sub" onclick="goHome()">ホームへ</button>
+  </div>
+  <div class="footer-space"></div>
+</section>
+
+<!-- ============ S6 成績 ============ -->
+<section id="screen-stats">
+  <h2 class="stats-title">成績</h2>
+  <div class="stats-grid">
+    <div class="stat-chip"><b id="st-total">0</b><span>総回答数</span></div>
+    <div class="stat-chip"><b id="st-acc">–</b><span>総合正答率</span></div>
+    <div class="stat-chip"><b id="st-streak">0日</b><span>連続学習</span></div>
+    <div class="stat-chip"><b id="st-wrong">0問</b><span>復習待ち</span></div>
+  </div>
+  <div class="cat-section">
+    <h3>カテゴリ別 正答率</h3>
+    <div id="cat-list"></div>
+  </div>
+  <div class="cat-section">
+    <h3>⚠ 要注意リスト（理解が固まっていない問題）</h3>
+    <p class="alert-lead" id="alert-lead"></p>
+    <div id="alert-list"></div>
+  </div>
+  <div class="result-actions">
+    <button class="btn-main hidden" id="btn-review-alert" onclick="startAlertReview()">要注意問題を復習する</button>
+    <button class="btn-sub" onclick="goHome()">ホームへ</button>
+  </div>
+  <div class="footer-space"></div>
+</section>
+
+<script>
+/* ============================================================
+   問題データ(5科目 各16問・計80問)
+   自主保全士2級 学科の出題範囲に沿ったオリジナル問題
+   ============================================================ */
+const QUESTIONS = [
+  // ===== ① 生産の基本 =====
+  {id:1, category:"生産の基本", text:"TPMとは「全員参加の生産保全」を意味する活動である。", answer:true,
+   explanation:"TPM（Total Productive Maintenance）は、トップから第一線のオペレーターまで全部門・全員が参加して、設備の効率を最高にする生産保全活動です。"},
+  {id:2, category:"生産の基本", text:"自主保全とは、保全部門の専門スタッフだけが設備の保全を行う活動である。", answer:false,
+   explanation:"自主保全は、設備を使うオペレーター自身が「自分の設備は自分で守る」という考えで行う保全活動です。専門保全（保全部門）と役割分担して進めます。"},
+  {id:3, category:"生産の基本", text:"5Sとは、整理・整頓・清掃・清潔・しつけの5つである。", answer:true,
+   explanation:"整理・整頓・清掃・清潔・しつけの頭文字Sをとって5S。前の3S（整理・整頓・清掃）を維持する状態が清潔、それを習慣づけるのがしつけです。"},
+  {id:4, category:"生産の基本", text:"「整理」とは、必要なものを使いやすく並べることである。", answer:false,
+   explanation:"整理は「要るものと要らないものを分け、要らないものを捨てる」こと。使いやすく置き場所・置き方を決めるのは「整頓」です。両者の区別は頻出です。"},
+  {id:5, category:"生産の基本", text:"整頓の基本は「定位置・定品・定量」の3定である。", answer:true,
+   explanation:"どこに（定位置）・何を（定品）・どれだけ（定量）置くかを決め、表示することで、誰でもすぐ取り出せ、戻せる状態をつくります。"},
+  {id:6, category:"生産の基本", text:"QCDとは、Quality（品質）・Cost（コスト）・Delivery（納期）を指す。", answer:true,
+   explanation:"生産管理の基本指標。この3つに安全（Safety）・モラール（Morale）を加えてPQCDSMと表すこともあります。"},
+  {id:7, category:"生産の基本", text:"PDCAサイクルのAはAction（処置・改善）を表す。", answer:true,
+   explanation:"Plan（計画）→Do（実行）→Check（評価）→Action（処置）を繰り返して継続的に改善を進める管理サイクルです。"},
+  {id:8, category:"生産の基本", text:"「なぜなぜ分析」は、なぜを繰り返して真の原因（真因）を突き止める手法である。", answer:true,
+   explanation:"「なぜ」を5回程度繰り返し、表面的な現象でなく根本原因にたどり着く手法。対策を真因に打つことで再発を防ぎます。"},
+  {id:9, category:"生産の基本", text:"三現主義とは「現場・現物・現実」を重視する考え方である。", answer:true,
+   explanation:"机上でなく、現場に行き、現物を見て、現実を確認して判断する。問題解決の基本姿勢です。"},
+  {id:10, category:"生産の基本", text:"安全の「ヒヤリ・ハット」とは、災害には至らなかったが、ひやりとした事例のことである。", answer:true,
+   explanation:"重大災害の陰に多数の軽微な事故とヒヤリ・ハットがあるとするハインリッヒの法則の考え方から、これを収集し未然防止に活かします。"},
+  {id:11, category:"生産の基本", text:"KY活動（危険予知活動）は、作業前に潜む危険を予測し対策を話し合う活動である。", answer:true,
+   explanation:"Kiken（危険）Yochi（予知）の頭文字。作業に取りかかる前に危険要因を洗い出し、指差呼称などで安全を確保します。"},
+  {id:12, category:"生産の基本", text:"標準作業とは、その日の作業者の判断で自由に手順を変えてよい作業のことである。", answer:false,
+   explanation:"標準作業は、最も安全で品質・能率のよい手順を定めたもの。誰がやっても同じ結果になるよう守るべきもので、勝手に変えるものではありません。"},
+  {id:13, category:"生産の基本", text:"整理・整頓が進むと、不要品による探すムダや置き場のムダが減る。", answer:true,
+   explanation:"要るものだけを決めた場所に置くことで、探す時間・取りに行く距離・在庫のムダが減り、生産性と安全が向上します。"},
+  {id:14, category:"生産の基本", text:"「見える化（目で見る管理）」とは、正常・異常を誰でも一目で判断できるようにする工夫である。", answer:true,
+   explanation:"あんどん、油面ライン、合マーク、区画線などで、異常をひと目でわかるようにし、早期発見・早期処置につなげます。"},
+  {id:15, category:"生産の基本", text:"改善（カイゼン）は、大きな設備投資を伴うものだけを指す。", answer:false,
+   explanation:"改善は現場の小さな工夫の積み重ねも含みます。「金をかけずに知恵を出す」のが基本で、誰でもできる小改善の積み上げが重視されます。"},
+  {id:16, category:"生産の基本", text:"5W1Hの要素には、When・Where・Who・What・Why・Howが含まれる。", answer:true,
+   explanation:"いつ・どこで・誰が・何を・なぜ・どのように。作業や問題を整理・報告するときの基本の枠組みです。"},
+
+  // ===== ② 設備の日常保全 =====
+  {id:17, category:"設備の日常保全", text:"自主保全の基本三要素は「清掃・給油・増し締め」である。", answer:true,
+   explanation:"清掃・給油・増し締めは、設備の基本条件を整えて劣化を防ぐ日常保全の三本柱です。"},
+  {id:18, category:"設備の日常保全", text:"「清掃は点検なり」といわれるように、清掃は点検を兼ねた活動である。", answer:true,
+   explanation:"汚れを取る過程で、ゆるみ・傷・漏れ・異音などの微欠陥を五感で発見できます。清掃は単なる掃除でなく点検活動です。"},
+  {id:19, category:"設備の日常保全", text:"発生源・困難箇所対策では、まず汚れを掃除しやすくすることが最優先である。", answer:false,
+   explanation:"最優先は「汚れの発生源そのものを断つ」こと。発生源対策が難しい場合に、飛散防止や清掃しやすくする対策を行います。"},
+  {id:20, category:"設備の日常保全", text:"ボルトの「合マーク（合わせマーク）」は、ゆるみを一目で発見するための表示である。", answer:true,
+   explanation:"ナットと相手部材にまたがる線を引いておき、線がずれれば増し締め不足やゆるみが一目でわかります。目で見る管理の代表例です。"},
+  {id:21, category:"設備の日常保全", text:"潤滑油の主な役割は、摩擦を大きくして部品の動きを止めることである。", answer:false,
+   explanation:"潤滑の役割は摩擦・摩耗の低減が第一。ほかに冷却、防錆、密封、洗浄（ごみの運び出し）、応力分散などの働きがあります。"},
+  {id:22, category:"設備の日常保全", text:"グリースは、基油に増ちょう剤を加えた半固体状の潤滑剤である。", answer:true,
+   explanation:"グリースは飛散しにくく、給油間隔を長くとれる、密封性がよいなどの利点があり、頻繁に給油できない箇所に向きます。"},
+  {id:23, category:"設備の日常保全", text:"給油では、油種が違っても粘度が同じなら混ぜて使ってよい。", answer:false,
+   explanation:"油種・銘柄の異なる油の混用は、添加剤の反応や性能低下を招くおそれがあり避けます。指定された油種・粘度を守るのが原則です。"},
+  {id:24, category:"設備の日常保全", text:"油面計（オイルゲージ）が汚れていても、油量さえ入っていれば管理上問題ない。", answer:false,
+   explanation:"油面計が汚れていると油量を正しく確認できません。清掃・見える化して、確実に点検できる状態を保つことが必要です。"},
+  {id:25, category:"設備の日常保全", text:"日常点検は、設備を止めずに稼働状態のまま行う点検が中心である。", answer:true,
+   explanation:"日常点検は運転中の温度・振動・音・漏れなどを五感で確認するのが中心。分解を伴う精密点検は定期点検で行います。"},
+  {id:26, category:"設備の日常保全", text:"設備の劣化には、使用による劣化のほか、放置（自然）による劣化もある。", answer:true,
+   explanation:"使用劣化（摩耗・疲労等）と自然劣化（さび・腐食・ほこりの堆積等）があり、いずれも清掃・給油・点検などの基本活動で防ぎます。"},
+  {id:27, category:"設備の日常保全", text:"「強制劣化」とは、清掃・給油・増し締めを怠って本来防げる劣化を進めてしまうことである。", answer:true,
+   explanation:"基本条件の整備を怠って起こる、人為的で防げるはずの劣化を強制劣化といいます。これを防ぐことが自主保全の狙いです。"},
+  {id:28, category:"設備の日常保全", text:"暫定基準（仮基準）とは、清掃・給油・増し締めの当面守るべき項目・周期・時間を定めたものである。", answer:true,
+   explanation:"自主保全の第3ステップで作る、誰でも確実に短時間で維持できる暫定的な基準です。活動の中で見直し改善していきます。"},
+  {id:29, category:"設備の日常保全", text:"エアフィルタやオイルミストの点検・交換も、日常保全の対象に含まれる。", answer:true,
+   explanation:"空圧機器のフィルタ・ルブリケータ・ドレンなども、汚れや水分の管理を怠ると機器不調の原因になるため日常保全の対象です。"},
+  {id:30, category:"設備の日常保全", text:"締結部のゆるみは、振動や騒音、部品の脱落・破損の原因になる。", answer:true,
+   explanation:"ボルトのゆるみは振動を増やし、さらにゆるみを進め、最終的に脱落・故障・事故につながります。増し締めと合マーク管理が重要です。"},
+  {id:31, category:"設備の日常保全", text:"清掃で微欠陥を見つけたら、その場で処置するか「エフ（不具合札）」を付けて管理する。", answer:true,
+   explanation:"発見した不具合にエフを付けて見える化し、対応済みで外していくことで、微欠陥の摘出と復元の進捗を管理します。"},
+  {id:32, category:"設備の日常保全", text:"点検作業を短時間・確実にするには、点検箇所の集中化や見える化が有効である。", answer:true,
+   explanation:"点検口の集約、透明カバー化、色分け表示、給油口の一元化などで、点検・給油の困難箇所をなくし作業を容易にします。"},
+
+  // ===== ③ 効率化の考え方とロスの捉え方 =====
+  {id:33, category:"効率化とロス", text:"設備総合効率は「時間稼働率 × 性能稼働率 × 良品率」で求められる。", answer:true,
+   explanation:"設備総合効率（OEE）はこの3要素の積。設備が持てる能力をどれだけ有効に発揮できたかを総合的に示します。"},
+  {id:34, category:"効率化とロス", text:"時間稼働率は、故障・段取り・調整などによる停止ロスに関係する指標である。", answer:true,
+   explanation:"時間稼働率＝稼働時間÷負荷時間。停止ロス（故障、段取り・調整、立上りなど）が大きいほど低下します。"},
+  {id:35, category:"効率化とロス", text:"性能稼働率は、チョコ停・空転や速度低下のロスに関係する指標である。", answer:true,
+   explanation:"性能稼働率は、基準サイクルタイムに対する実際の速度・小停止を反映します。チョコ停や速度低下ロスで低下します。"},
+  {id:36, category:"効率化とロス", text:"故障ロスは、設備効率を阻害する7大ロスの一つである。", answer:true,
+   explanation:"故障ロスは代表的な阻害ロス。ほかに段取り・調整、刃具交換、立上り、チョコ停・空転、速度低下、不良・手直しの各ロスがあります。"},
+  {id:37, category:"効率化とロス", text:"チョコ停とは、設備が長時間停止し、専門の修理を要する状態のことである。", answer:false,
+   explanation:"チョコ停は数分以内の一時的な小停止・空転で、詰まり除去やリセットなど簡単な処置ですぐ復旧するもの。部品交換や修理を要する「故障」とは区別します。"},
+  {id:38, category:"効率化とロス", text:"チョコ停は一件が軽微なため見逃されやすいが、積み重なると性能稼働率を大きく下げる。", answer:true,
+   explanation:"一回の停止は短くても頻発すると累積損失は大きく、原因が特定しにくいため軽視されがちです。実は重要なロスです。"},
+  {id:39, category:"効率化とロス", text:"段取り・調整ロスの短縮（シングル段取り化など）は、稼働率向上につながる。", answer:true,
+   explanation:"段取り替え時間を1桁分（10分未満）に縮めるシングル段取りなどで停止時間を減らし、時間稼働率を高めます。"},
+  {id:40, category:"効率化とロス", text:"立上りロスとは、始業時や段取り替え後、生産が安定するまでに生じるロスである。", answer:true,
+   explanation:"設備の暖機や条件出しで、安定した良品が出るまでに発生するロス。7大ロスの一つです。"},
+  {id:41, category:"効率化とロス", text:"速度低下ロスとは、設備を設計・基準速度より遅く動かすことで生じるロスである。", answer:true,
+   explanation:"品質不安や設備トラブルを避けるため速度を落として運転すると、性能稼働率が下がります。本来速度との差がロスです。"},
+  {id:42, category:"効率化とロス", text:"不良・手直しロスは、良品率を低下させ設備総合効率を悪化させる。", answer:true,
+   explanation:"不良品や手直しが必要な製品の発生は良品率を直接下げ、材料・時間のムダにもなります。"},
+  {id:43, category:"効率化とロス", text:"「ロス」を金額や件数で見える化することは、改善の優先順位づけに役立つ。", answer:true,
+   explanation:"ロスを定量化すると、どこから手を付ければ効果が大きいかが判断でき、重点指向の改善ができます。"},
+  {id:44, category:"効率化とロス", text:"設備のロスだけでなく、人（作業）や原単位（材料・エネルギー）のロスも管理の対象になる。", answer:true,
+   explanation:"TPMでは16大ロスとして、設備・人・原単位の各ロスを体系的に捉え、総合的な効率化を目指します。"},
+  {id:45, category:"効率化とロス", text:"故障には、機能停止型故障のほかに、機能低下型故障がある。", answer:true,
+   explanation:"完全に止まる機能停止型と、性能や品質が徐々に落ちる機能低下型があります。後者は気づきにくく見逃されがちです。"},
+  {id:46, category:"効率化とロス", text:"設備総合効率を高めるには、7大ロスをバランスよく減らしていく必要がある。", answer:true,
+   explanation:"どれか一つを潰しても他が大きければ効率は上がりません。各ロスを見える化して総合的に改善します。"},
+  {id:47, category:"効率化とロス", text:"良品率とは、投入数に対する良品数の割合のことである。", answer:true,
+   explanation:"良品率＝良品数÷投入（加工）数。不良・手直しが多いほど低下し、設備総合効率を押し下げます。"},
+  {id:48, category:"効率化とロス", text:"稼働率を上げるためなら、品質不良が増えても問題ない。", answer:false,
+   explanation:"稼働率だけ上げても不良が増えれば良品率が下がり、設備総合効率はかえって悪化します。QCDのバランスが大切です。"},
+
+  // ===== ④ 改善・解析の知識 =====
+  {id:49, category:"改善・解析", text:"パレート図は、項目を件数や金額の大きい順に並べ、重点課題を見つけるのに使う。", answer:true,
+   explanation:"大きい順の棒グラフと累積曲線で表し、「重要な少数（重点指向）」を見つけるQC手法。どこから改善するかの判断に使います。"},
+  {id:50, category:"改善・解析", text:"特性要因図は、その形から「魚の骨（フィッシュボーン）図」とも呼ばれる。", answer:true,
+   explanation:"特性（結果）に対する要因を大骨・小骨状に整理する図。要因を4M（人・設備・材料・方法）などで洗い出します。"},
+  {id:51, category:"改善・解析", text:"ヒストグラムは、データのばらつき（分布の形）を把握するために用いる。", answer:true,
+   explanation:"データを区間ごとの度数の柱で表し、分布の中心位置・ばらつき・形の異常（二山・離れ島など）を読み取ります。"},
+  {id:52, category:"改善・解析", text:"散布図は、対になった2種類のデータの相関関係を調べるのに使う。", answer:true,
+   explanation:"2変数の点をプロットし、正の相関・負の相関・無相関を視覚的に判断します。原因と結果の関係を探るのに有効です。"},
+  {id:53, category:"改善・解析", text:"チェックシートは、データを取りながら簡単に記録・集計できるよう作った記入用紙である。", answer:true,
+   explanation:"あらかじめ項目を印刷し、チェックを入れるだけで記録・集計できる、データ収集の基本ツールです。"},
+  {id:54, category:"改善・解析", text:"管理図は、工程が安定しているか（異常がないか）を時系列で判断するのに使う。", answer:true,
+   explanation:"中心線と上下の管理限界線を引き、点が限界を超えたり並び方に癖があれば異常と判断します。工程の安定性監視に使います。"},
+  {id:55, category:"改善・解析", text:"QC七つ道具には、パレート図・特性要因図・ヒストグラム・散布図・チェックシート・グラフ（管理図）・層別が含まれる。", answer:true,
+   explanation:"主に数値データを扱う7つの手法。言語データを整理する新QC七つ道具（親和図法など）とは別物です。"},
+  {id:56, category:"改善・解析", text:"層別とは、データを機械別・人別・時間別などのグループに分けて解析する考え方である。", answer:true,
+   explanation:"データを共通点でグループ分けすると、どこに問題があるかが見えやすくなります。他の手法と組み合わせて使う基本の考え方です。"},
+  {id:57, category:"改善・解析", text:"特性要因図の要因を洗い出すとき、4M（Man・Machine・Material・Method）の視点が役立つ。", answer:true,
+   explanation:"人・設備・材料・方法の4つの観点で要因を漏れなく挙げると、抜けの少ない解析ができます。"},
+  {id:58, category:"改善・解析", text:"改善は「思いつき」で対策するより、データで事実を確認してから進める方がよい。", answer:true,
+   explanation:"事実に基づく管理（ファクトコントロール）が基本。データで現状と原因を確認し、効果も数値で検証します。"},
+  {id:59, category:"改善・解析", text:"ECRSの原則とは、排除・結合・交換（組替え）・簡素化の順で改善を検討する考え方である。", answer:true,
+   explanation:"Eliminate（なくせないか）→Combine（一緒にできないか）→Rearrange（順序を変えられないか）→Simplify（簡単にできないか）の順で検討します。"},
+  {id:60, category:"改善・解析", text:"改善の効果は、対策前後を比較して定量的に確認する必要はない。", answer:false,
+   explanation:"効果は対策前後のデータで比較し、狙いどおり改善したかを確認します。効果が出ていなければ原因分析からやり直します。"},
+  {id:61, category:"改善・解析", text:"「歯止め（標準化）」とは、改善した状態を維持するために標準を定めることである。", answer:true,
+   explanation:"効果を確認したら、作業標準や点検基準に反映して誰でも守れるようにし、元に戻らないよう歯止めをかけます。"},
+  {id:62, category:"改善・解析", text:"グラフは、数値の大小や変化、割合を視覚的にわかりやすく伝えるのに有効である。", answer:true,
+   explanation:"棒グラフ（大小）、折れ線（変化）、円グラフ（割合）など、目的に応じて使い分けると情報が伝わりやすくなります。"},
+  {id:63, category:"改善・解析", text:"なぜなぜ分析では、対策しやすい原因が見つかった時点で分析をやめるのが望ましい。", answer:false,
+   explanation:"対策のしやすさで途中でやめると真因に届きません。「なぜ」を繰り返し、根本原因に対策を打つことで再発を防ぎます。"},
+  {id:64, category:"改善・解析", text:"パレート図で上位の少数項目に対策を集中させる考え方を「重点指向」という。", answer:true,
+   explanation:"全体の大部分を占める少数の重要項目（重点）に資源を集中させると、効率よく効果を出せます。"},
+
+  // ===== ⑤ 設備保全の基礎 =====
+  {id:65, category:"設備保全の基礎", text:"予防保全（PM）とは、故障が起きてから修理する保全のことである。", answer:false,
+   explanation:"予防保全は故障を未然に防ぐための保全。故障してから対応するのは事後保全（BM）です。"},
+  {id:66, category:"設備保全の基礎", text:"事後保全（BM）は、設備が故障・停止してから修理・復旧する保全方式である。", answer:true,
+   explanation:"Breakdown Maintenance。壊れてから直す方式で、故障しても影響の小さい設備などで意図的に採用されることもあります。"},
+  {id:67, category:"設備保全の基礎", text:"時間基準保全（TBM）は、一定の期間ごとに点検・部品交換を行う予防保全である。", answer:true,
+   explanation:"Time Based Maintenance。稼働時間や暦（例：3か月ごと）に基づいて定期的に保全する方式です。"},
+  {id:68, category:"設備保全の基礎", text:"状態基準保全（CBM）は、設備の状態を診断し、劣化の程度に応じて保全する方式である。", answer:true,
+   explanation:"Condition Based Maintenance。振動・温度・油分析などで劣化を把握し、必要なときに保全する予知保全的な方式です。"},
+  {id:69, category:"設備保全の基礎", text:"改良保全（CM）とは、故障しにくいように設備そのものを改善する活動である。", answer:true,
+   explanation:"Corrective Maintenance。材質変更や構造改良で信頼性・保全性を高め、故障や劣化そのものを減らします。"},
+  {id:70, category:"設備保全の基礎", text:"保全予防（MP）とは、設計・製作の段階から保全しやすく故障しにくい設備をつくる活動である。", answer:true,
+   explanation:"Maintenance Prevention。新設備の計画・設計段階で、過去の保全情報を反映し、故障や保全の手間が少ない設備を目指します。"},
+  {id:71, category:"設備保全の基礎", text:"ベアリング（転がり軸受）は、摩擦を利用して回転を止めるための部品である。", answer:false,
+   explanation:"ベアリングは、玉やころの転がりによって回転部の摩擦を減らし、滑らかに回すための部品です。"},
+  {id:72, category:"設備保全の基礎", text:"Vベルトは、断面がV字形で、プーリ（滑車）間の動力伝達に用いられる。", answer:true,
+   explanation:"Vベルトはプーリの溝に食い込み、摩擦で動力を伝えます。張力の管理不足はすべりや早期摩耗の原因になります。"},
+  {id:73, category:"設備保全の基礎", text:"歯車（ギヤ）は、かみ合いによって回転や動力を確実に伝えることができる。", answer:true,
+   explanation:"歯車はすべりが少なく、回転比（減速・増速）を正確に伝えられます。潤滑不良は摩耗・欠けの原因になります。"},
+  {id:74, category:"設備保全の基礎", text:"油圧装置は、油の圧力を利用して力を伝えたり運動させたりする。", answer:true,
+   explanation:"パスカルの原理を利用し、ポンプで加圧した作動油でシリンダやモータを駆動します。大きな力を得やすいのが特長です。"},
+  {id:75, category:"設備保全の基礎", text:"空気圧（空圧）装置では、作動流体として圧縮空気を用いる。", answer:true,
+   explanation:"空圧は応答が速く扱いやすい反面、油圧に比べ大きな力は出しにくく、圧縮性のため速度制御が難しい面があります。"},
+  {id:76, category:"設備保全の基礎", text:"締結用のボルト・ナットは、ゆるみが生じても設備の安全性に影響しない。", answer:false,
+   explanation:"ボルトのゆるみは振動・脱落・破損・事故の原因になります。増し締め、緩み止め（ばね座金・ダブルナット等）、合マーク管理が重要です。"},
+  {id:77, category:"設備保全の基礎", text:"潤滑不良（油切れ・異物混入）は、軸受や歯車の焼き付き・摩耗の原因になる。", answer:true,
+   explanation:"油膜が切れると金属同士が接触して発熱・摩耗し、最悪は焼き付きます。適正な油種・油量・清浄度の管理が欠かせません。"},
+  {id:78, category:"設備保全の基礎", text:"設備の異常は、振動・音・熱・におい・漏れなど五感でも察知できることがある。", answer:true,
+   explanation:"いつもと違う音や振動、異臭、発熱、油や水の漏れは異常の兆候。日常点検では五感による気づきが早期発見に役立ちます。"},
+  {id:79, category:"設備保全の基礎", text:"電動機（モータ）の絶縁不良や過熱は、故障や焼損の原因となる。", answer:true,
+   explanation:"絶縁劣化、過負荷、冷却不良による過熱は巻線の焼損につながります。温度や電流、絶縁抵抗の点検が予防に有効です。"},
+  {id:80, category:"設備保全の基礎", text:"設備の信頼性を表す指標に、平均故障間隔（MTBF）がある。", answer:true,
+   explanation:"MTBF（Mean Time Between Failures）は故障と故障の平均間隔で、大きいほど故障しにくい。修理時間の平均はMTTRで表します。"},
+];
+
+/* ============================================================
+   状態管理
+   ============================================================ */
+const STORAGE_KEY = "quizAppData";
+
+// ユーザーデータ(localStorage)
+let userData = loadData();
+
+// 進行中クイズの状態
+let state = {
+  mode: "normal",     // normal | review
+  subject: null,      // 出題中の科目名(nullは全科目ミックス)
+  queue: [],          // 出題する問題の配列
+  index: 0,           // 現在の問題番号
+  correctCount: 0,
+  wrongThisSet: [],   // このセットで間違えた問題
+  answered: false,    // 現在の問題に回答済みか
+};
+
+function loadData(){
+  let d = null;
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) d = JSON.parse(raw);
+  }catch(e){ console.error("データ読み込みに失敗:", e); }
+
+  // 初期値
+  const base = {
+    streak: 0,
+    lastStudyDate: null,
+    todayCount: 0,
+    totalAnswered: 0,
+    totalCorrect: 0,
+    wrongIds: [],
+    // stats: 問題ごとの学習履歴
+    //   correct/wrong … 正誤の累計
+    //   everCorrect   … 過去に一度でも正解したか
+    //   guessCount    … 「なんとなく正解」の回数
+    //   alert         … 要注意フラグ(以前正解→再誤答 or なんとなく正解)
+    stats: {},
+  };
+  if(!d) return base;
+
+  // 旧データに新フィールドを補完(後方互換)
+  d = Object.assign({}, base, d);
+  d.stats = d.stats || {};
+  for(const id in d.stats){
+    const s = d.stats[id];
+    if(s.everCorrect === undefined) s.everCorrect = (s.correct||0) > 0;
+    if(s.guessCount === undefined) s.guessCount = 0;
+    if(s.alert === undefined) s.alert = false;
+  }
+  return d;
+}
+function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+  }catch(e){ console.error("データ保存に失敗:", e); }
+}
+
+/* ---------- 日付・ストリーク ---------- */
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function yesterdayStr(){
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+// 回答のたびに呼ぶ:ストリークと今日のカウントを更新
+function touchStudyDate(){
+  const today = todayStr();
+  if(userData.lastStudyDate === today){
+    // 同日:カウントのみ
+  }else if(userData.lastStudyDate === yesterdayStr()){
+    userData.streak += 1;           // 昨日→今日:継続
+    userData.todayCount = 0;
+  }else{
+    userData.streak = 1;            // 途切れた or 初回
+    userData.todayCount = 0;
+  }
+  userData.lastStudyDate = today;
+}
+// ホーム表示用:日付が変わっていたら今日のカウントを0に見せる
+function displayTodayCount(){
+  return userData.lastStudyDate === todayStr() ? userData.todayCount : 0;
+}
+
+/* ============================================================
+   画面切り替え
+   ============================================================ */
+function show(id){
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   S1 ホーム
+   ============================================================ */
+function renderHome(){
+  document.getElementById("home-streak").textContent = userData.streak;
+  document.getElementById("home-today").textContent = displayTodayCount();
+  document.getElementById("home-total").textContent = userData.totalAnswered;
+  const acc = userData.totalAnswered > 0
+    ? Math.round(userData.totalCorrect / userData.totalAnswered * 100) + "%" : "–";
+  document.getElementById("home-acc").textContent = acc;
+
+  // 復習ボタン:間違いがあるときだけ表示
+  const btn = document.getElementById("btn-review");
+  const n = userData.wrongIds.length;
+  if(n > 0){
+    btn.classList.remove("hidden");
+    document.getElementById("review-badge").textContent = n + "問";
+  }else{
+    btn.classList.add("hidden");
+  }
+  show("screen-home");
+}
+function goHome(){ renderHome(); }
+
+/* ============================================================
+   S2/S5 クイズ
+   ============================================================ */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startQuiz(mode, subject){
+  let queue;
+  if(mode === "normal"){
+    // subject指定があればその科目のみ、なければ全科目ミックス
+    let pool = subject ? QUESTIONS.filter(q=>q.category===subject) : QUESTIONS;
+    queue = shuffle(pool).slice(0,10);
+    state.mode = "normal";
+    state.subject = subject || null;
+  }else if(mode === "review"){
+    // ホームからの復習:間違いリスト全部(最大10問)
+    queue = shuffle(QUESTIONS.filter(q=>userData.wrongIds.includes(q.id))).slice(0,10);
+    state.mode = "review";
+    state.subject = null;
+  }else{ // review-now:結果画面から、今回間違えた分だけ
+    queue = shuffle(state.wrongThisSet.slice());
+    state.mode = "review";
+    state.subject = null;
+  }
+  if(queue.length === 0){ renderHome(); return; }
+
+  state.queue = queue;
+  state.index = 0;
+  state.correctCount = 0;
+  state.wrongThisSet = [];
+  renderQuestion();
+  show("screen-quiz");
+}
+
+/* ---------- 科目選択画面 ---------- */
+const SUBJECTS = ["生産の基本","設備の日常保全","効率化とロス","改善・解析","設備保全の基礎"];
+// バッジ用の短い記号
+const SUBJ_BADGE = {
+  "生産の基本":"基","設備の日常保全":"日","効率化とロス":"率","改善・解析":"改","設備保全の基礎":"保"
+};
+
+function showSubjects(){
+  const list = document.getElementById("subj-list");
+  list.innerHTML = "";
+
+  // 全科目ミックス
+  const mix = document.createElement("button");
+  mix.className = "subj-card mix";
+  mix.onclick = ()=>startQuiz("normal");
+  mix.innerHTML = `
+    <div class="subj-badge">全</div>
+    <div class="subj-body">
+      <div class="subj-name">全科目ミックス</div>
+      <div class="subj-meta">全${QUESTIONS.length}問からランダム10問</div>
+    </div>
+    <div class="subj-acc">${subjAcc(null)}</div>`;
+  list.appendChild(mix);
+
+  // 科目別
+  SUBJECTS.forEach(name=>{
+    const count = QUESTIONS.filter(q=>q.category===name).length;
+    const card = document.createElement("button");
+    card.className = "subj-card";
+    card.onclick = ()=>startQuiz("normal", name);
+    card.innerHTML = `
+      <div class="subj-badge">${SUBJ_BADGE[name]||"○"}</div>
+      <div class="subj-body">
+        <div class="subj-name">${name}</div>
+        <div class="subj-meta">全${count}問</div>
+      </div>
+      <div class="subj-acc">${subjAcc(name)}</div>`;
+    list.appendChild(card);
+  });
+
+  show("screen-subjects");
+}
+
+// 科目ごとの正答率(未回答は「–」)。nullで全科目
+function subjAcc(subject){
+  let c=0,t=0;
+  QUESTIONS.forEach(q=>{
+    if(subject && q.category!==subject) return;
+    const s = userData.stats[q.id];
+    if(!s) return;
+    c += s.correct; t += s.correct + s.wrong;
+  });
+  return t>0 ? Math.round(c/t*100)+"%" : "–";
+}
+
+function renderQuestion(){
+  const q = state.queue[state.index];
+  state.answered = false;
+  state.confidenceAsked = false;
+  state.wasSure = false;
+
+  document.getElementById("q-tag").textContent = q.category;
+  document.getElementById("q-text").textContent = q.text;
+  document.getElementById("q-counter").textContent = `${state.index+1}/${state.queue.length}`;
+  document.getElementById("progress").style.width =
+    (state.index / state.queue.length * 100) + "%";
+
+  // スタンプ・解説・確信度をリセット、○×ボタンを戻す
+  document.getElementById("stamp-maru").classList.remove("show");
+  document.getElementById("stamp-batsu").classList.remove("show");
+  document.getElementById("judge-panel").classList.remove("show");
+  document.getElementById("confidence-panel").classList.remove("show");
+  document.getElementById("judge-alert").classList.remove("show");
+  document.getElementById("answer-area").classList.remove("hidden");
+}
+
+function answer(userAnswer){
+  if(state.answered) return;
+  state.answered = true;
+
+  const q = state.queue[state.index];
+  const correct = (userAnswer === q.answer);
+
+  /* --- 記録(共通) --- */
+  touchStudyDate();
+  userData.todayCount += 1;
+  userData.totalAnswered += 1;
+  if(!userData.stats[q.id]) userData.stats[q.id] = {correct:0, wrong:0, everCorrect:false, guessCount:0, alert:false};
+  const s = userData.stats[q.id];
+
+  // このターンの状況を控えておく(確信度回答や表示で使う)
+  state.curQ = q;
+  state.curCorrect = correct;
+  state.wasEverCorrect = s.everCorrect;   // 「以前に正解できていたか」を判定前に保持
+
+  /* --- スタンプ演出 --- */
+  document.getElementById(correct ? "stamp-maru" : "stamp-batsu").classList.add("show");
+  document.getElementById("answer-area").classList.add("hidden");
+
+  if(correct){
+    // 正解:まず確信度を聞く(記録はconfidenceで確定)
+    state.correctCount += 1;
+    userData.totalCorrect += 1;
+    s.correct += 1;
+    s.everCorrect = true;
+    if(state.mode === "review"){
+      // 復習で正解 → いったんリストから外す(克服判定は正答率で後述)
+      userData.wrongIds = userData.wrongIds.filter(id=>id !== q.id);
+    }
+    saveData();
+    showConfidence();   // 「確信あり／なんとなく」を尋ねる
+  }else{
+    // 不正解:記録して解説へ
+    s.wrong += 1;
+    state.wrongThisSet.push(q);
+    if(!userData.wrongIds.includes(q.id)) userData.wrongIds.push(q.id);
+    // 「以前は正解できたのに間違えた」→要注意フラグ
+    if(state.wasEverCorrect) s.alert = true;
+    saveData();
+    showJudge(false);
+  }
+}
+
+// 正解時:確信度を尋ねるパネル
+function showConfidence(){
+  document.getElementById("judge-panel").classList.remove("show");
+  document.getElementById("confidence-panel").classList.add("show");
+}
+
+// 確信度の回答を受けて記録し、解説へ
+function setConfidence(sure){
+  const q = state.curQ;
+  const s = userData.stats[q.id];
+  state.confidenceAsked = true;
+  state.wasSure = sure;
+  if(!sure){
+    // 「なんとなく正解」= 勘の可能性。要注意リストに入れる
+    s.guessCount = (s.guessCount||0) + 1;
+    s.alert = true;
+  }
+  updateMastery(q.id);   // 克服判定(正答率80%以上で苦手リストから外す)
+  saveData();
+  document.getElementById("confidence-panel").classList.remove("show");
+  showJudge(true);
+}
+
+// 克服判定:正答率80%以上 かつ 2回以上回答 なら苦手リストから外す
+// ただし「確信あり」で答えられていることを条件にする(勘の正解では克服にしない)
+function updateMastery(id){
+  const s = userData.stats[id];
+  if(!s) return;
+  const total = s.correct + s.wrong;
+  const rate = total>0 ? s.correct/total : 0;
+  const mastered = total>=2 && rate>=0.8 && (s.guessCount===0 || s.correct - s.guessCount >= 2);
+  if(mastered){
+    userData.wrongIds = userData.wrongIds.filter(x=>x!==id);
+    s.alert = false;   // 克服したら要注意も解除
+  }
+}
+
+// 解説パネルを表示(correct: 正誤)
+function showJudge(correct){
+  const q = state.curQ;
+  const s = userData.stats[q.id];
+  const head = document.getElementById("judge-head");
+
+  // 見出し:通常/要注意で出し分け
+  let label;
+  if(correct){
+    label = (state.confidenceAsked && !state.wasSure) ? "正解（自信なし）" : "正解！";
+  }else{
+    label = state.wasEverCorrect ? "不正解…" : "不正解…";
+  }
+  head.textContent = label;
+  head.className = "judge-head " + (correct ? "ok" : "ng");
+
+  // 要注意バナー(以前正解→誤答、またはなんとなく正解)
+  const banner = document.getElementById("judge-alert");
+  if(!correct && state.wasEverCorrect){
+    banner.textContent = "⚠ 前に正解できた問題を落としました。理解が固まっていないサインです。ここは本で復習を。";
+    banner.classList.add("show");
+  }else if(correct && !state.wasSure && state.confidenceAsked){
+    banner.textContent = "🤔 なんとなくの正解は「わかったつもり」かも。要注意リストに入れて、後で確実に。";
+    banner.classList.add("show");
+  }else{
+    banner.classList.remove("show");
+  }
+
+  document.getElementById("judge-exp").innerHTML =
+    `<b>答え：${q.answer ? "○" : "×"}</b><br>${q.explanation}`;
+
+  document.getElementById("judge-panel").classList.add("show");
+  document.getElementById("btn-next").textContent =
+    (state.index === state.queue.length-1) ? "結果を見る" : "次へ";
+  document.getElementById("btn-next").focus();
+}
+
+function nextQuestion(){
+  state.index += 1;
+  if(state.index >= state.queue.length){
+    renderResult();
+  }else{
+    renderQuestion();
+  }
+}
+
+function quitQuiz(){
+  if(confirm("途中でやめますか?ここまでの回答は記録されています。")){
+    renderHome();
+  }
+}
+
+/* ============================================================
+   S4 結果
+   ============================================================ */
+function renderResult(){
+  const total = state.queue.length;
+  const score = state.correctCount;
+  const pct = Math.round(score/total*100);
+
+  document.getElementById("result-title").textContent =
+    state.mode === "review" ? "復習 結果"
+    : (state.subject ? state.subject + " 結果" : "全科目ミックス 結果");
+  document.getElementById("score-text").textContent = `${score}/${total}`;
+  document.getElementById("score-pct").textContent = `正答率 ${pct}%`;
+
+  // 円グラフ(円周 2πr, r=72)
+  const ring = document.getElementById("ring-fg");
+  const C = 2 * Math.PI * 72;
+  ring.style.strokeDasharray = C;
+  ring.style.strokeDashoffset = C;             // 一旦リセット
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      ring.style.strokeDashoffset = C * (1 - score/total);
+    });
+  });
+
+  // ひとことメッセージ
+  const msg = pct === 100 ? "全問正解!お見事です。"
+            : pct >= 80 ? "好調です。この調子!"
+            : pct >= 50 ? "間違えた問題こそ伸びしろです。"
+            : "復習すれば必ず身につきます。";
+  document.getElementById("result-msg").textContent = msg;
+
+  // 間違い一覧
+  const list = document.getElementById("wrong-list");
+  list.innerHTML = "";
+  state.wrongThisSet.forEach(q=>{
+    const div = document.createElement("div");
+    div.className = "wrong-item";
+    div.innerHTML = `<span class="mark">✕</span><span>${q.text}</span>`;
+    list.appendChild(div);
+  });
+
+  // 「すぐ復習」ボタン
+  document.getElementById("btn-retry-wrong")
+    .classList.toggle("hidden", state.wrongThisSet.length === 0);
+
+  // 「もう10問」ボタンのラベル(復習セット後は非表示)
+  const again = document.getElementById("btn-again");
+  if(state.mode === "review"){
+    again.classList.add("hidden");
+  }else{
+    again.classList.remove("hidden");
+    again.textContent = state.subject ? `「${state.subject}」でもう10問` : "全科目でもう10問";
+  }
+
+  show("screen-result");
+}
+
+// 直前と同じ条件でもう1セット
+function retrySameSubject(){
+  startQuiz("normal", state.subject || undefined);
+}
+
+/* ============================================================
+   S6 成績
+   ============================================================ */
+function showStats(){
+  document.getElementById("st-total").textContent = userData.totalAnswered;
+  document.getElementById("st-acc").textContent = userData.totalAnswered > 0
+    ? Math.round(userData.totalCorrect/userData.totalAnswered*100) + "%" : "–";
+  document.getElementById("st-streak").textContent = userData.streak + "日";
+  document.getElementById("st-wrong").textContent = userData.wrongIds.length + "問";
+
+  // カテゴリ別集計
+  const cats = {};
+  QUESTIONS.forEach(q=>{
+    const s = userData.stats[q.id];
+    if(!s) return;
+    if(!cats[q.category]) cats[q.category] = {correct:0, total:0};
+    cats[q.category].correct += s.correct;
+    cats[q.category].total += s.correct + s.wrong;
+  });
+
+  const list = document.getElementById("cat-list");
+  list.innerHTML = "";
+  const names = Object.keys(cats);
+  if(names.length === 0){
+    list.innerHTML = `<p class="empty-note">まだ記録がありません。<br>「今日の10問」から始めましょう。</p>`;
+  }else{
+    names.forEach(name=>{
+      const c = cats[name];
+      const pct = Math.round(c.correct/c.total*100);
+      const row = document.createElement("div");
+      row.className = "cat-row";
+      row.innerHTML = `
+        <div class="cat-name">${name}<span>${pct}%(${c.correct}/${c.total})</span></div>
+        <div class="cat-bar"><div class="cat-fill" style="width:0%"></div></div>`;
+      list.appendChild(row);
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{ row.querySelector(".cat-fill").style.width = pct + "%"; });
+      });
+    });
+  }
+
+  renderAlertList();
+  show("screen-stats");
+}
+
+// 要注意問題の抽出:alertフラグが立っている問題
+//  ・以前正解できたのに間違えた
+//  ・なんとなく(勘)で正解した
+function getAlertQuestions(){
+  return QUESTIONS.filter(q=>{
+    const s = userData.stats[q.id];
+    return s && s.alert;
+  });
+}
+
+function renderAlertList(){
+  const wrap = document.getElementById("alert-list");
+  const lead = document.getElementById("alert-lead");
+  const btn = document.getElementById("btn-review-alert");
+  wrap.innerHTML = "";
+
+  const items = getAlertQuestions();
+  if(items.length === 0){
+    lead.textContent = "";
+    wrap.innerHTML = `<p class="empty-note">今は要注意問題はありません。<br>「なんとなく正解」や「前は解けたのに落とした」問題がここに集まります。</p>`;
+    btn.classList.add("hidden");
+    return;
+  }
+
+  lead.textContent = "2択で“なんとなく”当たった問題や、一度解けたのに間違えた問題です。ここは本で確実に固めましょう。";
+  items.forEach(q=>{
+    const s = userData.stats[q.id];
+    const total = s.correct + s.wrong;
+    const rate = total>0 ? Math.round(s.correct/total*100) : 0;
+    // 理由ラベル
+    let reason = [];
+    if(s.guessCount>0) reason.push("なんとなく正解あり");
+    if(s.wrong>0 && s.everCorrect) reason.push("正解後に誤答");
+    const card = document.createElement("div");
+    card.className = "alert-card";
+    card.innerHTML = `
+      <div class="ac-text">${q.text}</div>
+      <div class="ac-meta">
+        <span class="ac-tag">${q.category}</span>
+        <span>正答率 ${rate}%（${s.correct}/${total}）</span>
+        <span class="ac-reason">${reason.join("・")}</span>
+      </div>`;
+    wrap.appendChild(card);
+  });
+
+  btn.classList.remove("hidden");
+  btn.textContent = `要注意問題を復習する（${items.length}問）`;
+}
+
+// 要注意問題だけで復習セットを開始
+function startAlertReview(){
+  const items = getAlertQuestions();
+  if(items.length === 0){ return; }
+  state.mode = "review";
+  state.subject = null;
+  state.queue = shuffle(items).slice(0,10);
+  state.index = 0;
+  state.correctCount = 0;
+  state.wrongThisSet = [];
+  renderQuestion();
+  show("screen-quiz");
+}
+
+/* ============================================================
+   起動
+   ============================================================ */
+renderHome();
+
+/* ============================================================
+   PWA: サービスワーカー登録(オフライン対応)
+   ※ file:// で開くと動きません。http(s) 経由で開いてください。
+   ============================================================ */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch((err) => {
+      console.log("SW登録スキップ:", err && err.message);
+    });
+  });
+}
+</script>
+</body>
+</html>
