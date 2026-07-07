@@ -1,0 +1,17 @@
+{
+  "name": "自主保全士2級 ○×道場",
+  "short_name": "○×道場",
+  "description": "自主保全士2級 学科の一問一答。スキマ時間に○×で、苦手箇所を見える化。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F6F2",
+  "theme_color": "#2B4C7E",
+  "lang": "ja",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
