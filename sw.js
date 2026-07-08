@@ -3,7 +3,7 @@
    アプリを更新したら CACHE_VERSION の数字を上げてください。
    → 古いキャッシュが破棄され、新しいHTMLが配信されます。
    ========================================================== */
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const CACHE_NAME = "hozen-oxdojo-" + CACHE_VERSION;
 
 // オフラインで動かすために保存するファイル一式
