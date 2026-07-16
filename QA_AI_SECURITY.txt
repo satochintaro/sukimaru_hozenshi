@@ -1,0 +1,7 @@
+Ver 4.7 QA
+- Node.js syntax: server.js / admin.js / app.js
+- Manager GET/DELETE API requires authenticated session
+- Player POST submission remains available
+- Manager PIN generated on first server start
+- AI education recommendation is local statistical rule-based analysis
+- No external AI/API calls
