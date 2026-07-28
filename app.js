@@ -4,7 +4,9 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"4.7",schema:6};
+const APP={id:"skimaru-hozenshi",version:"4.9.0",schema:6};
+const CLOUD=window.SKIMARU_SUPABASE||{};
+const LOCATION_KEY="skimaruLocation";
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
 const LEGACY_KEYS=["quizAppData"];
@@ -747,9 +749,40 @@ function saveLocalSubmission(record,key=SUBMISSION_INBOX_KEY){
 function broadcastSubmission(record){
   try{const ch=new BroadcastChannel(SUBMISSION_CHANNEL);ch.postMessage({type:"submission",record});ch.close();}catch(e){}
 }
+function cloudConfigured(){
+  return /^https:\/\//.test(CLOUD.url||"")&&String(CLOUD.publishableKey||"").startsWith("sb_publishable_");
+}
+function cloudRow(record){
+  const total=Number(record.total)||0, correct=Number(record.correct)||0;
+  return {
+    submission_id:record.id,
+    user_name:String(record.name||"(未記入)").slice(0,50),
+    location:String(record.location||"").slice(0,80),
+    score:correct,
+    total_questions:total,
+    correct_count:correct,
+    correct_rate:total?Math.round(correct/total*100):0,
+    elapsed_seconds:0,
+    exam_version:APP.version,
+    submitted_at:record.sentAt,
+    streak:Number(record.streak)||0,
+    mastered_count:Number(record.mastered)||0,
+    wrong_count:Number(record.wrongCount)||0,
+    category_results:record.cats||{},
+    weak_questions:Array.isArray(record.alerts)?record.alerts:[],
+    raw_result:record
+  };
+}
 async function postSubmission(record){
-  const res=await fetch("./api/submissions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({submission:record}),cache:"no-store"});
-  if(!res.ok)throw new Error("server");return res.json();
+  if(!cloudConfigured())throw new Error("Supabase設定がありません");
+  const endpoint=`${CLOUD.url}/rest/v1/${encodeURIComponent(CLOUD.table||"exam_results")}?on_conflict=submission_id`;
+  const res=await fetch(endpoint,{method:"POST",headers:{
+    "apikey":CLOUD.publishableKey,
+    "Content-Type":"application/json",
+    "Prefer":"resolution=ignore-duplicates,return=minimal"
+  },body:JSON.stringify(cloudRow(record)),cache:"no-store"});
+  if(!res.ok){const detail=await res.text().catch(()=>"");throw new Error(detail||`Supabase HTTP ${res.status}`);}
+  return {receivedAt:new Date().toISOString()};
 }
 async function retryPendingSubmissions(){
   const pending=readSubmissionList(SUBMISSION_PENDING_KEY);if(!pending.length)return;
@@ -769,6 +802,8 @@ function showSend(){
   document.getElementById("sb-total").textContent=U.total+" 問";
   document.getElementById("sb-acc").textContent=U.total>0?Math.round(U.correct/U.total*100)+"%":"–";
   document.getElementById("sb-alert").textContent=a+" 問";
+  const locationInput=document.getElementById("sb-location");
+  if(locationInput)locationInput.value=localStorage.getItem(LOCATION_KEY)||"";
   document.getElementById("sd-done").classList.add("hide");
   show("sc-send");
 }
@@ -780,7 +815,10 @@ async function submitResult(){
   const btn=document.getElementById("submit-btn");
   btn.disabled=true;btn.textContent="送付中…";
   const sentAt=new Date().toISOString();
-  const record={...build(),id:submissionId(),sentAt,clientReceivedAt:sentAt,source:"player"};
+  const locationInput=document.getElementById("sb-location");
+  const location=String(locationInput?locationInput.value:"").trim().slice(0,80);
+  try{localStorage.setItem(LOCATION_KEY,location);}catch(e){}
+  const record={...build(),id:submissionId(),sentAt,clientReceivedAt:sentAt,source:"player",location};
   let serverSaved=false,receivedAt=sentAt;
   try{
     const result=await postSubmission(record);
@@ -792,11 +830,11 @@ async function submitResult(){
     broadcastSubmission(record);
   }
   document.getElementById("sd-done").classList.remove("hide");
-  document.getElementById("sd-title").textContent=serverSaved?"マネージャーへ送付しました":"この端末の受信箱へ送付しました";
+  document.getElementById("sd-title").textContent=serverSaved?"クラウドへ提出しました":"通信待ちとして端末に保存しました";
   const dt=new Date(receivedAt);
   const when=dt.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-  document.getElementById("sd-message").textContent=`送付者：${U.name} ／ 送付日時：${when}${serverSaved?"":"。別端末へ共有するにはLANサーバーで起動してください。"}`;
-  notify(serverSaved?"送付が完了しました":"端末内受信箱へ保存しました");
+  document.getElementById("sd-message").textContent=`提出者：${U.name} ／ 提出日時：${when}${serverSaved?" ／ Supabaseへ保存済み":"。オンライン復帰時に自動再送します。"}`;
+  notify(serverSaved?"クラウド提出が完了しました":"通信待ちとして保存しました");
   btn.disabled=false;btn.textContent="もう一度送付";
 }
 function dlJson(){

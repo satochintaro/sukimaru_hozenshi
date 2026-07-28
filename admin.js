@@ -1,4 +1,6 @@
 "use strict";
+const CLOUD=window.SKIMARU_SUPABASE||{};
+const SESSION_KEY="skimaru-supabase-manager-session-v1";
 const SUBJ=["生産の基本","設備の日常保全","効率化とロス","改善・解析","設備保全の基礎"];
 const CC={"生産の基本":"#2878B8","設備の日常保全":"#23875A","効率化とロス":"#C47A18","改善・解析":"#8A5AA8","設備保全の基礎":"#D94841"};
 const EDUCATION={
@@ -8,17 +10,66 @@ const EDUCATION={
   "改善・解析":{title:"問題解決の型を実践",practice:"なぜなぜ分析・パレート図・特性要因図を、実際の困りごと1件に当てはめる短時間ワークを行う。"},
   "設備保全の基礎":{title:"保全方式と劣化の理解",practice:"予防保全・事後保全・予知保全の使い分け、故障モードと点検基準を設備事例で整理する。"}
 };
-let rows=[];let serverAvailable=false;let timer;let authenticated=false;
+let rows=[];let serverAvailable=false;let timer;let authenticated=false;let session=readSession();
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function notify(m){const e=document.getElementById("toast");e.textContent=m;e.classList.add("show");clearTimeout(timer);timer=setTimeout(()=>e.classList.remove("show"),2400);}
-function normalize(x){if(!x||!x.cats||!Number.isFinite(Number(x.total)))return null;return {...x,id:x.id||`${x.name||"unknown"}-${x.sentAt||x.date||Date.now()}`,name:x.name||"(未記入)",total:Number(x.total)||0,correct:Number(x.correct)||0,mastered:Number(x.mastered)||0,streak:Number(x.streak)||0,alerts:Array.isArray(x.alerts)?x.alerts:[],sentAt:x.sentAt||x.receivedAt||x.date,receivedAt:x.receivedAt||x.sentAt||x.date};}
-function showLogin(message=""){authenticated=false;document.getElementById("manager-login").classList.add("show");document.getElementById("login-message").textContent=message;document.getElementById("manager-pin").focus();}
-function hideLogin(){authenticated=true;document.getElementById("manager-login").classList.remove("show");document.getElementById("manager-pin").value="";document.getElementById("login-message").textContent="";}
-async function checkAuth(){if(location.protocol==="file:"){showLogin("この画面はファイルとして開かれています。start-server.bat を実行し、http://localhost:8787/admin.html から開いてください。");return;}try{const r=await fetch("./api/manager/status",{cache:"no-store"});if(!r.ok)throw new Error();const j=await r.json();if(j.authenticated){hideLogin();await loadRows(true);}else showLogin();}catch(e){showLogin("LANサーバーから開いてください。ファイルを直接開くと認証できません。");}}
-async function login(){if(location.protocol==="file:"){showLogin("PINの問題ではありません。start-server.bat を実行し、http://localhost:8787/admin.html から開いてください。");return;}const pin=document.getElementById("manager-pin").value.trim(),btn=document.getElementById("login-btn");if(!pin)return;btn.disabled=true;btn.textContent="確認中…";try{const r=await fetch("./api/manager/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin}),cache:"no-store"});if(r.ok){hideLogin();await loadRows(true);notify("マネージャーにログインしました");}else if(r.status===429){const j=await r.json().catch(()=>({}));showLogin(j.message||"しばらく待ってから再試行してください。");}else showLogin("PINが違います。");}catch(e){showLogin("LANサーバーに接続できません。start-server.bat の黒い画面が起動中か確認し、http://localhost:8787/admin.html から開いてください。");}finally{btn.disabled=false;btn.textContent="ログイン";}}
-async function logout(){try{await fetch("./api/manager/logout",{method:"POST"});}catch(e){}rows=[];render();showLogin("ログアウトしました。");}
-function setConnection(){const dot=document.getElementById("connection-dot"),txt=document.getElementById("connection-text");dot.classList.toggle("online",serverAvailable);txt.textContent=serverAvailable?"LANサーバー受信中":"サーバー未接続";document.getElementById("submission-count").textContent=`${rows.length}件`;}
-async function loadRows(silent=false){if(!authenticated)return;serverAvailable=false;try{const res=await fetch("./api/submissions",{cache:"no-store"});if(res.status===401){showLogin("認証の有効期限が切れました。");return;}if(!res.ok)throw new Error();const json=await res.json();rows=(Array.isArray(json.submissions)?json.submissions:[]).map(normalize).filter(Boolean).sort((a,b)=>new Date(b.receivedAt||b.sentAt)-new Date(a.receivedAt||a.sentAt));serverAvailable=true;}catch(e){rows=[];}setConnection();render();if(!silent)notify(serverAvailable?"提出データを更新しました":"サーバーに接続できません");}
+function configured(){return /^https:\/\//.test(CLOUD.url||"")&&String(CLOUD.publishableKey||"").startsWith("sb_publishable_");}
+function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null");}catch(e){return null;}}
+function saveSession(value){session=value;try{value?localStorage.setItem(SESSION_KEY,JSON.stringify(value)):localStorage.removeItem(SESSION_KEY);}catch(e){}}
+function authHeaders(token){return {"apikey":CLOUD.publishableKey,"Authorization":`Bearer ${token}`,"Content-Type":"application/json"};}
+function normalizeJson(value,fallback){if(value==null)return fallback;if(typeof value==="string"){try{return JSON.parse(value);}catch(e){return fallback;}}return value;}
+function normalize(x){
+  const raw=normalizeJson(x.raw_result,{}),cats=normalizeJson(x.category_results,raw.cats||{}),alerts=normalizeJson(x.weak_questions,raw.alerts||[]);
+  const total=Number(x.total_questions??raw.total)||0;
+  const correct=Number(x.correct_count??x.score??raw.correct)||0;
+  return {id:x.submission_id||x.id||`${x.user_name||raw.name||"unknown"}-${x.created_at||Date.now()}`,
+    name:x.user_name||raw.name||"(未記入)",location:x.location||raw.location||"",total,correct,
+    mastered:Number(x.mastered_count??raw.mastered)||0,streak:Number(x.streak??raw.streak)||0,
+    alerts:Array.isArray(alerts)?alerts:[],cats:cats&&typeof cats==="object"?cats:{},
+    sentAt:x.submitted_at||raw.sentAt||x.created_at,receivedAt:x.created_at||x.submitted_at||raw.sentAt};
+}
+function showLogin(message=""){authenticated=false;document.getElementById("manager-login").classList.add("show");document.getElementById("login-message").textContent=message;setTimeout(()=>document.getElementById("manager-email").focus(),0);}
+function hideLogin(){authenticated=true;document.getElementById("manager-login").classList.remove("show");document.getElementById("manager-password").value="";document.getElementById("login-message").textContent="";}
+async function refreshSession(){
+  if(!session?.refresh_token)return false;
+  try{
+    const r=await fetch(`${CLOUD.url}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{"apikey":CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token}),cache:"no-store"});
+    if(!r.ok)throw new Error();const j=await r.json();saveSession({...j,expires_at_ms:Date.now()+(Number(j.expires_in)||3600)*1000});return true;
+  }catch(e){saveSession(null);return false;}
+}
+async function ensureSession(){if(!session?.access_token)return false;if((session.expires_at_ms||0)>Date.now()+60000)return true;return refreshSession();}
+async function checkAuth(){
+  if(!configured()){showLogin("Supabase接続設定がありません。");return;}
+  if(await ensureSession()){hideLogin();await loadRows(true);}else showLogin();
+}
+async function login(){
+  const email=document.getElementById("manager-email").value.trim(),password=document.getElementById("manager-password").value,btn=document.getElementById("login-btn");
+  if(!email||!password){showLogin("メールアドレスとパスワードを入力してください。");return;}
+  btn.disabled=true;btn.textContent="確認中…";
+  try{
+    const r=await fetch(`${CLOUD.url}/auth/v1/token?grant_type=password`,{method:"POST",headers:{"apikey":CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error_description||j.msg||j.message||"ログインできませんでした");
+    saveSession({...j,expires_at_ms:Date.now()+(Number(j.expires_in)||3600)*1000});hideLogin();await loadRows(true);notify("マネージャーにログインしました");
+  }catch(e){showLogin(e.message||"ログインできませんでした");}
+  finally{btn.disabled=false;btn.textContent="ログイン";}
+}
+async function logout(){
+  if(session?.access_token){try{await fetch(`${CLOUD.url}/auth/v1/logout`,{method:"POST",headers:authHeaders(session.access_token)});}catch(e){}}
+  saveSession(null);rows=[];render();showLogin("ログアウトしました。");
+}
+function setConnection(){const dot=document.getElementById("connection-dot"),txt=document.getElementById("connection-text");dot.classList.toggle("online",serverAvailable);txt.textContent=serverAvailable?"Supabaseクラウド接続中":"クラウド未接続";document.getElementById("submission-count").textContent=`${rows.length}件`;}
+async function loadRows(silent=false){
+  if(!authenticated)return;serverAvailable=false;
+  if(!(await ensureSession())){showLogin("認証の有効期限が切れました。");return;}
+  try{
+    const endpoint=`${CLOUD.url}/rest/v1/${encodeURIComponent(CLOUD.table||"exam_results")}?select=*&order=created_at.desc&limit=1000`;
+    const res=await fetch(endpoint,{headers:authHeaders(session.access_token),cache:"no-store"});
+    if(res.status===401){if(await refreshSession())return loadRows(silent);throw new Error("認証切れ");}
+    if(!res.ok){const detail=await res.text().catch(()=>"");throw new Error(detail||`HTTP ${res.status}`);}
+    const json=await res.json();rows=(Array.isArray(json)?json:[]).map(normalize).filter(Boolean).sort((a,b)=>new Date(b.receivedAt||b.sentAt)-new Date(a.receivedAt||a.sentAt));serverAvailable=true;
+  }catch(e){rows=[];if(!silent)notify("提出データを取得できません");}
+  setConnection();render();if(!silent&&serverAvailable)notify("提出データを更新しました");
+}
 function pct(n,d){return d?Math.round(n/d*100):null;}
 function median(arr){if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;}
 function stddev(arr){if(!arr.length)return 0;const m=arr.reduce((a,b)=>a+b,0)/arr.length;return Math.sqrt(arr.reduce((a,b)=>a+(b-m)**2,0)/arr.length);}
@@ -36,18 +87,30 @@ function educationHtml(a){const valid=a.catData.filter(x=>x.sample>0),weakest=[.
   else recs.push({pri:"C",cls:"good",title:"全体教育が成立しやすい",body:`受講者間のばらつきは比較的小さいため、弱点科目を全員で15分補講し、その後に個別復習へ分ける。`});
   if(a.mastered<10||a.avgAlerts>=5)recs.push({pri:"B",cls:"warn",title:"定着を狙う反復教育",body:`平均定着${a.mastered}問、平均要注意${a.avgAlerts}問。補講だけで終わらせず、1日後・3日後・7日後に同テーマを短時間で再出題する。`});
   recs.push({pri:"C",cls:"info",title:"1週間の実施例",body:"月：弱点科目15分補講／火：5問演習／木：誤答だけ再演習／翌月：確認テスト。1回を長くするより、短時間を複数回に分ける。"});
-  let h=`<div class="manager-section ai-education"><div class="manager-section-head ai-head"><div><h2>AI教育コーチ</h2><p>統計から、次に実施する教育を提案します。</p></div><span class="ai-local-badge">ローカル分析・外部送信なし</span></div><div class="ai-overview"><div><span>今週の最優先</span><b>${esc(weakest.label)}</b><small>平均 ${weakest.value}% ／ ${lev.label}</small></div><div class="ai-score-ring">${a.avg}<small>%</small><span>全体平均</span></div></div><div class="ai-recommend-grid">`;
+  let h=`<div class="manager-section ai-education"><div class="manager-section-head ai-head"><div><h2>AI教育コーチ</h2><p>統計から、次に実施する教育を提案します。</p></div><span class="ai-local-badge">端末内分析・生成AI送信なし</span></div><div class="ai-overview"><div><span>今週の最優先</span><b>${esc(weakest.label)}</b><small>平均 ${weakest.value}% ／ ${lev.label}</small></div><div class="ai-score-ring">${a.avg}<small>%</small><span>全体平均</span></div></div><div class="ai-recommend-grid">`;
   recs.forEach(r=>h+=`<article class="ai-rec ${r.cls}"><div class="ai-priority">優先度 ${r.pri}</div><h3>${esc(r.title)}</h3><p>${esc(r.body)}</p></article>`);h+='</div><div class="ai-person-title"><h3>個人別フォロー案</h3><p>個人名を含むため、マネージャーだけが確認してください。</p></div><div class="ai-person-list">';
-  rows.forEach(r=>{const x=individualAdvice(r),acc=r.total?Math.round(r.correct/r.total*100):0;h+=`<article class="ai-person ${x.cls}"><div class="ai-person-head"><b>${esc(r.name)}</b><span>${acc}% ／ ${r.total}問</span></div><strong>${esc(x.level)}</strong><p>${esc(x.text)}</p></article>`;});return h+'</div><div class="ai-disclaimer">この提案は統計ルールに基づくローカル分析です。正式な生成AIへ個人データを送信していないため、社内ネットワーク内で完結します。教育内容は現場責任者が最終判断してください。</div></div>';}
+  rows.forEach(r=>{const x=individualAdvice(r),acc=r.total?Math.round(r.correct/r.total*100):0;h+=`<article class="ai-person ${x.cls}"><div class="ai-person-head"><b>${esc(r.name)}</b><span>${acc}% ／ ${r.total}問</span></div><strong>${esc(x.level)}</strong><p>${esc(x.text)}</p></article>`;});return h+'</div><div class="ai-disclaimer">この提案は、Supabaseから取得した統計をブラウザ内のルールで分析しています。個人データを生成AIサービスへ送信していません。教育内容は現場責任者が最終判断してください。</div></div>';}
 function statCard(label,value,sub=""){return`<div class="manager-stat-card"><span>${esc(label)}</span><b>${esc(value)}</b>${sub?`<small>${esc(sub)}</small>`:""}</div>`;}
-function render(){const B=document.getElementById("ad-rep");if(!rows.length){B.innerHTML='<div class="manager-empty"><div>📭</div><b>提出データはまだありません</b><p>プレイヤーが「マネージャーへ送付」を押すと、ここへ自動表示されます。</p></div>';return;}const a=analyze();let h=`<div class="manager-stat-grid">${statCard("提出人数",rows.length+"名")}${statCard("本日の提出",a.today+"件")}${statCard("平均正答率",a.avg+"%")}${statCard("平均定着数",a.mastered+"問")}</div>`;
+function render(){const B=document.getElementById("ad-rep");if(!rows.length){B.innerHTML='<div class="manager-empty"><div>📭</div><b>提出データはまだありません</b><p>プレイヤーが「クラウドへ提出」を押すと、ここへ自動表示されます。</p></div>';return;}const a=analyze();let h=`<div class="manager-stat-grid">${statCard("提出人数",rows.length+"名")}${statCard("本日の提出",a.today+"件")}${statCard("平均正答率",a.avg+"%")}${statCard("平均定着数",a.mastered+"問")}</div>`;
  h+=educationHtml(a);
  h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>最近の提出</h2><p>誰が、いつ提出したかを確認できます。</p></div></div><div class="submission-list">`;rows.slice(0,12).forEach(r=>{const acc=r.total?Math.round(r.correct/r.total*100):0;h+=`<article class="submission-card"><div class="submission-avatar">${esc((r.name||"?").slice(0,1))}</div><div class="submission-main"><div class="submission-name">${esc(r.name)}</div><div class="submission-time">${fmtDate(r.receivedAt||r.sentAt)}</div><div class="submission-meta"><span>回答 ${r.total}問</span><span>正答率 ${acc}%</span><span>要注意 ${r.alerts.length}問</span></div></div><div class="submission-score">${acc}<small>%</small></div></article>`;});h+='</div></div>';
  h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>科目別バランス</h2><p>全提出者の平均値です。</p></div></div><div class="manager-chart">${svgRadar(a.catData)}</div></div>`;
  h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>科目別平均正答率</h2><p>弱い科目を比較します。</p></div></div><div class="manager-chart wide">${svgBars(a.catData)}</div></div>`;
  if(a.weak.length){h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>教育の重点問題</h2><p>複数人が要注意として残している問題です。</p></div></div><div class="weak-list">`;a.weak.forEach((w,i)=>{h+=`<div class="weak-card"><span class="weak-rank">${i+1}</span><div><b>${esc(w.text)}</b><p>${esc(w.cat)} ／ ${w.n}名が要注意</p></div></div>`;});h+='</div></div>';}
  h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>受講者別</h2><p>個人ごとの科目バランスです。</p></div></div>`;rows.forEach(r=>{const acc=r.total?Math.round(r.correct/r.total*100):0;h+=`<div class="manager-person"><div class="manager-person-head"><div><b>${esc(r.name)}</b><span>${fmtDate(r.receivedAt||r.sentAt)}</span></div><strong>${acc}<small>%</small></strong></div>`;SUBJ.forEach(c=>{const x=r.cats[c],v=x&&x.t?Math.round(x.c/x.t*100):null;h+=`<div class="manager-progress"><span>${esc(c)}</span><i><em style="width:${v||0}%;background:${CC[c]}"></em></i><b>${v===null?"–":v+"%"}</b></div>`;});h+=`<div class="manager-person-foot">回答 ${r.total}問　／　要注意 ${r.alerts.length}問　／　定着 ${r.mastered}問</div></div>`;});h+='</div>';B.innerHTML=h;}
-function downloadCsv(){if(!rows.length){notify("提出データがありません");return;}const head=["氏名","送付日時","受信日時","総回答数","正解数","正答率","連続日数","要注意数","定着数",...SUBJ];const lines=[head];rows.forEach(r=>lines.push([r.name,r.sentAt,r.receivedAt,r.total,r.correct,r.total?Math.round(r.correct/r.total*100):0,r.streak,r.alerts.length,r.mastered,...SUBJ.map(c=>{const x=r.cats[c];return x&&x.t?Math.round(x.c/x.t*100):"";})]));const body=lines.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");const b=new Blob(["\ufeff"+body],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=`skimaru_submissions_${new Date().toISOString().slice(0,10)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
-async function clearAll(){if(!rows.length)return;if(!confirm("提出データをすべて削除しますか？"))return;try{const r=await fetch("./api/submissions",{method:"DELETE"});if(r.status===401){showLogin("認証の有効期限が切れました。");return;}}catch(e){}await loadRows(true);notify("提出データを削除しました");}
-document.getElementById("login-btn").addEventListener("click",login);document.getElementById("manager-pin").addEventListener("keydown",e=>{if(e.key==="Enter")login();});document.getElementById("logout").addEventListener("click",logout);document.getElementById("refresh").addEventListener("click",()=>loadRows());document.getElementById("csv-learners").addEventListener("click",downloadCsv);document.getElementById("clear").addEventListener("click",clearAll);
+function downloadCsv(){if(!rows.length){notify("提出データがありません");return;}const head=["氏名","所属・拠点","送付日時","受信日時","総回答数","正解数","正答率","連続日数","要注意数","定着数",...SUBJ];const lines=[head];rows.forEach(r=>lines.push([r.name,r.location||"",r.sentAt,r.receivedAt,r.total,r.correct,r.total?Math.round(r.correct/r.total*100):0,r.streak,r.alerts.length,r.mastered,...SUBJ.map(c=>{const x=r.cats[c];return x&&x.t?Math.round(x.c/x.t*100):"";})]));const body=lines.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");const b=new Blob(["\ufeff"+body],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=`skimaru_submissions_${new Date().toISOString().slice(0,10)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+async function clearAll(){
+  if(!rows.length)return;
+  if(!confirm("提出データをすべて削除しますか？"))return;
+  if(!confirm("この操作は取り消せません。本当に削除しますか？"))return;
+  if(!(await ensureSession())){showLogin("認証の有効期限が切れました。");return;}
+  try{
+    const endpoint=`${CLOUD.url}/rest/v1/${encodeURIComponent(CLOUD.table||"exam_results")}?id=not.is.null`;
+    const r=await fetch(endpoint,{method:"DELETE",headers:{...authHeaders(session.access_token),"Prefer":"return=minimal"}});
+    if(!r.ok){const detail=await r.text().catch(()=>"");throw new Error(detail||`HTTP ${r.status}`);}
+    rows=[];setConnection();render();notify("提出データを削除しました");
+  }catch(e){notify("削除できませんでした");}
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("manager-login").classList.contains("show"))location.href="./index.html";});
+document.getElementById("login-btn").addEventListener("click",login);document.getElementById("manager-email").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("manager-password").focus();});document.getElementById("manager-password").addEventListener("keydown",e=>{if(e.key==="Enter")login();});document.getElementById("logout").addEventListener("click",logout);document.getElementById("refresh").addEventListener("click",()=>loadRows());document.getElementById("csv-learners").addEventListener("click",downloadCsv);document.getElementById("clear").addEventListener("click",clearAll);
 checkAuth();setInterval(()=>{if(authenticated)loadRows(true);},15000);

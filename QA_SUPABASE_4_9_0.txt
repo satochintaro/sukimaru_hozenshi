@@ -1,0 +1,8 @@
+Ver 4.9.0 Supabase cloud integration
+- Questions: 600
+- Supabase URL configured
+- Publishable key only (no secret/service_role)
+- Player insert: REST + anon RLS
+- Offline pending retry supported
+- Manager read/delete: Supabase Auth + authenticated RLS
+- Service worker does not cache cross-origin Supabase responses

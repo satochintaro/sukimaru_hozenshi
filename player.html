@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>スキマル保全士 プレイヤー Ver 4.7</title>
+<title>スキマル保全士 プレイヤー Ver 4.9.0</title>
 <link href="./manifest.webmanifest" rel="manifest"/>
 <meta content="#1C2B3A" name="theme-color"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
@@ -285,14 +285,15 @@
 <div class="lb">提 出 内 容 の 確 認</div>
 <div class="submit-summary" style="margin-top:8px">
 <div class="submit-summary-row"><span>氏名</span><b id="sb-name">—</b></div>
+<div class="submit-location"><label for="sb-location">所属・拠点（任意）</label><input id="sb-location" type="text" maxlength="80" autocomplete="organization" placeholder="例：四日市工場"></div>
 <div class="submit-summary-row"><span>総回答数</span><b id="sb-total">0 問</b></div>
 <div class="submit-summary-row"><span>正答率</span><b id="sb-acc">–</b></div>
 <div class="submit-summary-row"><span>要注意問題</span><b id="sb-alert">0 問</b></div>
 </div>
 <div style="height:1px;background:var(--line);margin:10px 0"></div>
-<p class="note" style="margin:0">提出ボタンを押すと、マネージャーの受信一覧へ自動送付します。</p>
+<p class="note" style="margin:0">提出ボタンを押すと、Supabaseの集計データベースへ送信します。通信できない場合は端末に保留し、オンライン復帰時に再送します。</p>
 </div>
-<button class="btn" id="submit-btn" onclick="submitResult()" style="margin-bottom:9px">マネージャーへ送付</button>
+<button class="btn" id="submit-btn" onclick="submitResult()" style="margin-bottom:9px">クラウドへ提出</button>
 <div class="hide" id="sd-done">
 <div class="pn p-grn submit-done-card">
 <div class="submit-done-icon">✓</div>
@@ -352,7 +353,7 @@
 </button>
 </div>
 <div class="sts">
-<span>スキマル保全士</span><span>Ver 4.7 ／ 全 <span id="st-qn">300</span> 問</span>
+<span>スキマル保全士</span><span>Ver 4.8 ／ 全 <span id="st-qn">600</span> 問</span>
 </div>
 </div>
 </section>
@@ -360,5 +361,5 @@
 <!-- ============ 集計（隠し） ============ -->
 
 
-<div aria-atomic="true" aria-live="assertive" class="sr-only" id="sr-status"></div><script src="./questions.js"></script><script src="./app.js"></script></body>
+<div aria-atomic="true" aria-live="assertive" class="sr-only" id="sr-status"></div><script src="./questions.js"></script><script src="./supabase-config.js"></script><script src="./app.js"></script></body>
 </html>
