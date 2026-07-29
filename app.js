@@ -775,11 +775,12 @@ function cloudRow(record){
 }
 async function postSubmission(record){
   if(!cloudConfigured())throw new Error("Supabase設定がありません");
-  const endpoint=`${CLOUD.url}/rest/v1/${encodeURIComponent(CLOUD.table||"exam_results")}?on_conflict=submission_id`;
+  const endpoint =
+  `${CLOUD.url}/rest/v1/${encodeURIComponent(CLOUD.table || "exam_results")}`;
   const res=await fetch(endpoint,{method:"POST",headers:{
     "apikey":CLOUD.publishableKey,
     "Content-Type":"application/json",
-    "Prefer":"resolution=ignore-duplicates,return=minimal"
+    "Prefer": "return=minimal"
   },body:JSON.stringify(cloudRow(record)),cache:"no-store"});
   if(!res.ok){const detail=await res.text().catch(()=>"");throw new Error(detail||`Supabase HTTP ${res.status}`);}
   return {receivedAt:new Date().toISOString()};
