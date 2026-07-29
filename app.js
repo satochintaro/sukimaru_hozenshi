@@ -778,6 +778,7 @@ async function postSubmission(record){
   const endpoint=`${CLOUD.url}/rest/v1/${encodeURIComponent(CLOUD.table||"exam_results")}?on_conflict=submission_id`;
   const res=await fetch(endpoint,{method:"POST",headers:{
     "apikey":CLOUD.publishableKey,
+    "Authorization": `Bearer ${CLOUD.publishableKey}`,
     "Content-Type":"application/json",
     "Prefer":"resolution=ignore-duplicates,return=minimal"
   },body:JSON.stringify(cloudRow(record)),cache:"no-store"});
