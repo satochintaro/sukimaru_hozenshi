@@ -825,10 +825,12 @@ async function submitResult(){
     serverSaved=true;receivedAt=(result.submission&&result.submission.receivedAt)||result.receivedAt||sentAt;
     const pending=readSubmissionList(SUBMISSION_PENDING_KEY).filter(x=>x.id!==record.id);writeSubmissionList(SUBMISSION_PENDING_KEY,pending);
   }catch(e){
-    saveLocalSubmission(record,SUBMISSION_INBOX_KEY);
-    saveLocalSubmission(record,SUBMISSION_PENDING_KEY);
-    broadcastSubmission(record);
-  }
+  alert("送信エラー：" + (e.message || e));
+
+  saveLocalSubmission(record, SUBMISSION_INBOX_KEY);
+  saveLocalSubmission(record, SUBMISSION_PENDING_KEY);
+  broadcastSubmission(record);
+}
   document.getElementById("sd-done").classList.remove("hide");
   document.getElementById("sd-title").textContent=serverSaved?"クラウドへ提出しました":"通信待ちとして端末に保存しました";
   const dt=new Date(receivedAt);
