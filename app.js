@@ -4,9 +4,8 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"4.9.0",schema:6};
+const APP={id:"skimaru-hozenshi",version:"5.0.0",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
-const LOCATION_KEY="skimaruLocation";
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
 const LEGACY_KEYS=["quizAppData"];
@@ -16,7 +15,7 @@ let loadMessage="";
 let storageHealthy=true;
 
 function baseData(){
-  return {schemaVersion:APP.schema,updatedAt:null,name:"",streak:0,lastDate:null,total:0,correct:0,
+  return {schemaVersion:APP.schema,updatedAt:null,name:"",playerNo:"",streak:0,lastDate:null,total:0,correct:0,
     wrongIds:[],recentIds:[],daily:{},showWarn:true,useSRS:true,largeText:false,highContrast:false,
     onboardingDone:false,stats:{}};
 }
@@ -29,6 +28,7 @@ function normalizeData(raw){
   d.wrongIds=Array.isArray(d.wrongIds)?[...new Set(d.wrongIds.map(Number).filter(Number.isInteger))]:[];
   d.recentIds=Array.isArray(d.recentIds)?d.recentIds.map(Number).filter(Number.isInteger):[];
   d.name=String(d.name||"").slice(0,20);
+  d.playerNo=String(d.playerNo||"").toUpperCase().replace(/[^A-Z0-9-]/g,"").slice(0,16);
   d.total=Number.isFinite(Number(d.total))?Math.max(0,Number(d.total)):0;
   d.correct=Number.isFinite(Number(d.correct))?Math.max(0,Math.min(d.total,Number(d.correct))):0;
   d.streak=Number.isFinite(Number(d.streak))?Math.max(0,Number(d.streak)):0;
@@ -68,6 +68,7 @@ function load(){
 }
 
 let U=load();
+if(!U.playerNo){U.playerNo=generatePlayerNo();save();}
 let S={mode:"normal",subject:null,queue:[],i:0,ok:0,wrong:[],answered:false,
        conf:null,sure:false,everOK:false,q:null,isMock:false};
 let currentSubject=null;
@@ -665,8 +666,20 @@ async function updateStorageStatus(){
   el.textContent=label;
   const restore=document.getElementById("restore-auto");if(restore)restore.classList.toggle("hide",!localStorage.getItem(AUTO_BACKUP_KEY));
 }
+function generatePlayerNo(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes=new Uint8Array(8);
+  if(globalThis.crypto&&crypto.getRandomValues)crypto.getRandomValues(bytes);
+  else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);
+  return "P-"+Array.from(bytes,b=>chars[b%chars.length]).join("");
+}
+function ensurePlayerNo(){
+  if(!U.playerNo){U.playerNo=generatePlayerNo();save();}
+  return U.playerNo;
+}
 function showSettings(){
   document.getElementById("st-name").textContent=U.name||"名前を入力";
+  const pn=document.getElementById("st-player-no");if(pn)pn.textContent=ensurePlayerNo();
   setSwitch("sw-warn",U.showWarn); setSwitch("sw-srs",U.useSRS);
   setSwitch("sw-large",U.largeText); setSwitch("sw-contrast",U.highContrast);
   document.getElementById("st-qn").textContent=QUESTIONS.length;
@@ -695,9 +708,9 @@ function restoreAutoBackup(){
 function resetData(){
   if(!confirm("学習履歴をすべて削除します。\n成績・苦手リスト・ブックマーク・日次記録が消えます。\nこの操作は取り消せません。")) return;
   if(!confirm("本当にリセットしますか？")) return;
-  const nm=U.name;
+  const nm=U.name, playerNo=ensurePlayerNo();
   localStorage.removeItem(KEY); localStorage.removeItem(AUTO_BACKUP_KEY);
-  U=baseData(); U.name=nm; save();
+  U=baseData(); U.name=nm; U.playerNo=playerNo; save();
   alert("リセットしました。");
   goHome();
 }
@@ -719,7 +732,7 @@ function build(){
     return {id:q.id,cat:q.category,text:q.text,rate:t>0?Math.round(s.c/t*100):0,
             guess:s.guess||0,relapse:(s.w>0&&s.everOK)?1:0};
   });
-  return {v:6,name:U.name||"(未記入)",date:today(),total:U.total,correct:U.correct,
+  return {v:7,playerNo:ensurePlayerNo(),name:U.name||"(未記入)",date:today(),total:U.total,correct:U.correct,
           streak:U.streak,cats,wrongCount:U.wrongIds.length,mastered:masteredCount(),alerts:al};
 }
 function checksum(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16).padStart(8,"0");}
@@ -756,8 +769,8 @@ function cloudRow(record){
   const total=Number(record.total)||0, correct=Number(record.correct)||0;
   return {
     submission_id:record.id,
+    player_no:String(record.playerNo||ensurePlayerNo()).slice(0,16),
     user_name:String(record.name||"(未記入)").slice(0,50),
-    location:String(record.location||"").slice(0,80),
     score:correct,
     total_questions:total,
     correct_count:correct,
@@ -800,11 +813,10 @@ function showSend(){
   // 提出内容のサマリーを表示
   const a=alerts().length;
   document.getElementById("sb-name").textContent=U.name;
+  const pn=document.getElementById("sb-player-no");if(pn)pn.textContent=ensurePlayerNo();
   document.getElementById("sb-total").textContent=U.total+" 問";
   document.getElementById("sb-acc").textContent=U.total>0?Math.round(U.correct/U.total*100)+"%":"–";
   document.getElementById("sb-alert").textContent=a+" 問";
-  const locationInput=document.getElementById("sb-location");
-  if(locationInput)locationInput.value=localStorage.getItem(LOCATION_KEY)||"";
   document.getElementById("sd-done").classList.add("hide");
   show("sc-send");
 }
@@ -816,10 +828,7 @@ async function submitResult(){
   const btn=document.getElementById("submit-btn");
   btn.disabled=true;btn.textContent="送付中…";
   const sentAt=new Date().toISOString();
-  const locationInput=document.getElementById("sb-location");
-  const location=String(locationInput?locationInput.value:"").trim().slice(0,80);
-  try{localStorage.setItem(LOCATION_KEY,location);}catch(e){}
-  const record={...build(),id:submissionId(),sentAt,clientReceivedAt:sentAt,source:"player",location};
+  const record={...build(),id:submissionId(),sentAt,clientReceivedAt:sentAt,source:"player"};
   let serverSaved=false,receivedAt=sentAt;
   try{
     const result=await postSubmission(record);
@@ -836,7 +845,7 @@ async function submitResult(){
   document.getElementById("sd-title").textContent=serverSaved?"クラウドへ提出しました":"通信待ちとして端末に保存しました";
   const dt=new Date(receivedAt);
   const when=dt.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-  document.getElementById("sd-message").textContent=`提出者：${U.name} ／ 提出日時：${when}${serverSaved?" ／ Supabaseへ保存済み":"。オンライン復帰時に自動再送します。"}`;
+  document.getElementById("sd-message").textContent=`プレイヤーNo.：${ensurePlayerNo()} ／ 提出者：${U.name} ／ 提出日時：${when}${serverSaved?" ／ Supabaseへ保存済み":"。オンライン復帰時に自動再送します。"}`;
   notify(serverSaved?"クラウド提出が完了しました":"通信待ちとして保存しました");
   btn.disabled=false;btn.textContent="もう一度送付";
 }

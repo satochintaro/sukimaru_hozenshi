@@ -1,8 +1,9 @@
--- スキマル保全士 Ver 4.9.0 / Supabase 初期設定
+-- スキマル保全士 Ver 5.0.0 / Supabase 初期設定
 -- Supabase Dashboard > SQL Editor で全体を実行してください。
 
 alter table public.exam_results
   add column if not exists submission_id text,
+  add column if not exists player_no text,
   add column if not exists correct_count integer default 0,
   add column if not exists submitted_at timestamptz,
   add column if not exists streak integer default 0,
@@ -54,3 +55,8 @@ create policy "managers_can_delete_results"
 
 -- idがserial/identityの場合の採番権限
 grant usage, select on all sequences in schema public to anon, authenticated;
+
+
+-- Ver 5.0: プレイヤーNo.で履歴をまとめるための索引
+create index if not exists exam_results_player_no_created_at_idx
+  on public.exam_results (player_no, created_at desc);
