@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 260" role="img" aria-labelledby="title desc">
+  <title id="title">目で見る管理の模式図</title><desc id="desc">正常範囲が緑で示された圧力計と合いマークのあるボルト</desc>
+  <rect width="720" height="260" rx="24" fill="#f5f1fa"/>
+  <g transform="translate(70 25)"><circle cx="105" cy="105" r="92" fill="#fff" stroke="#39224f" stroke-width="8"/><path d="M42 140 A78 78 0 0 1 168 50" fill="none" stroke="#e2b23b" stroke-width="18"/><path d="M64 65 A78 78 0 0 1 164 145" fill="none" stroke="#36a66d" stroke-width="18"/><line x1="105" y1="105" x2="155" y2="68" stroke="#d24848" stroke-width="8" stroke-linecap="round"/><circle cx="105" cy="105" r="10" fill="#39224f"/><text x="105" y="202" text-anchor="middle" font-family="sans-serif" font-size="21" font-weight="700" fill="#39224f">圧力計</text></g>
+  <g transform="translate(360 42)"><rect x="25" y="95" width="250" height="68" rx="12" fill="#b7c2cc"/><polygon points="105,32 158,32 190,78 158,124 105,124 73,78" fill="#e8edf1" stroke="#39224f" stroke-width="7"/><line x1="132" y1="36" x2="132" y2="158" stroke="#d24848" stroke-width="8"/><text x="150" y="204" text-anchor="middle" font-family="sans-serif" font-size="21" font-weight="700" fill="#39224f">合いマーク</text></g>
+</svg>

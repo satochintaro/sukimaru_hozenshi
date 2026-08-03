@@ -4,11 +4,23 @@
    更新時は CACHE_VERSION を上げる
    ========================================================== */
 
-const CACHE_VERSION = "v5-back-button-r1";
+const CACHE_VERSION = "v6-practical-test-r1";
 const CACHE_NAME = "hozen-oxdojo-" + CACHE_VERSION;
 
 const ASSETS = [
   "./index.html",
+  "./player.html",
+  "./practical.html",
+  "./admin.html",
+  "./styles.css",
+  "./questions.js",
+  "./practical-questions.js",
+  "./practical.js",
+  "./practical-gauge.svg",
+  "./practical-drawing.svg",
+  "./supabase-config.js",
+  "./app.js",
+  "./admin.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
