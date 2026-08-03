@@ -4,7 +4,7 @@
    更新時は CACHE_VERSION を上げる
    ========================================================== */
 
-const CACHE_VERSION = "v6-practical-test-r2";
+const CACHE_VERSION = "v7-practical-submit-r1";
 const CACHE_NAME = "hozen-oxdojo-" + CACHE_VERSION;
 
 const ASSETS = [
@@ -16,8 +16,14 @@ const ASSETS = [
   "./questions.js",
   "./practical-questions.js",
   "./practical.js",
+  "./mode-swipe.js",
   "./practical-gauge.svg",
   "./practical-drawing.svg",
+  "./practical-safety.svg",
+  "./practical-transmission.svg",
+  "./practical-pneumatic.svg",
+  "./practical-sensors.svg",
+  "./practical-orthographic.svg",
   "./supabase-config.js",
   "./app.js",
   "./admin.js",

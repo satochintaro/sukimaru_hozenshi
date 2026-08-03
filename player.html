@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>スキマル保全士 プレイヤー Ver 5.1.0 TEST</title>
+<title>スキマル保全士 プレイヤー Ver 5.2.0 TEST</title>
 <link href="./manifest.webmanifest" rel="manifest"/>
 <meta content="#1C2B3A" name="theme-color"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
@@ -13,7 +13,7 @@
 <link href="./apple-touch-icon.png" rel="apple-touch-icon"/>
 
 <link href="./styles.css" rel="stylesheet"/></head>
-<body>
+<body data-learning-mode="academic">
 <!-- ============ ホーム（1画面完結） ============ -->
 <section aria-hidden="false" class="active" id="sc-home">
 <div class="hd">
@@ -27,13 +27,17 @@
 </div>
 <div class="hz"></div>
 <div class="pad player-home-pad">
+<nav class="learning-mode-switch" aria-label="問題モード">
+  <a class="active" href="./player.html" aria-current="page">学科</a><a href="./practical.html">実技</a>
+</nav>
+<p class="learning-mode-swipe">画面を左へスワイプすると実技へ</p>
 <div class="player-menu-head">
   <span>PLAYER MENU</span>
   <h2>学習メニュー</h2>
 </div>
 <a class="practical-entry" href="./practical.html">
   <span class="practical-entry-icon">実</span>
-  <span class="practical-entry-body"><small>TEST MODE</small><b>実技問題モード</b><em>選択式・穴埋めの仮問題10課題</em></span>
+  <span class="practical-entry-body"><small>TEST MODE</small><b>実技問題モード</b><em>20課題からランダム10課題を出題</em></span>
   <span class="practical-entry-go">›</span>
 </a>
 <!-- メニューを最初に表示 -->
@@ -368,5 +372,5 @@
 <!-- ============ 集計（隠し） ============ -->
 
 
-<div aria-atomic="true" aria-live="assertive" class="sr-only" id="sr-status"></div><script src="./questions.js"></script><script src="./supabase-config.js"></script><script src="./app.js"></script></body>
+<div aria-atomic="true" aria-live="assertive" class="sr-only" id="sr-status"></div><script src="./questions.js"></script><script src="./supabase-config.js"></script><script src="./app.js"></script><script src="./mode-swipe.js"></script></body>
 </html>

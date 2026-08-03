@@ -17,7 +17,7 @@ window.PRACTICAL_TASKS = [
   },
   {
     id: "PT02",
-    category: "目で見る管理",
+    category: "自主保全",
     title: "点検状態の見える化",
     instruction: "管理方法と、その主な効果の組み合わせを完成させてください。",
     figure: "./practical-gauge.svg",
@@ -67,9 +67,11 @@ window.PRACTICAL_TASKS = [
   },
   {
     id: "PT06",
-    category: "設備要素",
+    category: "設備保全",
     title: "伝動装置の点検",
     instruction: "設備要素の状態と点検内容を対応させてください。",
+    figure: "./practical-transmission.svg",
+    figureAlt: "Vベルトの正常・摩耗断面と、チェーンのたるみ測定位置を示した技術図",
     material: "Vベルトがプーリー溝の底に接触している場合は、ベルトの{{a}}が疑われる。チェーンでは、張り過ぎだけでなく適正な{{b}}を確認する。軸受の異常は、音・温度・{{c}}などから判断する。",
     blanks: [
       {id:"a",label:"①",choices:["摩耗","帯電","塗装不良","磁化"],answer:0,explanation:"摩耗したVベルトは溝の底に近づき、正常な側面接触ができなくなります。"},
@@ -79,9 +81,11 @@ window.PRACTICAL_TASKS = [
   },
   {
     id: "PT07",
-    category: "設備要素",
+    category: "設備保全",
     title: "空気圧機器",
     instruction: "空気圧回路の機器名称と役割を完成させてください。",
+    figure: "./practical-pneumatic.svg",
+    figureAlt: "エアフィルター、レギュレーター、ルブリケーターを並べた空気圧回路図",
     material: "圧縮空気中の水分やごみを除去するのは{{a}}である。圧力を設定値に調整するのは{{b}}である。必要な潤滑油を霧状に供給するのは{{c}}である。",
     blanks: [
       {id:"a",label:"①",choices:["エアフィルター","シリンダー","圧力計","電磁弁"],answer:0,explanation:"エアフィルターは、圧縮空気中の水分や異物を除去します。"},
@@ -117,14 +121,142 @@ window.PRACTICAL_TASKS = [
   },
   {
     id: "PT10",
-    category: "安全・異常対応",
+    category: "安全・環境",
     title: "異常発見時の行動",
     instruction: "安全を優先した行動になるよう、空欄を選んでください。",
+    figure: "./practical-safety.svg",
+    figureAlt: "点検中のコンベヤ、主電源遮断器、施錠表示を示した安全作業図",
     material: "回転部から異音を発見した作業者は、まず定められた手順で設備を{{a}}し、安全を確保する。点検前にはエネルギー源を遮断し、必要に応じて{{b}}を行う。異常の状態と処置は記録し、関係者へ{{c}}する。",
     blanks: [
       {id:"a",label:"①",choices:["停止","増速","無負荷運転","連続運転"],answer:0,explanation:"異常時は無理に運転を続けず、定められた停止手順で安全を確保します。"},
       {id:"b",label:"②",choices:["ロックアウト・表示","増し締め","再起動","給油"],answer:0,explanation:"意図しない再起動を防ぐため、エネルギー遮断とロックアウト・表示を行います。"},
       {id:"c",label:"③",choices:["報告・共有","破棄","非公開化","推測だけで判断"],answer:0,explanation:"異常の再発防止には、事実を記録して関係者へ報告・共有することが重要です。"}
+    ]
+  },
+  {
+    id: "PT11",
+    category: "安全・環境",
+    title: "KYTの4ラウンド",
+    instruction: "作業前ミーティングの進め方として適切な語句を選んでください。",
+    figure: "./practical-safety.svg",
+    figureAlt: "コンベヤ点検時の挟まれ危険と電源遮断を示した安全作業図",
+    material: "KYTでは、作業に潜む危険を出し合う{{a}}、重要な危険を絞る本質追究、対策を決める{{b}}を経て、最後にチームの{{c}}を定める。",
+    blanks: [
+      {id:"a",label:"①",choices:["現状把握","効果確認","設備診断","標準化"],answer:0,explanation:"第1ラウンドでは、どのような危険が潜んでいるかを具体的に挙げます。"},
+      {id:"b",label:"②",choices:["対策樹立","原因廃棄","個人評価","再発記録"],answer:0,explanation:"第3ラウンドでは、重要危険に対する具体的な対策を考えます。"},
+      {id:"c",label:"③",choices:["行動目標","生産数量","購入予算","保全費"],answer:0,explanation:"第4ラウンドでは、全員で実行する行動目標を指差唱和できる形にします。"}
+    ]
+  },
+  {
+    id: "PT12",
+    category: "TPM・5S",
+    title: "TPM活動の考え方",
+    instruction: "TPMの特徴を表す文章を完成させてください。",
+    material: "TPMは、生産システムの総合的な{{a}}を高め、設備のライフサイクル全体でロスを未然に防ぐ仕組みをつくる。活動にはトップから第一線まで{{b}}し、重複する{{c}}活動を通してロスゼロを目指す。",
+    blanks: [
+      {id:"a",label:"①",choices:["効率","在庫","面積","人数"],answer:0,explanation:"TPMでは、生産システムの総合効率を極限まで高めることを狙います。"},
+      {id:"b",label:"②",choices:["全員が参加","保全部門だけが参加","外注先だけが参加","管理者だけが参加"],answer:0,explanation:"全部門・全階層が参加することがTPMの重要な特徴です。"},
+      {id:"c",label:"③",choices:["小集団","個人競争","購買監査","会計"],answer:0,explanation:"職制と重なる小集団活動によって改善を継続します。"}
+    ]
+  },
+  {
+    id: "PT13",
+    category: "TPM・5S",
+    title: "5Sの状態判定",
+    instruction: "職場の状態に対応する5S用語を選んでください。",
+    material: "赤札で不要品を区分して処分する活動は{{a}}である。必要品の置き場所・品名・数量を決める活動は{{b}}である。決めたルールを守る習慣を身につける活動は{{c}}である。",
+    blanks: [
+      {id:"a",label:"①",choices:["整理","整頓","清掃","清潔"],answer:0,explanation:"整理は、必要なものと不要なものを分け、不要なものをなくす活動です。"},
+      {id:"b",label:"②",choices:["整頓","清潔","躾","清掃"],answer:0,explanation:"整頓は、必要なものを必要なときに取り出せるよう3定などで管理します。"},
+      {id:"c",label:"③",choices:["躾","清掃","整理","整列"],answer:0,explanation:"躾は、決めたことを守る習慣を定着させることです。"}
+    ]
+  },
+  {
+    id: "PT14",
+    category: "自主保全",
+    title: "自主保全支援ツール",
+    instruction: "支援ツールの用途に合う名称を選んでください。",
+    material: "発見した不具合箇所へ取り付け、処置状況を管理するのは{{a}}である。活動の計画・進捗・成果を職場で共有するのは{{b}}である。設備配置上に不具合位置を記録するのは{{c}}である。",
+    blanks: [
+      {id:"a",label:"①",choices:["エフ","活動板","マップ","標準書"],answer:0,explanation:"エフは不具合箇所を明示し、発見から処置完了までを管理します。"},
+      {id:"b",label:"②",choices:["活動板","エフ","定点写真","工具台"],answer:0,explanation:"活動板は小集団活動のPDCAと成果を見える化します。"},
+      {id:"c",label:"③",choices:["マップ","活動板","ワンポイントレッスン","点検札"],answer:0,explanation:"マップは設備や工程の配置と不具合箇所を対応させて管理します。"}
+    ]
+  },
+  {
+    id: "PT15",
+    category: "自主保全",
+    title: "発生源・困難箇所対策",
+    instruction: "汚れの発生源対策を進める順序として適切な語句を選んでください。",
+    material: "汚れ対策では、最初に発生源を{{a}}ことを検討する。それが難しい場合は飛散する量や範囲を{{b}}し、最後に清掃・点検・給油を{{c}}する改善を行う。",
+    blanks: [
+      {id:"a",label:"①",choices:["絶つ","拡大する","移動する","記録だけする"],answer:0,explanation:"最も効果が高いのは、汚れや異物が発生する原因そのものをなくすことです。"},
+      {id:"b",label:"②",choices:["極小化・局所化","全体へ拡散","見えなくする","周期化"],answer:0,explanation:"発生を止められない場合は、飛散量と範囲を小さく限定します。"},
+      {id:"c",label:"③",choices:["しやすく","不要に","自動停止に","外注だけに"],answer:0,explanation:"点検窓や局所カバーなどで、日常作業を短時間かつ安全にします。"}
+    ]
+  },
+  {
+    id: "PT16",
+    category: "改善・解析",
+    title: "改善の4原則 ECRS",
+    instruction: "改善案に対応するECRSの原則を選んでください。",
+    material: "不要な検査を廃止する案は{{a}}、別々に行っていた記録と確認を同時に行う案は{{b}}、作業台の配置を変えて歩行を短くする案は{{c}}に該当する。",
+    blanks: [
+      {id:"a",label:"①",choices:["排除 Eliminate","結合 Combine","交換 Rearrange","簡素化 Simplify"],answer:0,explanation:"目的に不要な作業をなくすのが排除です。"},
+      {id:"b",label:"②",choices:["結合 Combine","排除 Eliminate","交換 Rearrange","簡素化 Simplify"],answer:0,explanation:"複数の作業を一緒に行えるようにするのが結合です。"},
+      {id:"c",label:"③",choices:["交換 Rearrange","簡素化 Simplify","結合 Combine","排除 Eliminate"],answer:0,explanation:"順序や配置を入れ替える改善は交換に当たります。"}
+    ]
+  },
+  {
+    id: "PT17",
+    category: "設備保全",
+    title: "センサーの選定",
+    instruction: "検出対象に適したセンサーを選んでください。",
+    figure: "./practical-sensors.svg",
+    figureAlt: "リミットスイッチ、近接センサー、光電センサーの検出原理と配線記号を示した技術図",
+    material: "機械的な接触でドッグの位置を検出するのは{{a}}である。金属体を非接触で検出する用途には{{b}}が適する。投光器と受光器を使い物体の通過を検出するのは{{c}}である。",
+    blanks: [
+      {id:"a",label:"①",choices:["リミットスイッチ","近接センサー","光電センサー","温度センサー"],answer:0,explanation:"リミットスイッチは、レバーやローラーへ接触して位置変化を検出します。"},
+      {id:"b",label:"②",choices:["近接センサー","リミットスイッチ","流量計","熱電対"],answer:0,explanation:"誘導形近接センサーは、金属体を非接触で検出できます。"},
+      {id:"c",label:"③",choices:["光電センサー","圧力スイッチ","ひずみゲージ","pHセンサー"],answer:0,explanation:"光電センサーは光の遮断や反射量の変化で物体を検出します。"}
+    ]
+  },
+  {
+    id: "PT18",
+    category: "設備保全",
+    title: "故障ゼロへの対策",
+    instruction: "現場の状況と故障ゼロへの対策を対応させてください。",
+    material: "定格を超えた負荷で運転しないことは{{a}}を守る対策である。摩耗した部品を正常寸法へ戻すことは劣化の{{b}}である。清掃・給油・増し締めの徹底は{{c}}を整える活動である。",
+    blanks: [
+      {id:"a",label:"①",choices:["使用条件","購入条件","勤務条件","出荷条件"],answer:0,explanation:"設備の設計条件・定格・正しい操作方法を守ることが基本です。"},
+      {id:"b",label:"②",choices:["復元","促進","放置","予算化"],answer:0,explanation:"顕在化した劣化を元の正しい状態に戻す活動が復元です。"},
+      {id:"c",label:"③",choices:["基本条件","販売条件","会計条件","人事条件"],answer:0,explanation:"清掃・給油・増し締めは設備の基本条件です。"}
+    ]
+  },
+  {
+    id: "PT19",
+    category: "図面・測定",
+    title: "第三角法と投影図",
+    instruction: "立体と三面図の関係を見て、図面用語を選んでください。",
+    figure: "./practical-orthographic.svg",
+    figureAlt: "段付き工作物の等角図と第三角法による正面図、平面図、右側面図",
+    material: "第三角法では、正面図の上側に{{a}}を配置し、正面図の右側に{{b}}を配置する。図中の一点鎖線は穴や円の{{c}}を表す。",
+    blanks: [
+      {id:"a",label:"①",choices:["平面図","底面図","背面図","断面図"],answer:0,explanation:"第三角法では、上から見た平面図を正面図の上へ配置します。"},
+      {id:"b",label:"②",choices:["右側面図","左側面図","下面図","補助投影図"],answer:0,explanation:"右から見た右側面図は、正面図の右へ配置します。"},
+      {id:"c",label:"③",choices:["中心","表面粗さ","材質","公差域"],answer:0,explanation:"細い一点鎖線は中心線として、円や対称形状の中心を示します。"}
+    ]
+  },
+  {
+    id: "PT20",
+    category: "効率化とロス",
+    title: "稼動率と良品率の計算",
+    instruction: "表の数値を使って指標を求めてください。",
+    material: "負荷時間480分、停止時間60分のとき、稼動時間は{{a}}分で、時間稼動率は{{b}}％である。また、加工数400個のうち良品が380個なら、良品率は{{c}}％である。",
+    blanks: [
+      {id:"a",label:"①",choices:["420","540","400","60"],answer:0,explanation:"稼動時間は、負荷時間480分から停止時間60分を引いた420分です。"},
+      {id:"b",label:"②",choices:["87.5","80.0","92.5","75.0"],answer:0,explanation:"時間稼動率は420÷480×100＝87.5％です。"},
+      {id:"c",label:"③",choices:["95.0","90.0","87.5","105.3"],answer:0,explanation:"良品率は380÷400×100＝95.0％です。"}
     ]
   }
 ];
