@@ -1,4 +1,4 @@
-const CACHE="skimaru-v5-1-0-practical-test-r1";
+const CACHE="skimaru-v5-1-0-practical-test-r2";
 const ASSETS=["./","./index.html","./player.html","./practical.html","./admin.html","./styles.css","./questions.js","./practical-questions.js","./practical.js","./practical-gauge.svg","./practical-drawing.svg","./supabase-config.js","./app.js","./admin.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});

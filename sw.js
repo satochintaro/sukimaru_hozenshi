@@ -4,7 +4,7 @@
    更新時は CACHE_VERSION を上げる
    ========================================================== */
 
-const CACHE_VERSION = "v6-practical-test-r1";
+const CACHE_VERSION = "v6-practical-test-r2";
 const CACHE_NAME = "hozen-oxdojo-" + CACHE_VERSION;
 
 const ASSETS = [
