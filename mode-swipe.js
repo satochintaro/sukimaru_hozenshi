@@ -18,6 +18,24 @@
     });
   }
 
+  function updateVersionDisplay(){
+    document.title=document.title.replace("5.2.0","5.3.0");
+
+    if(current==="academic"){
+      const practicalInfo=document.querySelector(".practical-entry-body em");
+      if(practicalInfo) practicalInfo.textContent="60課題からランダム10課題を出題";
+
+      const status=document.querySelector("#sc-set .sts span:last-child");
+      if(status) status.innerHTML='Ver 5.3 ／ 全 <span id="st-qn">1000</span> 問';
+    }else{
+      const heroInfo=document.querySelector(".pt-hero small");
+      if(heroInfo) heroInfo.textContent="問題バンク60課題・毎回ランダム10課題／公式問題の転載ではありません";
+
+      const sub=document.querySelector("#pt-home .hd-sub");
+      if(sub) sub.textContent="PRACTICAL ／ Ver 5.3 TEST";
+    }
+  }
+
   async function loadYearMode(){
     try{
       await loadScript("./year-mode-core.js");
@@ -25,16 +43,16 @@
         await loadScript("./year-question-data.js");
         await loadScript("./year-mode.js");
         if(typeof APP!=="undefined" && APP) APP.version="5.3.0-test";
-        document.title=document.title.replace("5.2.0","5.3.0");
       }else{
         await loadScript("./practical-year-data.js");
         await loadScript("./practical-year-mode.js");
-        document.title=document.title.replace("5.2.0","5.3.0");
       }
+      updateVersionDisplay();
     }catch(error){
       console.error("Ver 5.3.0 年度別データ読込エラー",error);
     }
   }
+  updateVersionDisplay();
   loadYearMode();
 
   // ===== 既存の左右スワイプ切替 =====
