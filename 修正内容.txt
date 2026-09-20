@@ -1,0 +1,8 @@
+Ver 5.4.0 レイアウト修正 r2
+原因：coach-dashboard が section だったため既存 section{height:100dvh} を継承。
+修正：
+- coach-dashboard を div 化
+- ホームはカウントダウン＋今日のコーチ＋3指標＋バッジ＋最新Managerメッセージだけに圧縮
+- 年度別の詳細成績は「07 年度別過去問」で表示
+- 学習データ・問題データは変更なし
+- Service Workerキャッシュを r2 に更新

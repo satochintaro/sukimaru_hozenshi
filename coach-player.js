@@ -54,17 +54,9 @@
     const pRate=practical.totalBlanks?Math.round((Number(practical.correctBlanks)||0)/(Number(practical.totalBlanks)||1)*100):null;
     const bestPast=C.bestPastScore(d.pastYearHistory);
     const improvement=C.latestPastImprovement(d.pastYearHistory);
-    return {
-      themes,
-      academicTotal:Number(profile.total)||0,
-      academicCorrect:Number(profile.correct)||0,
-      practicalTotal:Number(practical.totalBlanks)||0,
-      practicalRate:pRate,
-      streak:Number(profile.streak)||0,
-      bestPast,
-      improvement,
-      yearHistory:d.pastYearHistory
-    };
+    return {themes,academicTotal:Number(profile.total)||0,academicCorrect:Number(profile.correct)||0,
+      practicalTotal:Number(practical.totalBlanks)||0,practicalRate:pRate,streak:Number(profile.streak)||0,
+      bestPast,improvement,yearHistory:d.pastYearHistory};
   }
 
   function remoteData(){return parse(REMOTE_KEY,{examDate:null,messages:[],updatedAt:null});}
@@ -97,55 +89,39 @@
     return {big:`あと ${d}日`,small:d<=7?"仕上げ期間です":d<=30?"過去問中心で仕上げよう":"毎日少しずつ積み上げよう",tone:d<=7?"urgent":""};
   }
 
-  function yearCards(){
-    const d=coachData(),map=C.summarizeYearHistory(d.pastYearHistory);
-    return [2019,2020,2021,2022,2023,2024,2025].map(y=>{
-      const x=map[y];
-      if(!x)return `<div class="coach-year"><b>${y}</b><span>未挑戦</span></div>`;
-      const diff=x.previous==null?"":`<small class="${x.latest>x.previous?"up":x.latest<x.previous?"down":""}">${x.latest>x.previous?"+":""}${x.latest-x.previous}pt</small>`;
-      return `<div class="coach-year"><b>${y}</b><strong>${x.latest}点</strong><span>最高 ${x.best} / ${x.attempts}回 ${diff}</span></div>`;
-    }).join("");
-  }
-
-  function managerMessages(){
-    const msgs=remoteData().messages||[];
-    if(!msgs.length)return "";
-    return `<div class="coach-messages"><div class="coach-section-title">📩 マネージャーから</div>${msgs.slice(0,3).map(m=>
-      `<article><p>${esc(m.message)}</p><small>${new Date(m.created_at).toLocaleDateString("ja-JP")}${m.player_no==="ALL"?"・全員向け":""}</small></article>`).join("")}</div>`;
-  }
-
   function coachPanelHtml(){
     const summary=combinedSummary(),msg=C.coachMessage(summary),badges=C.badges(summary);
     const cd=countdownText(remoteData().examDate);
     const best=summary.bestPast==null?"—":summary.bestPast+"点";
     const pRate=summary.practicalRate==null?"—":summary.practicalRate+"%";
-    return `<section class="coach-dashboard" id="coach-dashboard">
-      <div class="coach-countdown ${cd.tone}"><span>EXAM COUNTDOWN</span><b>${cd.big}</b><small>${cd.small}</small></div>
-      <div class="coach-message ${msg.tone}"><span>💬 今日のコーチ</span><h3>${esc(msg.title)}</h3><p>${esc(msg.text)}</p><strong>${esc(msg.action)}</strong></div>
+    const latestMessage=(remoteData().messages||[])[0];
+    return `<div class="coach-dashboard" id="coach-dashboard">
+      <div class="coach-home-top">
+        <div class="coach-countdown ${cd.tone}">
+          <span>EXAM</span><b>${cd.big}</b><small>${cd.small}</small>
+        </div>
+        <div class="coach-message ${msg.tone}">
+          <span>💬 今日のコーチ</span>
+          <h3>${esc(msg.title)}</h3>
+          <strong>${esc(msg.action)}</strong>
+        </div>
+      </div>
       <div class="coach-mini-grid">
         <div><span>過去問ベスト</span><b>${best}</b></div>
         <div><span>実技正答率</span><b>${pRate}</b></div>
         <div><span>学科回答</span><b>${summary.academicTotal}問</b></div>
       </div>
-      ${badges.length?`<div class="coach-badges">${badges.map(b=>`<span title="${esc(b.label)}">${b.icon}<small>${esc(b.label)}</small></span>`).join("")}</div>`:""}
-      <div class="coach-section-title">年度別 過去問成績</div>
-      <div class="coach-years">${yearCards()}</div>
-      ${managerMessages()}
-    </section>`;
+      ${badges.length?`<div class="coach-badges">${badges.slice(0,5).map(b=>`<span title="${esc(b.label)}">${b.icon}<small>${esc(b.label)}</small></span>`).join("")}</div>`:""}
+      ${latestMessage?`<div class="coach-home-manager-message"><span>📩 マネージャーから</span><p>${esc(latestMessage.message)}</p></div>`:""}
+    </div>`;
   }
 
   function renderCoach(){
     if(current==="academic"){
-      const home=document.querySelector("#sc-home .player-home-pad");
-      if(!home)return;
-      let panel=document.getElementById("coach-dashboard");
-      const html=coachPanelHtml();
-      if(panel){
-        const box=document.createElement("div");box.innerHTML=html;panel.replaceWith(box.firstElementChild);
-      }else{
-        const head=home.querySelector(".player-menu-head");
-        if(head)head.insertAdjacentHTML("beforebegin",html);else home.insertAdjacentHTML("afterbegin",html);
-      }
+      const home=document.querySelector("#sc-home .player-home-pad");if(!home)return;
+      let panel=document.getElementById("coach-dashboard"),html=coachPanelHtml();
+      if(panel){const box=document.createElement("div");box.innerHTML=html;panel.replaceWith(box.firstElementChild);}
+      else{const head=home.querySelector(".player-menu-head");if(head)head.insertAdjacentHTML("beforebegin",html);else home.insertAdjacentHTML("afterbegin",html);}
     }else if(current==="practical"){
       updatePracticalCats();
       const home=document.querySelector("#pt-home .practical-pad");if(!home)return;
@@ -176,8 +152,7 @@
       if(d.practicalHistory.some(x=>x.at===at))return;
       d.practicalHistory.push({title:run.title,correct:run.correct,total:run.total,rate:run.rate,cats:run.cats||{},at});
       d.practicalHistory=d.practicalHistory.slice(-100);
-      d.practicalCats=updatePracticalCats()||d.practicalCats;
-      saveCoach(d);
+      d.practicalCats=updatePracticalCats()||d.practicalCats;saveCoach(d);
     }catch(e){}
   }
 
@@ -191,39 +166,22 @@
   }
 
   if(current==="academic"){
-    if(typeof result==="function"){
-      const baseResult=result;
-      result=function(){recordPastYear();const r=baseResult.apply(this,arguments);renderCoach();return r;};
-    }
-    if(typeof renderHome==="function"){
-      const baseHome=renderHome;
-      renderHome=function(){const r=baseHome.apply(this,arguments);requestAnimationFrame(renderCoach);return r;};
-    }
+    if(typeof result==="function"){const baseResult=result;result=function(){recordPastYear();const r=baseResult.apply(this,arguments);renderCoach();return r;};}
+    if(typeof renderHome==="function"){const baseHome=renderHome;renderHome=function(){const r=baseHome.apply(this,arguments);requestAnimationFrame(renderCoach);return r;};}
     if(typeof build==="function"){
       const baseBuild=build;
-      build=function(){
-        const r=baseBuild.apply(this,arguments),d=coachData(),s=combinedSummary();
-        r.coach={pastYearHistory:d.pastYearHistory,practicalHistory:d.practicalHistory.slice(-20),commonThemes:s.themes,badges:C.badges(s)};
-        return r;
-      };
+      build=function(){const r=baseBuild.apply(this,arguments),d=coachData(),s=combinedSummary();
+        r.coach={pastYearHistory:d.pastYearHistory,practicalHistory:d.practicalHistory.slice(-20),commonThemes:s.themes,badges:C.badges(s)};return r;};
     }
     if(typeof showPastYears==="function"){
       const baseYears=showPastYears;
       showPastYears=function(){const r=baseYears.apply(this,arguments);requestAnimationFrame(enrichYearPage);return r;};
     }
   }else if(current==="practical"){
-    if(typeof renderPracticalResult==="function"){
-      const basePracticalResult=renderPracticalResult;
-      renderPracticalResult=function(){const r=basePracticalResult.apply(this,arguments);recordPracticalRun();renderCoach();return r;};
-    }
-    if(typeof renderPracticalHome==="function"){
-      const basePracticalHome=renderPracticalHome;
-      renderPracticalHome=function(){const r=basePracticalHome.apply(this,arguments);requestAnimationFrame(renderCoach);return r;};
-    }
+    if(typeof renderPracticalResult==="function"){const b=renderPracticalResult;renderPracticalResult=function(){const r=b.apply(this,arguments);recordPracticalRun();renderCoach();return r;};}
+    if(typeof renderPracticalHome==="function"){const b=renderPracticalHome;renderPracticalHome=function(){const r=b.apply(this,arguments);requestAnimationFrame(renderCoach);return r;};}
     updatePracticalCats();
   }
 
-  renderCoach();
-  refreshRemote();
-  setInterval(refreshRemote,300000);
+  renderCoach();refreshRemote();setInterval(refreshRemote,300000);
 })();

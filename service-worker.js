@@ -1,4 +1,4 @@
-const CACHE="skimaru-v5-4-0-coach-r1";
+const CACHE="skimaru-v5-4-0-coach-r2";
 const ASSETS=["./","./index.html","./player.html","./practical.html","./admin.html","./styles.css","./coach.css","./questions.js","./year-mode-core.js","./year-question-data.js","./year-mode.js","./practical-questions.js","./practical-year-data.js","./practical.js","./practical-year-mode.js","./mode-swipe.js","./coach-shared.js","./coach-player.js","./coach-manager.js","./practical-gauge.svg","./practical-drawing.svg","./practical-safety.svg","./practical-transmission.svg","./practical-pneumatic.svg","./practical-sensors.svg","./practical-orthographic.svg","./supabase-config.js","./app.js","./admin.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
