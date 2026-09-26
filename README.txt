@@ -1,26 +1,27 @@
-スキマル保全士 Ver 5.7.0 / QUEST UI
+スキマル保全士 Ver 5.8.0 / NEXT
 
-今回の更新:
-- バージョン表記を Ver 5.7.0 / QUEST UI に統一
-- 入口、Player、実技、Manager、閲覧モードのデザインを統一
-- Player: ネイビー＋ゴールド、ゲーム感は要所だけ
-- 実技: 同じUI骨格＋パープル
-- Manager: 白ベース＋ネイビーの分析ダッシュボード
-- 文字はみ出し対策を強化
-- 学科ホームの「実技問題モード」カードをDOMから削除
-- PWAが新Service Workerを起動時に確認し、自動更新しやすく改善
+アップロードする8ファイル
+- index.html（上書き）
+- manifest.webmanifest（上書き）
+- mode-swipe.js（上書き）
+- service-worker.js（上書き）
+- theme-v58.css（新規）
+- ui-v58.js（新規）
+- practical-v58.js（新規）
+- practical-year-data-v58.js（新規）
 
-アップロード:
-【上書き】
-index.html
-admin.html
-viewer.html
-mode-swipe.js
-service-worker.js
+主な変更
+- TEST / テスト版 / 実技問題モード表記を終了
+- 実技は「実技演習」へ名称統一
+- ランダム10課題、年度別実技、分野別練習を通常機能化
+- 2023〜2025年度ベース実技を各10課題追加
+- 年度別実技は2019〜2025すべて各10課題
+- 実技総数は 60 → 90課題
+- 学科ホームをスマホ2列中心へ変更
+- ランダム10問カードのサイズ・文字切れ修正
+- 入口をVer 5.8.0へ統一
+- manifest start_urlも更新しPWA更新を促進
 
-【新規または上書き】
-theme-v57.css
-ui-v57.js
-academic-remove-practical.js
-
-既存の学習データ、問題データ、Supabaseデータには触れません。
+注意
+年度別実技は公式試験問題文の転載ではありません。
+各年度の出題領域・頻出テーマを踏まえたオリジナル「年度ベース」課題です。

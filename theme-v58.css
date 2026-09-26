@@ -1,0 +1,91 @@
+
+/* Ver 5.8.0 NEXT UI */
+:root{--n58:#152331;--n582:#223747;--g58:#e4aa2c;--bg58:#f2f5f7;--line58:#d9e1e6;--text58:#121b24;--muted58:#71808b;--purple58:#654287}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+body.v58{background:var(--bg58);color:var(--text58);-webkit-font-smoothing:antialiased}
+.v58 .hd{min-height:82px;background:linear-gradient(135deg,var(--n58),var(--n582));color:#fff;border:0;box-shadow:0 8px 22px rgba(21,35,49,.14)}
+.v58[data-learning-mode="practical"] .hd{background:linear-gradient(135deg,#312042,#654287)}
+.v58 .hd-ttl{font-size:23px!important;line-height:1.08!important;letter-spacing:-.03em}
+.v58 .hd-sub{font-size:9px!important;line-height:1.35!important;color:rgba(255,255,255,.68)!important}
+.v58 .hd-back,.v58 .hd-ico{color:#fff!important}
+.v58 .pad{padding-left:14px!important;padding-right:14px!important}
+.v58 .learning-mode-switch{padding:4px;border:1px solid #d8e0e6;border-radius:15px;background:#e8edf0}
+.v58 .learning-mode-switch a{min-height:44px;border-radius:11px;font-size:13px;font-weight:900}
+.v58[data-learning-mode="academic"] .learning-mode-switch a.active{background:var(--n58);color:#fff}
+.v58[data-learning-mode="practical"] .learning-mode-switch a.active{background:#533470;color:#fff}
+.v58 .learning-mode-swipe{font-size:9px;margin:6px 0 11px;color:#87939c}
+.v58 .player-menu-head{margin:5px 1px 8px}
+.v58 .player-menu-head h2{font-size:19px}
+.v58 .player-menu-head span{font-size:9px;color:#83909a}
+.v58 .past-random-card{min-height:92px!important;height:auto!important;padding:14px!important;border-radius:18px!important;grid-template-columns:48px minmax(0,1fr) 22px!important;gap:10px!important}
+.v58 .past-random-icon{width:46px!important;height:46px!important;font-size:22px!important}
+.v58 .past-random-copy b{font-size:19px!important;line-height:1.15!important}
+.v58 .past-random-copy em{font-size:9px!important;line-height:1.35!important;white-space:normal!important}
+.v58 .menu.player-main-menu{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+.v58 .mi{min-width:0!important;min-height:98px!important;border-radius:16px!important;padding:12px 8px!important}
+.v58 .mi-n{font-size:15px!important;line-height:1.32!important}
+.v58 .mi-i{font-size:10px!important}
+.v58 #mi-past-year{grid-column:1/-1;min-height:78px!important}
+.v58 #mi-past-year .mi-n br{display:none}
+.v58 .coach-home-top{grid-template-columns:96px minmax(0,1fr)!important}
+.v58 .coach-countdown,.v58 .coach-message{min-height:96px!important}
+.v58 .coach-message h3{font-size:14px!important}
+.v58 .q-card{border-radius:20px!important;box-shadow:0 12px 28px rgba(21,35,49,.08)!important}
+.v58 .q-txt{font-size:clamp(18px,4.5vw,22px)!important;line-height:1.75!important}
+.v58 .q-source-year{max-width:100%;white-space:nowrap}
+.v58 .btn-ox{border-radius:17px!important}
+
+/* practical */
+.v58 .practical-pad{gap:9px!important}
+.v58 .pt-hero{padding:16px!important;border-radius:18px!important;background:linear-gradient(145deg,#342246,#654287)!important}
+.v58 .pt-hero>span{font-size:8px!important;letter-spacing:.13em!important}
+.v58 .pt-hero h1{font-size:22px!important;margin:4px 0!important}
+.v58 .pt-hero p{font-size:11px!important;line-height:1.55!important}
+.v58 .pt-hero small{font-size:8px!important;margin-top:9px!important;padding-top:8px!important}
+.v58 .pt-stat-grid{gap:6px!important}
+.v58 .pt-stat-grid>div{padding:10px 4px!important;border-radius:12px!important}
+.v58 .pt-stat-grid b{font-size:20px!important}
+.v58 .pt-primary{min-height:50px!important;border-radius:14px!important;background:linear-gradient(135deg,#654287,#4b2a70)!important}
+.v58 .pt-category{min-height:58px!important;border-radius:13px!important}
+.v58 #pt-year-panel{border-radius:16px!important}
+.v58 #pt-year-panel .row{min-height:58px!important}
+.v58 .pt-task-head h1{font-size:20px!important;line-height:1.35!important}
+.v58 .pt-task-head p{font-size:11px!important;line-height:1.55!important}
+.v58 .pt-blank-card{border-radius:15px!important}
+.v58 .pt-choice{min-height:46px!important;border-radius:11px!important}
+
+/* portal */
+body.v58.portal-body{background:linear-gradient(150deg,#0f1821,#172936 58%,#10202a)!important}
+.v58 .portal-app-game{max-width:620px!important;padding:0 14px 28px!important}
+.v58 .portal-game-header{padding:18px 3px 14px!important;align-items:flex-start!important}
+.v58 .portal-game-brand{min-width:0!important}
+.v58 .portal-game-brandtext{min-width:0!important}
+.v58 .portal-game-brandtext h1{font-size:30px!important;line-height:1.05!important;overflow-wrap:normal!important}
+.v58 .portal-game-brandtext p{font-size:11px!important}
+.v58 .portal-game-icon{width:58px!important;height:58px!important}
+.v58 .portal-game-ver{font-size:9px!important;padding:8px 10px!important;white-space:nowrap!important}
+.v58 .portal-hero-card{padding:17px!important;border-radius:20px!important}
+.v58 .portal-hero-card h2{font-size:22px!important}
+.v58 .portal-hero-card p{font-size:11px!important;line-height:1.65!important}
+.v58 .portal-mode-grid{grid-template-columns:1fr!important;gap:10px!important}
+.v58 .portal-mode-card{min-height:0!important;padding:17px!important;border-radius:20px!important}
+.v58 .portal-mode-body strong{font-size:26px!important}
+.v58 .portal-mode-body p{font-size:11px!important;line-height:1.6!important}
+.v58 .portal-mode-enter{min-height:48px!important;padding:13px!important}
+.v58 .portal-status-chip b{font-size:21px!important}
+
+/* manager */
+.v58.manager-body{background:linear-gradient(180deg,#edf2f4,#f7f9fa 280px,#f2f5f7)!important}
+.v58 .manager-header{background:linear-gradient(135deg,var(--n58),#29404f)!important;color:#fff!important}
+.v58 .manager-scope-tabs,.v58 .manager-mode-tabs{border-radius:15px!important}
+.v58 .manager-section,.v58 .manager-stat-card{border-radius:16px!important}
+.v58 .manager-actions{gap:7px!important}
+.v58 .manager-actions button{min-width:0!important}
+
+@media(max-width:380px){
+  .v58 .hd-ttl{font-size:21px!important}
+  .v58 .portal-game-brandtext h1{font-size:27px!important}
+  .v58 .portal-game-ver{font-size:8px!important}
+  .v58 .mi-n{font-size:14px!important}
+}
