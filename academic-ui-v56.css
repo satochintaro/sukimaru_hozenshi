@@ -1,0 +1,91 @@
+
+/* Academic home cleanup / past-paper-first UI */
+.academic-hide-practical-entry{display:none!important}
+
+.past-random-card{
+  width:100%;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  margin:8px 0 12px;
+  padding:15px 16px;
+  border:2px solid #b97813;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 82% 15%,rgba(255,209,85,.25),transparent 28%),
+    linear-gradient(135deg,#18222d,#273644 68%,#6d4513);
+  color:#fff;
+  box-shadow:0 10px 24px rgba(26,39,50,.18);
+  text-align:left;
+}
+.past-random-icon{
+  display:grid;
+  place-items:center;
+  width:52px;
+  height:52px;
+  border-radius:15px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,220,124,.35);
+  font-size:25px;
+}
+.past-random-copy{min-width:0}
+.past-random-copy small{
+  display:block;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.14em;
+  color:#ffd36d;
+}
+.past-random-copy b{
+  display:block;
+  margin-top:2px;
+  font-size:20px;
+  line-height:1.2;
+}
+.past-random-copy em{
+  display:block;
+  margin-top:4px;
+  font-size:10px;
+  font-style:normal;
+  line-height:1.4;
+  color:rgba(255,255,255,.75);
+}
+.past-random-go{font-size:20px;color:#ffd36d}
+
+.q-source-year{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:25px;
+  padding:4px 8px;
+  margin-left:6px;
+  border-radius:999px;
+  background:#fff3d7;
+  border:1px solid #e5bd63;
+  color:#7a4c08;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.04em;
+  white-space:nowrap;
+}
+.q-source-year.foundation{
+  background:#eef2f5;
+  border-color:#d5dde4;
+  color:#5c6771;
+}
+#sc-quiz .q-hd{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-wrap:wrap;
+}
+#sc-quiz .q-star{margin-left:auto}
+#sc-quiz .q-no{white-space:nowrap}
+
+@media(max-width:390px){
+  .past-random-card{padding:13px 12px;gap:9px}
+  .past-random-icon{width:46px;height:46px;font-size:22px}
+  .past-random-copy b{font-size:18px}
+  .q-source-year{font-size:8px;padding:3px 7px}
+}

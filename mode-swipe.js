@@ -18,13 +18,12 @@
     const l=document.createElement("link");l.rel="stylesheet";l.href=src;document.head.appendChild(l);
   }
   function updateVersionDisplay(){
-    document.title=document.title.replace(/5\.[234]\.0/g,"5.4.0");
+    document.title=document.title.replace(/5\.[23456]\.0/g,"5.6.0");
     if(current==="academic"){
-      const practicalInfo=document.querySelector(".practical-entry-body em");if(practicalInfo)practicalInfo.textContent="60課題からランダム10課題を出題";
-      const status=document.querySelector("#sc-set .sts span:last-child");if(status)status.innerHTML='Ver 5.4 ／ 全 <span id="st-qn">1000</span> 問';
+      const status=document.querySelector("#sc-set .sts span:last-child");if(status)status.innerHTML='Ver 5.6 ／ 全 <span id="st-qn">1000</span> 問';
     }else{
       const heroInfo=document.querySelector(".pt-hero small");if(heroInfo)heroInfo.textContent="問題バンク60課題・毎回ランダム10課題／公式問題の転載ではありません";
-      const sub=document.querySelector("#pt-home .hd-sub");if(sub)sub.textContent="PRACTICAL ／ Ver 5.4 TEST";
+      const sub=document.querySelector("#pt-home .hd-sub");if(sub)sub.textContent="PRACTICAL ／ Ver 5.6 TEST";
     }
   }
 
@@ -33,10 +32,14 @@
       loadStyle("./coach.css");
       await loadScript("./year-mode-core.js");
       if(current==="academic"){
-        await loadScript("./year-question-data.js");await loadScript("./year-mode.js");
-        if(typeof APP!=="undefined"&&APP)APP.version="5.4.0-test";
+        await loadScript("./year-question-data.js");
+        await loadScript("./year-mode.js");
+        loadStyle("./academic-ui-v56.css");
+        await loadScript("./academic-ui-v56.js");
+        if(typeof APP!=="undefined"&&APP)APP.version="5.6.0-test";
       }else{
-        await loadScript("./practical-year-data.js");await loadScript("./practical-year-mode.js");
+        await loadScript("./practical-year-data.js");
+        await loadScript("./practical-year-mode.js");
       }
       await loadScript("./coach-shared.js");
       await loadScript("./coach-player.js");
@@ -44,7 +47,7 @@
         loadStyle("./game-effects.css");
         await loadScript("./game-effects.js");
       }
-    }catch(error){console.error("Ver 5.4.0 拡張読込エラー",error);}
+    }catch(error){console.error("Ver 5.6.0 拡張読込エラー",error);}
   }
   updateVersionDisplay();loadEnhancements();
 
