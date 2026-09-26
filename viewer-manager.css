@@ -1,0 +1,14 @@
+
+.viewer-page{max-width:1120px}
+.viewer-tabs{grid-template-columns:repeat(3,1fr)!important}
+.viewer-bars{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.viewer-bar{display:grid;grid-template-columns:minmax(92px,150px) minmax(70px,1fr) 44px 42px;gap:8px;align-items:center;font-size:11px}
+.viewer-bar>span{overflow-wrap:anywhere}.viewer-bar i{display:block;height:8px;border-radius:999px;background:#e5e9ed;overflow:hidden}.viewer-bar em{display:block;height:100%;background:#2878b8}.viewer-bar b{text-align:right}.viewer-bar small{text-align:right;color:#68737e}
+.manager-role-badge{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 9px;border-radius:999px;background:#edf8f2;color:#176a44;border:1px solid #b8dbc7;font-size:10px;font-weight:900;white-space:nowrap}
+.manager-role-badge.viewer{background:#eef6fc;color:#1d5b8b;border-color:#c6ddef}
+@media(max-width:600px){.viewer-bar{grid-template-columns:90px 1fr 42px}.viewer-bar small{display:none}.viewer-page .manager-stat-grid{grid-template-columns:1fr 1fr}}
+
+.viewer-login-link{display:flex;align-items:center;justify-content:center;margin-top:10px;text-decoration:none}
+.viewer-settings-card{max-width:460px}.viewer-set-label{display:block;margin:8px 0 5px;font-size:12px;font-weight:800}.viewer-settings-card input{width:100%;min-height:48px;padding:10px 12px;margin-bottom:10px;border:1px solid #d8dee5;border-radius:9px}.viewer-set-note{margin-top:10px}
+.manager-actions:has(#manager-viewer-settings-btn){grid-template-columns:repeat(3,1fr)}
+@media(max-width:520px){.manager-actions:has(#manager-viewer-settings-btn){grid-template-columns:1fr 1fr}.manager-actions #manager-viewer-settings-btn{grid-column:1/-1}}

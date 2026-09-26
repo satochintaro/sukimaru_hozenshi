@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>スキマル保全士 閲覧モード</title>
+<meta name="theme-color" content="#26323d">
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./coach.css">
+<link rel="stylesheet" href="./viewer-manager.css">
+</head>
+<body class="manager-body viewer-page">
+<main class="admin-main">
+  <header class="hd manager-header">
+    <a class="hd-back" href="./admin.html" aria-label="マネージャー認証へ戻る">‹</a>
+    <div class="manager-header-title">
+      <div class="hd-ttl">スキマル保全士</div>
+      <div class="hd-sub">MANAGER ／ 閲覧専用</div>
+    </div>
+    <span class="manager-role-badge viewer">閲覧専用</span>
+    <button class="manager-logout" id="viewer-logout">退出</button>
+    <button class="manager-refresh" id="viewer-refresh">↻</button>
+  </header>
+
+  <div class="pad manager-pad">
+    <div class="manager-connection">
+      <span class="connection-dot" id="viewer-dot"></span>
+      <span id="viewer-connection">認証を確認中</span>
+      <b id="viewer-count">0人</b>
+    </div>
+
+    <div class="manager-mode-tabs viewer-tabs" role="tablist">
+      <button type="button" class="active" data-viewer-mode="combined">総合分析</button>
+      <button type="button" data-viewer-mode="academic">学科分析</button>
+      <button type="button" data-viewer-mode="practical">実技分析</button>
+    </div>
+
+    <div id="viewer-report" class="scroll manager-report"></div>
+  </div>
+</main>
+
+<div class="player-detail" id="viewer-detail" aria-hidden="true">
+  <div class="player-detail-card">
+    <button class="player-detail-close" id="viewer-detail-close" aria-label="閉じる">×</button>
+    <div id="viewer-detail-body"></div>
+  </div>
+</div>
+
+<div class="manager-login show" id="viewer-login" role="dialog" aria-modal="true" aria-labelledby="viewer-login-title">
+  <div class="manager-login-card">
+    <a class="manager-login-back" href="./admin.html">‹ 管理者ログインへ戻る</a>
+    <div class="manager-login-icon">👁️</div>
+    <h1 id="viewer-login-title">閲覧モード</h1>
+    <p>管理者から共有された閲覧用パスワードを入力してください。</p>
+    <label for="viewer-password">閲覧用パスワード</label>
+    <input id="viewer-password" type="password" autocomplete="current-password" placeholder="閲覧用パスワード">
+    <button class="btn" id="viewer-login-btn">見るだけで開く</button>
+    <div class="manager-login-message" id="viewer-login-message"></div>
+    <small>閲覧モードでは成績・学科・実技・総合分析のみ確認できます。設定変更、メッセージ送信、データ削除はできません。</small>
+  </div>
+</div>
+
+<div class="toast" id="viewer-toast" role="status" aria-live="polite"></div>
+<script src="./supabase-config.js"></script>
+<script src="./coach-shared.js"></script>
+<script src="./viewer-manager.js"></script>
+</body>
+</html>
