@@ -1,0 +1,89 @@
+
+/* Ver 5.9.3 question layout safety */
+
+/* Old retry badge/effects must never enter the question card. */
+#sc-quiz .game-retry-badge,
+#sc-quiz .battle-fx-root,
+.game-result-pop,
+.game-spark{
+  display:none!important;
+}
+
+/* Old effect classes may remain in cache: neutralize them. */
+#sc-quiz .q-card.game-retry-card,
+#sc-quiz .q-card.battle-card-in{
+  animation:none!important;
+  transform:none!important;
+  box-shadow:var(--shadow)!important;
+  border:1px solid var(--line)!important;
+  border-top:4px solid var(--yellow)!important;
+}
+#sc-quiz .game-retry-card .q-txt,
+#sc-quiz .q-txt{
+  padding-top:0!important;
+  transform:none!important;
+}
+
+/* One retry notice only, above the question. */
+#sc-quiz .q-warn,
+#sc-quiz .q-warn.game-revenge-warn{
+  margin:8px 16px 0!important;
+  padding:9px 11px!important;
+  border:1px solid #e6aca8!important;
+  border-left:5px solid var(--red)!important;
+  background:#fff2f1!important;
+  color:#9a302b!important;
+  animation:none!important;
+  transform:none!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+}
+
+/* Prevent the collapsed/overlap look seen in the screenshot. */
+#sc-quiz .q-body{
+  min-height:190px!important;
+}
+#sc-quiz .q-card{
+  min-height:160px!important;
+  height:auto!important;
+  overflow:visible!important;
+  align-items:center!important;
+}
+#sc-quiz .q-txt{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  margin:0!important;
+  overflow:visible!important;
+}
+
+/* Answer result must use the original layout:
+   answer buttons disappear, feedback + next appear. */
+#sc-quiz #ans.hide{
+  display:none!important;
+  opacity:1!important;
+}
+#sc-quiz #ans.answer-locked{
+  display:none!important;
+}
+#sc-quiz #jd.show{
+  display:flex!important;
+  animation:none!important;
+}
+
+/* Remove all residual movement. */
+#sc-quiz .stamp{display:none!important}
+#sc-quiz,
+#sc-quiz *,
+#sc-quiz *::before,
+#sc-quiz *::after{
+  scroll-behavior:auto!important;
+}
+body.battle-screen-shake #sc-quiz,
+body.battle-fail-shake #sc-quiz,
+body.battle-hitstop #sc-quiz{
+  animation:none!important;
+  transform:none!important;
+  filter:none!important;
+}

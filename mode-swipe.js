@@ -58,7 +58,7 @@
 
   function preloadAll(){
     const commonScripts=[
-      "./ui-v58.js?v=592",
+      "./ui-v58.js?v=593",
       "./year-mode-core.js",
       "./coach-shared.js",
       "./coach-player.js"
@@ -69,7 +69,9 @@
       "./year-question-data.js",
       "./year-mode.js",
       "./academic-ui-v56.js",
-      "./quiz-static.js?v=592"
+      "./quiz-static.js?v=593",
+      "./game-effects.js?v=593",
+      "./layout-safety.js?v=593"
     ];
 
     const practicalScripts=[
@@ -82,12 +84,13 @@
     const commonStyles=[
       "./theme-v58.css",
       "./coach.css",
-      "./app-polish.css?v=592"
+      "./app-polish.css?v=593"
     ];
 
     const academicStyles=[
       "./academic-ui-v56.css",
-      "./quiz-static.css?v=592"
+      "./quiz-static.css?v=593",
+      "./layout-safety.css?v=593"
     ];
 
     [...commonScripts,...(current==="academic"?academicScripts:practicalScripts)]
@@ -129,7 +132,7 @@
   }
 
   function updateVersion(){
-    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.2").replace(/TEST/gi,"");
+    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.3").replace(/TEST/gi,"");
     if(current==="academic"){
       const qn=document.getElementById("st-qn");
       if(qn)qn.textContent="1000";
@@ -141,7 +144,7 @@
     await loadScript("./year-mode-core.js");
 
     await Promise.all([
-      loadScript("./ui-v58.js?v=592"),
+      loadScript("./ui-v58.js?v=593"),
       loadScript("./academic-remove-practical.js"),
       loadScript("./year-question-data.js"),
       loadScript("./coach-shared.js")
@@ -149,18 +152,22 @@
 
     await loadScript("./year-mode.js");
     await loadScript("./academic-ui-v56.js");
-    await loadScript("./quiz-static.js?v=592");
+    await loadScript("./quiz-static.js?v=593",
+      "./game-effects.js?v=593",
+      "./layout-safety.js?v=593");
     await loadScript("./coach-player.js");
-    await loadScript("./coach-sync.js?v=592");
+    await loadScript("./coach-sync.js?v=593");
+    await loadScript("./game-effects.js?v=593");
+    await loadScript("./layout-safety.js?v=593");
 
-    if(typeof APP!=="undefined"&&APP)APP.version="5.9.2";
+    if(typeof APP!=="undefined"&&APP)APP.version="5.9.3";
   }
 
   async function loadPractical(){
     await loadScript("./year-mode-core.js");
 
     await Promise.all([
-      loadScript("./ui-v58.js?v=592"),
+      loadScript("./ui-v58.js?v=593"),
       loadScript("./practical-year-data.js"),
       loadScript("./practical-year-data-v58.js"),
       loadScript("./coach-shared.js")
@@ -169,16 +176,17 @@
     await loadScript("./practical-year-mode.js");
     await loadScript("./practical-v58.js");
     await loadScript("./coach-player.js");
-    await loadScript("./coach-sync.js?v=592");
+    await loadScript("./coach-sync.js?v=593");
   }
 
   async function boot(){
     try{
       preloadAll();
 
-      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=592"];
+      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=593"];
       if(current==="academic"){
-        styles.push("./academic-ui-v56.css","./quiz-static.css?v=592");
+        styles.push("./academic-ui-v56.css","./quiz-static.css?v=593",
+      "./layout-safety.css?v=593");
       }
       await Promise.all(styles.map(loadStyle));
 
