@@ -1,69 +1,91 @@
-
-/* Game-like retry effect for previously missed questions */
-#sc-quiz .q-card{isolation:isolate}
-.game-retry-card{border-color:#c47a18!important;box-shadow:0 0 0 2px rgba(196,122,24,.08),0 10px 26px rgba(24,34,43,.12)!important}
-.game-retry-enter{animation:retryCardIn .72s cubic-bezier(.2,.9,.2,1)}
-.game-retry-badge{
-  position:absolute;z-index:3;left:14px;top:12px;display:flex;align-items:center;gap:8px;
-  padding:7px 10px;border-radius:12px;background:#20262d;color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.16);
-  transform:translateY(-16px) scale(.88);opacity:0;pointer-events:none
-}
-.game-retry-badge.show{animation:retryBadgeIn .55s cubic-bezier(.2,1.3,.3,1) forwards}
-.game-retry-badge>span{font-size:20px}.game-retry-badge b{display:block;font-size:10px;letter-spacing:.09em}.game-retry-badge small{display:block;margin-top:1px;font-size:8px;opacity:.72}
-.game-retry-card .q-txt{padding-top:48px}
-.game-revenge-warn{border-left-color:#c47a18!important;background:#fff6e7!important;color:#73460d!important;animation:revengeWarn .7s ease}
-.game-result-pop{
-  position:absolute;z-index:8;left:50%;top:50%;min-width:190px;padding:14px 18px;border-radius:16px;
-  text-align:center;color:#fff;box-shadow:0 16px 32px rgba(0,0,0,.22);opacity:0;transform:translate(-50%,-50%) scale(.55) rotate(-4deg);pointer-events:none
-}
-.game-result-pop.clear{background:#176a44}.game-result-pop.miss{background:#9a5b11}
-.game-result-pop.show{animation:retryResultPop 1.35s cubic-bezier(.17,.9,.25,1) forwards}
-.game-result-pop b{display:block;font-size:20px;letter-spacing:.06em}.game-result-pop span{display:block;margin-top:3px;font-size:10px;opacity:.85}
-.game-retry-clear{animation:retryClearPulse .7s ease}.game-retry-miss{animation:retryMissShake .45s ease}
-.game-spark{
-  --angle:calc(var(--i) * 45deg);
-  position:absolute;z-index:7;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:#e9a900;
-  animation:retrySpark .8s ease-out forwards;pointer-events:none
-}
-.q-txt,.jd-e,.jd-w,.row-t,.row-d,.mi-n,.coach-message,.coach-home-manager-message{overflow-wrap:anywhere;word-break:normal}
 html,body{overflow-x:hidden}
+#sc-quiz{overflow:hidden}
+#sc-quiz .q-card{isolation:isolate;position:relative;overflow:hidden}
+.game-retry-card{border:2px solid #d98b12!important;box-shadow:0 0 0 2px rgba(255,177,0,.12),0 12px 34px rgba(16,24,38,.18),inset 0 0 28px rgba(255,185,39,.07)!important}
+.battle-card-in{animation:battleCardSlam .78s cubic-bezier(.12,.95,.2,1)}
+.game-retry-badge.battle{position:absolute;z-index:8;left:12px;top:10px;display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:10px;color:#fff;background:linear-gradient(120deg,#121820,#252d37 62%,#6e4310);border:1px solid rgba(255,194,69,.7);box-shadow:0 5px 18px rgba(0,0,0,.28),inset 0 0 18px rgba(255,188,52,.1);transform:translateX(-30px) skewX(-7deg) scale(.9);opacity:0;pointer-events:none}
+.game-retry-badge.battle.show{animation:battleBadgeIn .48s cubic-bezier(.16,1.25,.28,1) forwards}
+.game-retry-badge.battle>div{transform:skewX(7deg)}
+.game-retry-badge.battle .battle-flame{font-size:22px;filter:drop-shadow(0 0 7px rgba(255,174,0,.7))}
+.game-retry-badge.battle b{display:block;font-size:10px;letter-spacing:.12em;line-height:1.1}
+.game-retry-badge.battle small{display:block;margin-top:2px;font-size:8px;letter-spacing:.08em;opacity:.72}
+.game-retry-card .q-txt{padding-top:50px}
+.game-revenge-warn{border:1px solid #d98b12!important;border-left:6px solid #d98b12!important;background:linear-gradient(90deg,#fff2d3,#fffaf0)!important;color:#673c08!important;box-shadow:0 5px 16px rgba(206,132,13,.12);animation:revengeWarnRumble .66s ease}
 
-@keyframes retryCardIn{
-  0%{transform:translateY(14px) scale(.985);opacity:.55}
-  55%{transform:translateY(-3px) scale(1.005)}
-  100%{transform:none;opacity:1}
-}
-@keyframes retryBadgeIn{
-  0%{transform:translateY(-16px) scale(.75);opacity:0}
-  70%{transform:translateY(2px) scale(1.05);opacity:1}
-  100%{transform:none;opacity:1}
-}
-@keyframes revengeWarn{
-  0%,100%{transform:none}
-  35%{transform:translateX(4px)}
-  55%{transform:translateX(-3px)}
-}
-@keyframes retryResultPop{
-  0%{opacity:0;transform:translate(-50%,-50%) scale(.55) rotate(-4deg)}
-  22%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(1deg)}
-  72%{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  100%{opacity:0;transform:translate(-50%,-58%) scale(.96)}
-}
-@keyframes retryClearPulse{
-  0%,100%{box-shadow:0 0 0 2px rgba(35,135,90,.08)}
-  45%{box-shadow:0 0 0 8px rgba(35,135,90,.16)}
-}
-@keyframes retryMissShake{
-  0%,100%{transform:none}
-  25%{transform:translateX(-5px)}
-  50%{transform:translateX(4px)}
-  75%{transform:translateX(-2px)}
-}
-@keyframes retrySpark{
-  0%{opacity:1;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(12px) scale(1)}
-  100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(92px) scale(.2)}
-}
+.battle-fx-root{position:fixed;inset:0;z-index:99999;pointer-events:none;overflow:hidden;opacity:0;font-family:inherit}
+.battle-fx-root.go{opacity:1}
+.battle-vignette{position:absolute;inset:-10%;background:radial-gradient(circle at 50% 50%,rgba(0,0,0,.05) 0 27%,rgba(0,0,0,.78) 78%),linear-gradient(130deg,rgba(5,11,18,.72),rgba(18,24,30,.92));animation:vignetteIn .85s ease both}
+.battle-speed-lines{position:absolute;inset:-20%;opacity:.45;background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0deg 2deg,rgba(255,255,255,.28) 2.2deg 2.6deg,transparent 2.8deg 6deg);transform:scale(1.7);animation:speedSpin .9s cubic-bezier(.15,.8,.2,1) both}
+.finish-lines{opacity:.28}.fail-lines{filter:hue-rotate(325deg) saturate(2)}
+
+.battle-slash{position:absolute;left:-25%;top:47%;width:150%;height:12px;background:linear-gradient(90deg,transparent,#fff 18%,#f0ab18 48%,#fff 76%,transparent);box-shadow:0 0 14px rgba(255,205,92,.95),0 0 34px rgba(255,145,0,.65);transform:rotate(-16deg) scaleX(0);transform-origin:center;opacity:0}
+.battle-intro.go .slash-a{animation:slashCut .52s .08s cubic-bezier(.1,.8,.2,1) both}
+.battle-intro.go .slash-b{top:52%;transform:rotate(17deg) scaleX(0);animation:slashCutB .46s .22s cubic-bezier(.1,.8,.2,1) both}
+.fail .battle-slash{background:linear-gradient(90deg,transparent,#fff 16%,#e43d32 48%,#fff 82%,transparent);box-shadow:0 0 18px rgba(255,69,53,.9),0 0 42px rgba(216,30,30,.68)}
+.fail.go .fail-a{animation:slashCut .48s .03s cubic-bezier(.1,.8,.2,1) both}
+.fail.go .fail-b{top:53%;transform:rotate(18deg) scaleX(0);animation:slashCutB .45s .16s cubic-bezier(.1,.8,.2,1) both}
+
+.battle-intro-copy,.battle-finish-copy{position:absolute;left:50%;top:50%;width:min(92vw,680px);text-align:center;color:#fff;transform:translate(-50%,-50%) scale(.5) rotate(-4deg);opacity:0;text-shadow:0 5px 22px rgba(0,0,0,.65)}
+.battle-intro.go .battle-intro-copy{animation:introTitle .88s .22s cubic-bezier(.12,.95,.2,1) both}
+.battle-intro-copy small,.battle-finish-copy small{display:block;font-size:clamp(10px,2.4vw,15px);letter-spacing:.26em;font-weight:900}
+.battle-intro-copy b{display:block;margin-top:3px;font-size:clamp(38px,11vw,82px);line-height:.92;font-style:italic;font-weight:1000;letter-spacing:-.035em;color:#fff;-webkit-text-stroke:1px rgba(255,188,41,.65)}
+.battle-intro-copy span,.battle-finish-copy span{display:block;margin-top:10px;font-size:clamp(11px,3vw,16px);font-weight:850;letter-spacing:.06em}
+
+.battle-white-flash,.battle-red-flash{position:absolute;inset:0;opacity:0}
+.success.go .battle-white-flash{background:#fff;animation:whiteFlash .55s ease-out both}
+.fail.go .battle-red-flash{background:radial-gradient(circle,#ff8072 0%,#ab1616 48%,#280303 100%);animation:redFlash .58s ease-out both}
+.battle-cross-flare{position:absolute;left:50%;top:50%;width:20px;height:20px;transform:translate(-50%,-50%);opacity:0}
+.battle-cross-flare:before,.battle-cross-flare:after{content:"";position:absolute;left:50%;top:50%;background:#fff;box-shadow:0 0 22px #fff,0 0 55px #ffd454}
+.battle-cross-flare:before{width:160vw;height:5px;transform:translate(-50%,-50%)}.battle-cross-flare:after{width:5px;height:160vh;transform:translate(-50%,-50%)}
+.success.go .battle-cross-flare{animation:crossFlare .72s .08s ease-out both}
+.battle-shockwave{position:absolute;left:50%;top:50%;width:80px;height:80px;border-radius:50%;border:8px solid rgba(255,255,255,.92);box-shadow:0 0 36px rgba(255,198,53,.95);transform:translate(-50%,-50%) scale(.1);opacity:0}
+.success.go .wave-a{animation:shockwave 1.05s .08s cubic-bezier(.1,.7,.2,1) both}
+.success.go .wave-b{animation:shockwave 1.15s .22s cubic-bezier(.1,.7,.2,1) both}
+
+.battle-finish-copy b{display:block;margin-top:2px;font-size:clamp(46px,13vw,104px);line-height:.86;font-style:italic;font-weight:1000;letter-spacing:-.05em;color:#fff;-webkit-text-stroke:2px rgba(17,24,31,.2)}
+.success .battle-finish-copy b{text-shadow:0 3px 0 #9d6300,0 8px 24px rgba(0,0,0,.55),0 0 24px rgba(255,204,69,.8)}
+.fail .battle-finish-copy b{text-shadow:0 3px 0 #76100d,0 8px 24px rgba(0,0,0,.55),0 0 22px rgba(255,70,57,.72)}
+.success.go .battle-finish-copy{animation:finishTitle 1.5s .12s cubic-bezier(.12,.9,.2,1) both}
+.fail.go .battle-finish-copy{animation:failTitle 1.2s .08s cubic-bezier(.12,.9,.2,1) both}
+
+.battle-combo{position:absolute;right:6vw;top:20vh;display:flex;align-items:flex-end;gap:5px;color:#fff;opacity:0;transform:translateX(40px) rotate(6deg)}
+.success.go .battle-combo{animation:comboIn 1.2s .45s cubic-bezier(.12,.95,.2,1) both}
+.battle-combo b{font-size:clamp(44px,12vw,84px);line-height:.8;font-style:italic;font-weight:1000;color:#ffd34d;text-shadow:0 5px 20px rgba(0,0,0,.6)}
+.battle-combo span{max-width:90px;font-size:10px;font-weight:950;line-height:1.1;letter-spacing:.06em}
+
+.battle-particle{--angle:calc((360deg / var(--count)) * var(--i));position:absolute;z-index:7;left:50%;top:50%;width:28px;height:5px;border-radius:999px;opacity:0;transform-origin:left center}
+.battle-particle.gold{background:linear-gradient(90deg,#fff5c1,#ffbe25,transparent);box-shadow:0 0 8px rgba(255,187,32,.8)}
+.battle-particle.white{width:18px;height:3px;background:linear-gradient(90deg,#fff,rgba(255,255,255,.25),transparent)}
+.battle-particle.red{background:linear-gradient(90deg,#fff,#ff4438,transparent);box-shadow:0 0 8px rgba(255,43,32,.75)}
+.battle-fx-root.go .battle-particle{animation:particleBurst .86s var(--delay) cubic-bezier(.05,.75,.15,1) both}
+
+body.battle-screen-shake #sc-quiz{animation:screenShakeStrong .52s linear}
+body.battle-fail-shake #sc-quiz{animation:screenShakeFail .68s linear}
+body.battle-hitstop #sc-quiz{transform:scale(1.018);filter:contrast(1.22) brightness(1.08)}
+
+.q-txt,.jd-e,.jd-w,.row-t,.row-d,.mi-n,.coach-message,.coach-home-manager-message{overflow-wrap:anywhere;word-break:normal}
+
+@keyframes battleCardSlam{0%{transform:scale(.84) rotate(-1deg);filter:brightness(.65);opacity:.5}45%{transform:scale(1.045) rotate(.45deg);filter:brightness(1.08);opacity:1}62%{transform:scale(.985)}100%{transform:none;filter:none}}
+@keyframes battleBadgeIn{0%{transform:translateX(-42px) skewX(-8deg) scale(.8);opacity:0}68%{transform:translateX(5px) skewX(-8deg) scale(1.05);opacity:1}100%{transform:translateX(0) skewX(-7deg) scale(1);opacity:1}}
+@keyframes revengeWarnRumble{0%,100%{transform:none}20%{transform:translateX(-5px)}38%{transform:translateX(4px)}54%{transform:translateX(-2px)}70%{transform:translateX(1px)}}
+@keyframes vignetteIn{0%{opacity:0;transform:scale(1.1)}28%{opacity:1}100%{opacity:.95;transform:scale(1)}}
+@keyframes speedSpin{0%{opacity:0;transform:scale(.6) rotate(-8deg)}35%{opacity:.5}100%{opacity:0;transform:scale(2.3) rotate(4deg)}}
+@keyframes slashCut{0%{opacity:0;transform:rotate(-16deg) scaleX(0)}18%{opacity:1}65%{opacity:1;transform:rotate(-16deg) scaleX(1)}100%{opacity:0;transform:rotate(-16deg) scaleX(1.18)}}
+@keyframes slashCutB{0%{opacity:0;transform:rotate(17deg) scaleX(0)}18%{opacity:1}65%{opacity:1;transform:rotate(17deg) scaleX(1)}100%{opacity:0;transform:rotate(17deg) scaleX(1.2)}}
+@keyframes introTitle{0%{opacity:0;transform:translate(-50%,-50%) scale(.45) rotate(-7deg)}45%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(-1deg)}68%{transform:translate(-50%,-50%) scale(.98)}100%{opacity:0;transform:translate(-50%,-55%) scale(1.02)}}
+@keyframes whiteFlash{0%{opacity:0}12%{opacity:1}32%{opacity:.72}100%{opacity:0}}
+@keyframes redFlash{0%{opacity:0}18%{opacity:.88}100%{opacity:0}}
+@keyframes crossFlare{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}28%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}}
+@keyframes shockwave{0%{opacity:1;transform:translate(-50%,-50%) scale(.08)}100%{opacity:0;transform:translate(-50%,-50%) scale(10)}}
+@keyframes finishTitle{0%{opacity:0;transform:translate(-50%,-50%) scale(.35) rotate(-8deg)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.18) rotate(1deg)}36%{transform:translate(-50%,-50%) scale(.96) rotate(-1deg)}70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-58%) scale(1.05)}}
+@keyframes failTitle{0%{opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(8deg)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(-2deg)}50%{transform:translate(-50%,-50%) scale(.98) rotate(1deg)}82%{opacity:1}100%{opacity:0;transform:translate(-50%,-54%) scale(1)}}
+@keyframes comboIn{0%{opacity:0;transform:translateX(60px) rotate(10deg) scale(.7)}32%{opacity:1;transform:translateX(-6px) rotate(4deg) scale(1.12)}58%{transform:translateX(0) rotate(6deg) scale(1)}88%{opacity:1}100%{opacity:0}}
+@keyframes particleBurst{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(5px) scaleX(.2)}18%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(48vw) scaleX(1.5)}}
+@keyframes screenShakeStrong{0%,100%{transform:none}10%{transform:translate(-6px,2px) rotate(-.4deg)}20%{transform:translate(7px,-4px) rotate(.5deg)}30%{transform:translate(-5px,5px) rotate(-.3deg)}42%{transform:translate(5px,-2px)}56%{transform:translate(-3px,2px)}70%{transform:translate(2px,-1px)}}
+@keyframes screenShakeFail{0%,100%{transform:none}8%{transform:translateX(-10px) rotate(-.6deg)}16%{transform:translateX(9px) rotate(.6deg)}26%{transform:translateX(-8px)}38%{transform:translateX(7px)}52%{transform:translateX(-5px)}68%{transform:translateX(3px)}82%{transform:translateX(-1px)}}
+
 @media(prefers-reduced-motion:reduce){
-  .game-retry-enter,.game-retry-badge.show,.game-revenge-warn,.game-result-pop.show,.game-retry-clear,.game-retry-miss,.game-spark{animation:none!important}
-  .game-retry-badge{opacity:1;transform:none}.game-result-pop.show{opacity:1;transform:translate(-50%,-50%)}
+  .battle-fx-root{display:none!important}
+  .battle-card-in,.game-retry-badge.battle.show,.game-revenge-warn,body.battle-screen-shake #sc-quiz,body.battle-fail-shake #sc-quiz{animation:none!important}
+  .game-retry-badge.battle{opacity:1;transform:none}
 }
