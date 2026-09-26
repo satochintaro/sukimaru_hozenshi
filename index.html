@@ -1,21 +1,67 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>スキマル保全士</title><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#101826">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="スキマル保全士"><link rel="apple-touch-icon" href="./apple-touch-icon.png"><link rel="stylesheet" href="./styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>スキマル保全士 Ver 5.7.0 QUEST UI</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#111A23">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="スキマル保全士">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./theme-v57.css">
 </head>
-<body class="portal-body portal-body-game">
+<body class="portal-body portal-body-game quest-v57">
 <main class="portal-app portal-app-game" aria-labelledby="portal-title">
-<header class="portal-game-header"><div class="portal-game-brand"><img class="portal-game-icon" src="./icon-192.png" alt=""><div class="portal-game-brandtext"><span class="portal-game-kicker">MAINTENANCE QUEST</span><h1 id="portal-title">スキマル保全士</h1><p>自主保全士2級 学習アプリ</p></div></div><span class="portal-game-ver">VER 5.4.0 TEST</span></header>
-<section class="portal-hero-card"><div class="portal-hero-top"><span class="portal-stage-badge">STAGE SELECT</span><span class="portal-stage-mini">TAP YOUR MODE</span></div><h2>どっちで入る？</h2><p>学習するなら<span>プレイヤー</span>、提出データを分析するなら<span>マネージャー</span>。ゲームのモード選択みたいに、ここからスタート。</p><div class="portal-status-row"><div class="portal-status-chip"><b>1000</b><small>QUESTIONS</small></div><div class="portal-status-chip"><b>60</b><small>PRACTICAL</small></div><div class="portal-status-chip"><b>7</b><small>YEARS</small></div></div></section>
+<header class="portal-game-header">
+  <div class="portal-game-brand">
+    <img class="portal-game-icon" src="./icon-192.png" alt="">
+    <div class="portal-game-brandtext">
+      <span class="portal-game-kicker">MAINTENANCE QUEST</span>
+      <h1 id="portal-title">スキマル保全士</h1>
+      <p>自主保全士2級 学習・分析アプリ</p>
+    </div>
+  </div>
+  <span class="portal-game-ver">VER 5.7.0 / QUEST UI</span>
+</header>
+
+<section class="portal-hero-card">
+  <div class="portal-hero-top">
+    <span class="portal-stage-badge">SELECT MODE</span>
+    <span class="portal-stage-mini">READY TO START</span>
+  </div>
+  <h2>学ぶ。解く。克服する。</h2>
+  <p>過去問ベースの学習と実技、苦手分析、学習コーチをひとつに。Managerでは全体・個人の成長を確認できます。</p>
+  <div class="portal-status-row">
+    <div class="portal-status-chip"><b>1000</b><small>ACADEMIC</small></div>
+    <div class="portal-status-chip"><b>60</b><small>PRACTICAL</small></div>
+    <div class="portal-status-chip"><b>7</b><small>YEARS</small></div>
+  </div>
+</section>
+
 <nav class="portal-mode-grid" aria-label="利用モード">
-<a class="portal-mode-card mode-player" href="./player.html"><div class="portal-mode-glow" aria-hidden="true"></div><div class="portal-mode-head"><span class="portal-mode-icon">🎮</span><span class="portal-mode-label">PLAYER MODE</span></div><div class="portal-mode-body"><strong>プレイヤー</strong><p>問題演習・年度別過去問・実技・学習コーチで合格まで積み上げる。</p></div><div class="portal-mode-tags"><span>1000問</span><span>実技60</span><span>学習コーチ</span></div><div class="portal-mode-enter">▶ START</div></a>
-<a class="portal-mode-card mode-manager" href="./admin.html"><div class="portal-mode-glow" aria-hidden="true"></div><div class="portal-mode-head"><span class="portal-mode-icon">📊</span><span class="portal-mode-label">MANAGER MODE</span></div><div class="portal-mode-body"><strong>マネージャー</strong><p>学科・実技・過去問を総合分析し、プレイヤーへ個別フォロー。</p></div><div class="portal-mode-tags"><span>総合分析</span><span>メッセージ</span><span>試験日</span></div><div class="portal-mode-enter">▶ ANALYZE</div></a>
+  <a class="portal-mode-card mode-player" href="./player.html">
+    <div class="portal-mode-glow" aria-hidden="true"></div>
+    <div class="portal-mode-head"><span class="portal-mode-icon">⚔️</span><span class="portal-mode-label">PLAYER MODE</span></div>
+    <div class="portal-mode-body"><strong>プレイヤー</strong><p>ランダム10問、年度別、復習、実技、学習コーチで合格へ。</p></div>
+    <div class="portal-mode-tags"><span>過去問ベース</span><span>REVENGE</span><span>学習コーチ</span></div>
+    <div class="portal-mode-enter">▶ START QUEST</div>
+  </a>
+
+  <a class="portal-mode-card mode-manager" href="./admin.html">
+    <div class="portal-mode-glow" aria-hidden="true"></div>
+    <div class="portal-mode-head"><span class="portal-mode-icon">📊</span><span class="portal-mode-label">MANAGER MODE</span></div>
+    <div class="portal-mode-body"><strong>マネージャー</strong><p>全体・個人、学科・実技・総合を切り替えて教育フォロー。</p></div>
+    <div class="portal-mode-tags"><span>全体分析</span><span>個人分析</span><span>AI教育</span></div>
+    <div class="portal-mode-enter">▶ OPEN DASHBOARD</div>
+  </a>
 </nav>
-<div class="portal-tip-card"><span class="portal-tip-title">INFO</span><p><b>Ver 5.4</b>では、年度別成績・学科＋実技の総合傾向・コーチメッセージ・試験カウントダウンに対応。</p></div>
-<footer class="portal-game-footer"><span>SKIMARU MAINTENANCE LEARNING</span><span>READY ? TAP TO START</span></footer>
+
+<div class="portal-tip-card"><span class="portal-tip-title">VERSION</span><p><b>Ver 5.7.0</b> — 過去問ベース学習・年度表示・学習コーチ・REVENGE演出・全体/個人分析を統合。</p></div>
+<footer class="portal-game-footer"><span>SKIMARU MAINTENANCE LEARNING</span><span>QUEST UI 5.7</span></footer>
 </main>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));}</script>
-</body></html>
+<script src="./ui-v57.js"></script>
+</body>
+</html>

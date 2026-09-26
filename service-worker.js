@@ -1,11 +1,22 @@
-const CACHE="skimaru-v5-6-0-academic-r6";
-const ASSETS=["./","./index.html","./player.html","./practical.html","./admin.html","./viewer.html","./styles.css","./coach.css","./viewer-manager.css","./manager-ui-v55.css","./academic-ui-v56.css","./game-effects.css","./questions.js","./year-mode-core.js","./year-question-data.js","./year-mode.js","./practical-questions.js","./practical-year-data.js","./practical.js","./practical-year-mode.js","./mode-swipe.js","./academic-ui-v56.js","./game-effects.js","./coach-shared.js","./coach-player.js","./coach-manager.js","./manager-organizer.js","./manager-viewer-admin.js","./viewer-manager.js","./practical-gauge.svg","./practical-drawing.svg","./practical-safety.svg","./practical-transmission.svg","./practical-pneumatic.svg","./practical-sensors.svg","./practical-orthographic.svg","./supabase-config.js","./app.js","./admin.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png"];
+const CACHE="skimaru-v5-7-0-quest-r8";
+const ASSETS=["./","./index.html","./player.html","./practical.html","./admin.html","./viewer.html","./styles.css","./theme-v57.css","./coach.css","./viewer-manager.css","./manager-ui-v55.css","./academic-ui-v56.css","./game-effects.css","./questions.js","./year-mode-core.js","./year-question-data.js","./year-mode.js","./practical-questions.js","./practical-year-data.js","./practical.js","./practical-year-mode.js","./mode-swipe.js","./ui-v57.js","./academic-remove-practical.js","./academic-ui-v56.js","./game-effects.js","./coach-shared.js","./coach-player.js","./coach-manager.js","./manager-organizer.js","./manager-viewer-admin.js","./viewer-manager.js","./practical-gauge.svg","./practical-drawing.svg","./practical-safety.svg","./practical-transmission.svg","./practical-pneumatic.svg","./practical-sensors.svg","./practical-orthographic.svg","./supabase-config.js","./app.js","./admin.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET")return;
   const u=new URL(e.request.url);if(u.origin!==self.location.origin)return;
   const dynamic=e.request.mode==="navigate"||/\.(?:html|js|css|webmanifest)$/.test(u.pathname);
-  if(dynamic){e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;}).catch(()=>caches.match(e.request).then(hit=>hit||caches.match("./index.html"))));}
-  else{e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;})));}
+  if(dynamic){
+    e.respondWith(fetch(e.request).then(r=>{
+      const copy=r.clone();
+      caches.open(CACHE).then(c=>c.put(e.request,copy));
+      return r;
+    }).catch(()=>caches.match(e.request).then(hit=>hit||caches.match("./index.html"))));
+  }else{
+    e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{
+      const copy=r.clone();
+      caches.open(CACHE).then(c=>c.put(e.request,copy));
+      return r;
+    })));
+  }
 });

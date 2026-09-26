@@ -1,30 +1,26 @@
-Ver 5.6 学科UI・過去問ベース・演出強化
+スキマル保全士 Ver 5.7.0 / QUEST UI
 
-アップロードする6ファイル
+今回の更新:
+- バージョン表記を Ver 5.7.0 / QUEST UI に統一
+- 入口、Player、実技、Manager、閲覧モードのデザインを統一
+- Player: ネイビー＋ゴールド、ゲーム感は要所だけ
+- 実技: 同じUI骨格＋パープル
+- Manager: 白ベース＋ネイビーの分析ダッシュボード
+- 文字はみ出し対策を強化
+- 学科ホームの「実技問題モード」カードをDOMから削除
+- PWAが新Service Workerを起動時に確認し、自動更新しやすく改善
 
-上書き:
-- mode-swipe.js
-- game-effects.js
-- game-effects.css
-- service-worker.js
+アップロード:
+【上書き】
+index.html
+admin.html
+viewer.html
+mode-swipe.js
+service-worker.js
 
-新規:
-- academic-ui-v56.js
-- academic-ui-v56.css
+【新規または上書き】
+theme-v57.css
+ui-v57.js
+academic-remove-practical.js
 
-変更内容:
-- 学科ホームの大きい「実技問題モード」カードを非表示
-- 学科ホームに「ランダム10問」を追加
-- ランダム10問は年度タグのある2019〜2025年度ベース問題を優先
-- 5科目×2問を基本にして10問構成
-- 各問題に「2024年度ベース」等の年度表示
-- 年度のない300問は「基礎問題」と表示
-- 通常問題も正解時 CORRECT! / 不正解時 MISS! の全画面演出
-- 過去誤答問題は従来より強い REVENGE BATTLE / BREAKTHROUGH! / RETRY!
-- 模擬試験は演出なし
-- 学習履歴・問題データ本体は変更なし
-
-注意:
-現在の年度別問題は公式過去問本文の転載ではなく、
-各年度の出題テーマを踏まえたオリジナル学習問題です。
-そのため画面表示も「年度ベース」としています。
+既存の学習データ、問題データ、Supabaseデータには触れません。
