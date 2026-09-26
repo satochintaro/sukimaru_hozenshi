@@ -52,6 +52,7 @@
 
       if(current==="academic"){
         loadStyle("./game-effects.css");
+        loadStyle("./no-shake.css");
         await loadScript("./game-effects.js");
       }
     }catch(error){

@@ -10,7 +10,7 @@
 
   function removeFx(){
     document.querySelectorAll(".battle-fx-root,.game-retry-badge").forEach(e=>e.remove());
-    document.body.classList.remove("battle-screen-shake","battle-hitstop","battle-fail-shake");
+    document.body.classList.remove("battle-hitstop","battle-screen-shake","battle-fail-shake");
     document.querySelector(".q-card")?.classList.remove("game-retry-card","battle-card-in");
     document.getElementById("q-warn")?.classList.remove("game-revenge-warn");
   }
@@ -52,8 +52,6 @@
         <span>過去 ${wrongs}回ミス　ここで克服しよう</span>
       </div>`;
     requestAnimationFrame(()=>root.classList.add("go"));
-    document.body.classList.add("battle-screen-shake");
-    setTimeout(()=>document.body.classList.remove("battle-screen-shake"),520);
     setTimeout(()=>root.remove(),1150);
   }
 
@@ -69,8 +67,6 @@
       <div class="battle-result-copy"><b>不正解</b></div>`;
     addBurst(root,ok?18:12,ok?"green":"red");
     requestAnimationFrame(()=>root.classList.add("go"));
-    document.body.classList.add(ok?"battle-screen-shake":"battle-fail-shake");
-    setTimeout(()=>document.body.classList.remove("battle-screen-shake","battle-fail-shake"),ok?480:600);
     setTimeout(()=>root.remove(),ok?1050:1150);
   }
 
@@ -93,8 +89,6 @@
     addBurst(root,28,"gold");
     addBurst(root,14,"white");
     requestAnimationFrame(()=>root.classList.add("go"));
-    document.body.classList.add("battle-screen-shake");
-    setTimeout(()=>document.body.classList.remove("battle-screen-shake"),620);
     setTimeout(()=>root.remove(),1850);
   }
 
@@ -113,8 +107,6 @@
       </div>`;
     addBurst(root,18,"red");
     requestAnimationFrame(()=>root.classList.add("go"));
-    document.body.classList.add("battle-fail-shake");
-    setTimeout(()=>document.body.classList.remove("battle-fail-shake"),720);
     setTimeout(()=>root.remove(),1550);
   }
 

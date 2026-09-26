@@ -1,0 +1,12 @@
+
+/* Screen movement disabled. Visual effects remain, but the page never shakes or scales. */
+body.battle-screen-shake #sc-quiz,
+body.battle-fail-shake #sc-quiz{
+  animation:none!important;
+  transform:none!important;
+}
+body.battle-hitstop #sc-quiz{
+  animation:none!important;
+  transform:none!important;
+  filter:contrast(1.08) brightness(1.03)!important;
+}
