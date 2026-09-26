@@ -1,13 +1,13 @@
-const CACHE="skimaru-v5-9-3-layout-r19";
+const CACHE="skimaru-v5-9-4-balance-r20";
 
 const CORE=[
   "./","./index.html","./player.html","./practical.html",
   "./styles.css","./theme-v58.css","./app-polish.css","./coach.css",
-  "./academic-ui-v56.css","./quiz-static.css","./layout-safety.css",
+  "./academic-ui-v56.css","./quiz-static.css","./quiz-balance-v594.css",
   "./questions.js","./app.js","./supabase-config.js",
   "./mode-swipe.js","./ui-v58.js",
   "./year-mode-core.js","./year-question-data.js","./year-mode.js",
-  "./academic-remove-practical.js","./academic-ui-v56.js","./quiz-static.js","./game-effects.js","./layout-safety.js",
+  "./academic-remove-practical.js","./academic-ui-v56.js","./quiz-static.js","./quiz-balance-v594.js",
   "./coach-shared.js","./coach-player.js","./coach-sync.js",
   "./practical-questions.js","./practical.js",
   "./practical-year-data.js","./practical-year-data-v58.js",
