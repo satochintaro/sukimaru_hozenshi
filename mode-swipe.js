@@ -18,7 +18,7 @@
     const l=document.createElement("link");l.rel="stylesheet";l.href=src;document.head.appendChild(l);
   }
   function updateVersionDisplay(){
-    document.title=document.title.replace(/5\.[23]\.0/g,"5.4.0");
+    document.title=document.title.replace(/5\.[234]\.0/g,"5.4.0");
     if(current==="academic"){
       const practicalInfo=document.querySelector(".practical-entry-body em");if(practicalInfo)practicalInfo.textContent="60課題からランダム10課題を出題";
       const status=document.querySelector("#sc-set .sts span:last-child");if(status)status.innerHTML='Ver 5.4 ／ 全 <span id="st-qn">1000</span> 問';
@@ -40,6 +40,10 @@
       }
       await loadScript("./coach-shared.js");
       await loadScript("./coach-player.js");
+      if(current==="academic"){
+        loadStyle("./game-effects.css");
+        await loadScript("./game-effects.js");
+      }
     }catch(error){console.error("Ver 5.4.0 拡張読込エラー",error);}
   }
   updateVersionDisplay();loadEnhancements();

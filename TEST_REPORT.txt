@@ -1,0 +1,14 @@
+TEST REPORT
+- manager-organizer.js syntax: OK
+- game-effects.js syntax: OK
+- mode-swipe.js syntax: OK
+- service-worker.js syntax: OK
+- Manager 2階層タブ静的確認: OK
+- 全体/個人 AI教育・苦手分野分離: OK
+- 誤答履歴判定 U.stats[q.id].w: OK
+- 模擬試験除外 S.isMock: OK
+- 誤答アラートOFF尊重: OK
+- Service Worker cache bump r4: OK
+
+注記:
+GitHub Pages反映後に実機表示を最終確認してください。
