@@ -1,7 +1,7 @@
 "use strict";
 (() => {
-  const VERSION="5.9.0";
-  const RELOAD_KEY="skimaru-pwa-reload-590";
+  const VERSION="5.9.1";
+  const RELOAD_KEY="skimaru-pwa-reload-591";
   const SOUND_KEY="skimaru-sound-enabled";
 
   document.body.classList.add("v58");
@@ -106,7 +106,7 @@
     e.preventDefault();
     Sound.nav();
     document.body.classList.add("page-transitioning");
-    setTimeout(()=>{location.href=url.href;},150);
+    requestAnimationFrame(()=>{ location.href=url.href; });
   });
 
   const mode=document.body.dataset.learningMode;
@@ -157,17 +157,24 @@
       }
     });
 
-    window.addEventListener("load",async()=>{
-      try{
-        const reg=await navigator.serviceWorker.register("./service-worker.js?v=590",{updateViaCache:"none"});
-        await reg.update();
-        if(reg.waiting)reg.waiting.postMessage({type:"SKIP_WAITING"});
-        document.addEventListener("visibilitychange",()=>{
-          if(document.visibilityState==="visible")reg.update().catch(()=>{});
-        });
-      }catch(e){
-        console.warn("PWA update check failed",e);
-      }
+    window.addEventListener("load",()=>{
+      const run=async()=>{
+        try{
+          const reg=await navigator.serviceWorker.register("./service-worker.js?v=591",{updateViaCache:"none"});
+          if(reg.waiting)reg.waiting.postMessage({type:"SKIP_WAITING"});
+          reg.update().catch(()=>{});
+          document.addEventListener("visibilitychange",()=>{
+            if(document.visibilityState==="visible"){
+              const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,500));
+              idle(()=>reg.update().catch(()=>{}),{timeout:1500});
+            }
+          });
+        }catch(e){
+          console.warn("PWA update check failed",e);
+        }
+      };
+      const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,900));
+      idle(run,{timeout:1800});
     });
   }
 })();
