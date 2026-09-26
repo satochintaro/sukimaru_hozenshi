@@ -4,7 +4,7 @@
   if(typeof renderQ!=="function"||typeof judge!=="function")return;
 
   let retryState=null;
-  let revengeCombo=0;
+  let clearCombo=0;
   const baseRenderQ=renderQ;
   const baseJudge=judge;
 
@@ -39,7 +39,7 @@
     setTimeout(()=>document.body.classList.remove("battle-hitstop"),ms);
   }
 
-  function introFx(wrongs){
+  function retryIntro(wrongs){
     const root=fxRoot("battle-intro");
     root.innerHTML=`
       <div class="battle-vignette"></div>
@@ -47,9 +47,9 @@
       <div class="battle-slash slash-a"></div>
       <div class="battle-slash slash-b"></div>
       <div class="battle-intro-copy">
-        <small>PAST MISTAKE DETECTED</small>
-        <b>REVENGE BATTLE</b>
-        <span>過去 ${wrongs}回ミス　ここで取り返せ</span>
+        <small>過去に間違えた問題</small>
+        <b>再挑戦</b>
+        <span>過去 ${wrongs}回ミス　ここで克服しよう</span>
       </div>`;
     requestAnimationFrame(()=>root.classList.add("go"));
     document.body.classList.add("battle-screen-shake");
@@ -63,18 +63,10 @@
     root.innerHTML=ok?`
       <div class="battle-standard-flash"></div>
       <div class="battle-shockwave standard-wave"></div>
-      <div class="battle-result-copy">
-        <small>ANSWER</small>
-        <b>CORRECT!</b>
-        <span>正解</span>
-      </div>`:`
+      <div class="battle-result-copy"><b>正解！</b></div>`:`
       <div class="battle-standard-red"></div>
       <div class="battle-slash standard-fail"></div>
-      <div class="battle-result-copy">
-        <small>ANSWER</small>
-        <b>MISS!</b>
-        <span>不正解</span>
-      </div>`;
+      <div class="battle-result-copy"><b>不正解</b></div>`;
     addBurst(root,ok?18:12,ok?"green":"red");
     requestAnimationFrame(()=>root.classList.add("go"));
     document.body.classList.add(ok?"battle-screen-shake":"battle-fail-shake");
@@ -82,11 +74,11 @@
     setTimeout(()=>root.remove(),ok?1050:1150);
   }
 
-  function successFx(wrongs){
-    revengeCombo++;
+  function retryClearFx(wrongs){
+    clearCombo++;
     hitStop(120);
     const root=fxRoot("battle-finish success");
-    const combo=revengeCombo>1?`<div class="battle-combo"><b>${revengeCombo}</b><span>REVENGE COMBO</span></div>`:"";
+    const combo=clearCombo>1?`<div class="battle-combo"><b>${clearCombo}</b><span>連続克服</span></div>`:"";
     root.innerHTML=`
       <div class="battle-white-flash"></div>
       <div class="battle-cross-flare"></div>
@@ -94,19 +86,20 @@
       <div class="battle-shockwave wave-b"></div>
       <div class="battle-speed-lines finish-lines"></div>
       <div class="battle-finish-copy">
-        <small>PAST MISTAKE</small>
-        <b>BREAKTHROUGH!</b>
-        <span>${wrongs}回のミスを突破</span>
+        <small>過去に間違えた問題</small>
+        <b>克服！</b>
+        <span>${wrongs}回のミスを乗り越えました</span>
       </div>${combo}`;
-    addBurst(root,28,"gold");addBurst(root,14,"white");
+    addBurst(root,28,"gold");
+    addBurst(root,14,"white");
     requestAnimationFrame(()=>root.classList.add("go"));
     document.body.classList.add("battle-screen-shake");
     setTimeout(()=>document.body.classList.remove("battle-screen-shake"),620);
     setTimeout(()=>root.remove(),1850);
   }
 
-  function failFx(){
-    revengeCombo=0;
+  function retryMissFx(){
+    clearCombo=0;
     hitStop(120);
     const root=fxRoot("battle-finish fail");
     root.innerHTML=`
@@ -115,9 +108,8 @@
       <div class="battle-slash fail-b"></div>
       <div class="battle-speed-lines fail-lines"></div>
       <div class="battle-finish-copy">
-        <small>NOT YET</small>
-        <b>RETRY!</b>
-        <span>まだ終わらない　次で決めろ</span>
+        <b>もう一度</b>
+        <span>復習して次に克服しよう</span>
       </div>`;
     addBurst(root,18,"red");
     requestAnimationFrame(()=>root.classList.add("go"));
@@ -134,19 +126,23 @@
       const q=S.q,stat=U.stats?.[q?.id],wrongs=Number(stat?.w)||0;
       if(!q||!wrongs||S.isMock||U.showWarn===false)return out;
       retryState={id:q.id,wrongs};
-      const card=document.querySelector(".q-card"),warn=document.getElementById("q-warn");
-      introFx(wrongs);
+
+      const card=document.querySelector(".q-card");
+      const warn=document.getElementById("q-warn");
+      retryIntro(wrongs);
+
       if(card){
         card.classList.add("game-retry-card","battle-card-in");
         const badge=document.createElement("div");
         badge.className="game-retry-badge battle";
-        badge.innerHTML=`<span class="battle-flame">🔥</span><div><b>REVENGE BATTLE</b><small>MISTAKE × ${wrongs}</small></div>`;
+        badge.innerHTML=`<span class="battle-flame">🔥</span><div><b>再挑戦</b><small>過去 ${wrongs}回ミス</small></div>`;
         card.prepend(badge);
         requestAnimationFrame(()=>badge.classList.add("show"));
         setTimeout(()=>card.classList.remove("battle-card-in"),900);
       }
+
       if(warn){
-        warn.textContent="🔥 REVENGE BATTLE ── 過去に落とした問題。ここで決めろ";
+        warn.textContent="🔥 過去に間違えた問題です。ここで克服しよう";
         warn.classList.add("show","game-revenge-warn");
       }
     }catch(e){}
@@ -158,11 +154,8 @@
     const out=baseJudge.apply(this,arguments);
     if(S.isMock)return out;
     setTimeout(()=>{
-      if(state){
-        ok?successFx(state.wrongs):failFx();
-      }else{
-        standardResultFx(!!ok);
-      }
+      if(state) ok?retryClearFx(state.wrongs):retryMissFx();
+      else standardResultFx(!!ok);
     },60);
     return out;
   };
