@@ -52,8 +52,8 @@
 
       if(current==="academic"){
         loadStyle("./game-effects.css");
-        loadStyle("./no-shake.css");
-        await loadScript("./game-effects.js");
+        loadStyle("./answer-animation-off.css?v=14");
+        await loadScript("./game-effects.js?v=14");
       }
     }catch(error){
       console.error("Ver 5.8.3 拡張読込エラー",error);

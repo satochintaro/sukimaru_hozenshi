@@ -1,0 +1,51 @@
+
+/* Ver 5.8.x 回答後アニメーション完全停止 */
+.battle-fx-root,
+.game-result-pop,
+.game-spark{
+  display:none!important;
+}
+
+body.battle-screen-shake #sc-quiz,
+body.battle-fail-shake #sc-quiz,
+body.battle-hitstop #sc-quiz{
+  animation:none!important;
+  transform:none!important;
+  filter:none!important;
+}
+
+.game-retry-badge.simple-retry{
+  position:relative!important;
+  inset:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin:0 0 10px!important;
+  padding:6px 9px!important;
+  border:1px solid #e2b85b!important;
+  border-radius:10px!important;
+  background:#fff7e5!important;
+  color:#69440b!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  transform:none!important;
+  animation:none!important;
+}
+.game-retry-badge.simple-retry span{font-size:16px!important}
+.game-retry-badge.simple-retry b{
+  display:block!important;
+  font-size:10px!important;
+  line-height:1.1!important;
+}
+.game-retry-badge.simple-retry small{
+  display:block!important;
+  margin-top:2px!important;
+  font-size:8px!important;
+  opacity:.75!important;
+}
+.game-revenge-warn{
+  animation:none!important;
+  transform:none!important;
+}
