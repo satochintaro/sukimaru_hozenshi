@@ -6,8 +6,6 @@
   const loaded=new Set();
   const preloaded=new Set();
 
-  // mode-swipe.jsが実行された瞬間から未完成画面を覆う。
-  // リングは120msを超えた時だけ出す。
   const bootStyle=document.createElement("style");
   bootStyle.id="skimaru-boot-style";
   bootStyle.textContent=`
@@ -16,7 +14,7 @@
       background:rgba(247,249,250,.90);
       -webkit-backdrop-filter:blur(8px) saturate(.90);
       backdrop-filter:blur(8px) saturate(.90);
-      pointer-events:all
+      pointer-events:none!important
     }
     body.skimaru-booting::after{
       content:"";position:fixed;left:50%;top:50%;z-index:999991;
@@ -24,9 +22,8 @@
       background:conic-gradient(from 10deg,#258a61 0 30%,#e8ad20 30% 48%,rgba(37,138,97,.12) 48% 100%);
       -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
       mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
-      opacity:0;
-      animation:skimaruBootSpin .68s linear infinite;
-      pointer-events:none
+      opacity:0;animation:skimaruBootSpin .68s linear infinite;
+      pointer-events:none!important
     }
     body.skimaru-booting.skimaru-show-spinner::after{opacity:1}
     @keyframes skimaruBootSpin{to{transform:rotate(360deg)}}`;
@@ -37,7 +34,7 @@
     document.body.classList.add("skimaru-show-spinner");
   },120);
 
-  const safetyTimer=setTimeout(finishBoot,5000);
+  const safetyTimer=setTimeout(finishBoot,2500);
 
   function finishBoot(){
     clearTimeout(spinnerTimer);
@@ -47,7 +44,7 @@
   }
 
   function preload(src,as){
-    if(preloaded.has(src))return;
+    if(!src||preloaded.has(src))return;
     preloaded.add(src);
     const link=document.createElement("link");
     link.rel="preload";
@@ -58,7 +55,7 @@
 
   function preloadAll(){
     const commonScripts=[
-      "./ui-v58.js?v=594",
+      "./ui-v58.js?v=595",
       "./year-mode-core.js",
       "./coach-shared.js",
       "./coach-player.js"
@@ -69,27 +66,29 @@
       "./year-question-data.js",
       "./year-mode.js",
       "./academic-ui-v56.js",
-      "./quiz-static.js?v=594",
-      "./quiz-balance-v594.js?v=594"
+      "./quiz-static.js?v=595",
+      "./quiz-balance-v594.js?v=595",
+      "./coach-sync.js?v=595"
     ];
 
     const practicalScripts=[
       "./practical-year-data.js",
       "./practical-year-data-v58.js",
       "./practical-year-mode.js",
-      "./practical-v58.js"
+      "./practical-v58.js",
+      "./coach-sync.js?v=595"
     ];
 
     const commonStyles=[
       "./theme-v58.css",
       "./coach.css",
-      "./app-polish.css?v=594"
+      "./app-polish.css?v=595"
     ];
 
     const academicStyles=[
       "./academic-ui-v56.css",
-      "./quiz-static.css?v=594",
-      "./quiz-balance-v594.css?v=594"
+      "./quiz-static.css?v=595",
+      "./quiz-balance-v594.css?v=595"
     ];
 
     [...commonScripts,...(current==="academic"?academicScripts:practicalScripts)]
@@ -100,7 +99,9 @@
   }
 
   function loadScript(src){
+    if(!src)return Promise.resolve();
     if(loaded.has(src)||document.querySelector(`script[src="${src}"]`))return Promise.resolve();
+
     return new Promise((resolve,reject)=>{
       const s=document.createElement("script");
       s.src=src;
@@ -112,14 +113,16 @@
   }
 
   function loadStyle(src){
+    if(!src)return Promise.resolve();
     const existing=document.querySelector(`link[rel="stylesheet"][href="${src}"]`);
     if(existing){
       if(existing.sheet)return Promise.resolve();
       return new Promise(resolve=>{
         existing.addEventListener("load",resolve,{once:true});
-        setTimeout(resolve,400);
+        setTimeout(resolve,350);
       });
     }
+
     return new Promise(resolve=>{
       const l=document.createElement("link");
       l.rel="stylesheet";
@@ -131,19 +134,16 @@
   }
 
   function updateVersion(){
-    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.4").replace(/TEST/gi,"");
-    if(current==="academic"){
-      const qn=document.getElementById("st-qn");
-      if(qn)qn.textContent="1000";
-    }
+    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.5").replace(/TEST/gi,"");
+    const qn=document.getElementById("st-qn");
+    if(current==="academic"&&qn)qn.textContent="1000";
   }
 
   async function loadAcademic(){
-    // 通信自体はpreloadで並列化。実行順が必要なものだけ順番を守る。
     await loadScript("./year-mode-core.js");
 
     await Promise.all([
-      loadScript("./ui-v58.js?v=594"),
+      loadScript("./ui-v58.js?v=595"),
       loadScript("./academic-remove-practical.js"),
       loadScript("./year-question-data.js"),
       loadScript("./coach-shared.js")
@@ -151,22 +151,19 @@
 
     await loadScript("./year-mode.js");
     await loadScript("./academic-ui-v56.js");
-    await loadScript("./quiz-static.js?v=594",
-      "./quiz-balance-v594.js?v=594");
+    await loadScript("./quiz-static.js?v=595");
     await loadScript("./coach-player.js");
-    await loadScript("./coach-sync.js?v=594");
-    await loadScript("./quiz-balance-v594.js?v=594");
-    await loadScript();
-    await loadScript();
+    await loadScript("./coach-sync.js?v=595");
+    await loadScript("./quiz-balance-v594.js?v=595");
 
-    if(typeof APP!=="undefined"&&APP)APP.version="5.9.4";
+    if(typeof APP!=="undefined"&&APP)APP.version="5.9.5";
   }
 
   async function loadPractical(){
     await loadScript("./year-mode-core.js");
 
     await Promise.all([
-      loadScript("./ui-v58.js?v=594"),
+      loadScript("./ui-v58.js?v=595"),
       loadScript("./practical-year-data.js"),
       loadScript("./practical-year-data-v58.js"),
       loadScript("./coach-shared.js")
@@ -175,25 +172,29 @@
     await loadScript("./practical-year-mode.js");
     await loadScript("./practical-v58.js");
     await loadScript("./coach-player.js");
-    await loadScript("./coach-sync.js?v=594");
+    await loadScript("./coach-sync.js?v=595");
   }
 
   async function boot(){
     try{
       preloadAll();
 
-      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=594"];
+      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=595","./input-safety-v595.css?v=595"];
       if(current==="academic"){
-        styles.push("./academic-ui-v56.css","./quiz-static.css?v=594",
-      "./quiz-balance-v594.css?v=594");
+        styles.push(
+          "./academic-ui-v56.css",
+          "./quiz-static.css?v=595",
+          "./quiz-balance-v594.css?v=595"
+        );
       }
+
       await Promise.all(styles.map(loadStyle));
 
       if(current==="academic")await loadAcademic();
       else await loadPractical();
 
-      // DOM追加・CSS反映が完了したフレームまで待ち、完成形だけ見せる。
-      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      await loadScript("./input-safety-v595.js?v=595");
+      await new Promise(resolve=>requestAnimationFrame(resolve));
     }catch(error){
       console.error("初期化エラー",error);
     }finally{

@@ -1,24 +1,21 @@
-スキマル保全士 Ver 5.9.4 問題画面バランス修正
+Ver 5.9.5 タップ不能 緊急修正
 
-変更:
-- 問題エリアの flex:1 を廃止
-- 短文/長文/再挑戦でカード高さが極端に変わらないよう統一
-- 問題カード 基本205〜240px
-- 長文のみカード内スクロール
-- 自信選択・○×エリアを一定の高さに整理
-- 回答後は○×エリアを消して、正答・解説・次への元レイアウト
-- 解説カードも高さと余白を統一
-- game-effects.js を問題画面で読み込まない
-- 再挑戦は上部の警告バーだけ
-- 古い再挑戦バッジ/演出は強制削除
-- 画面揺れ・自動スクロールなし
+原因:
+- 5.9.4 mode-swipe.js の loadScript 呼び出しが壊れていた
+- 起動オーバーレイが pointer-events:all でタップを遮断する可能性があった
+
+修正:
+- mode-swipe.js を正常な読込順に再構築
+- loadScript(undefined) を完全排除
+- 起動/画面遷移オーバーレイは pointer-events:none
+- page-transitioning / booting が残っても800msで自動解除
+- 問題画面の表示中ボタンは常にタップ可能
+- Service Worker cacheをr21へ更新
 
 アップロード:
-quiz-balance-v594.css
-quiz-balance-v594.js
-quiz-static.js
-quiz-static.css
 mode-swipe.js
+input-safety-v595.css
+input-safety-v595.js
 ui-v58.js
 service-worker.js
 index.html（同梱時）
