@@ -4,18 +4,51 @@
   if(current!=="academic"&&current!=="practical")return;
   const loaded=new Set();
 
+  // 初期化途中の「古いUI→新しいUI→カード追加」を利用者に見せない。
+  const bootStyle=document.createElement("style");
+  bootStyle.id="skimaru-boot-style";
+  bootStyle.textContent=`
+    body.skimaru-booting{min-height:100dvh;background:#f5f7f8!important}
+    body.skimaru-booting>section,
+    body.skimaru-booting>.toast,
+    body.skimaru-booting>.player-detail{visibility:hidden!important}
+    body.skimaru-booting::before{
+      content:"スキマル保全士";
+      position:fixed;inset:0;z-index:999999;
+      display:flex;align-items:center;justify-content:center;
+      background:#f5f7f8;color:#172431;
+      font:800 24px/1.2 -apple-system,BlinkMacSystemFont,"Helvetica Neue","Noto Sans JP",sans-serif;
+      letter-spacing:-.03em
+    }`;
+  document.head.appendChild(bootStyle);
+  document.body.classList.add("skimaru-booting");
+
   function loadScript(src){
     if(loaded.has(src)||document.querySelector(`script[src="${src}"]`))return Promise.resolve();
     return new Promise((resolve,reject)=>{
-      const s=document.createElement("script");s.src=src;s.async=false;
+      const s=document.createElement("script");
+      s.src=src;s.async=false;
       s.onload=()=>{loaded.add(src);resolve();};
       s.onerror=()=>reject(new Error(`load failed: ${src}`));
       document.body.appendChild(s);
     });
   }
+
   function loadStyle(src){
-    if(document.querySelector(`link[href="${src}"]`))return;
-    const l=document.createElement("link");l.rel="stylesheet";l.href=src;document.head.appendChild(l);
+    const existing=document.querySelector(`link[href="${src}"]`);
+    if(existing){
+      if(existing.sheet)return Promise.resolve();
+      return new Promise(resolve=>{
+        existing.addEventListener("load",resolve,{once:true});
+        setTimeout(resolve,1200);
+      });
+    }
+    return new Promise(resolve=>{
+      const l=document.createElement("link");
+      l.rel="stylesheet";l.href=src;
+      l.onload=resolve;l.onerror=resolve;
+      document.head.appendChild(l);
+    });
   }
 
   function updateVersion(){
@@ -28,8 +61,16 @@
 
   async function loadEnhancements(){
     try{
-      loadStyle("./theme-v58.css");
-      loadStyle("./coach.css");
+      // まず見た目を全部読み切る。
+      const commonStyles=[
+        "./theme-v58.css",
+        "./coach.css"
+      ];
+      if(current==="academic"){
+        commonStyles.push("./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15");
+      }
+      await Promise.all(commonStyles.map(loadStyle));
+
       await loadScript("./ui-v58.js");
       await loadScript("./year-mode-core.js");
 
@@ -37,26 +78,31 @@
         await loadScript("./academic-remove-practical.js");
         await loadScript("./year-question-data.js");
         await loadScript("./year-mode.js");
-        loadStyle("./academic-ui-v56.css");
         await loadScript("./academic-ui-v56.js");
+
+        // 元の判定UIを静的表示に変更してから、誤答表示だけを追加。
+        await loadScript("./quiz-static.js?v=15");
+        await loadScript("./coach-shared.js");
+        await loadScript("./coach-player.js");
+        await loadScript("./game-effects.js?v=14");
+
         if(typeof APP!=="undefined"&&APP)APP.version="5.8.3";
       }else{
         await loadScript("./practical-year-data.js");
         await loadScript("./practical-year-data-v58.js");
         await loadScript("./practical-year-mode.js");
         await loadScript("./practical-v58.js");
+        await loadScript("./coach-shared.js");
+        await loadScript("./coach-player.js");
       }
 
-      await loadScript("./coach-shared.js");
-      await loadScript("./coach-player.js");
-
-      if(current==="academic"){
-        loadStyle("./game-effects.css");
-        loadStyle("./answer-animation-off.css?v=14");
-        await loadScript("./game-effects.js?v=14");
-      }
+      // DOM挿入とCSS適用を2フレーム待ってから、完成画面を一度だけ表示。
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     }catch(error){
-      console.error("Ver 5.8.3 拡張読込エラー",error);
+      console.error("画面初期化エラー",error);
+    }finally{
+      document.body.classList.remove("skimaru-booting");
+      document.getElementById("skimaru-boot-style")?.remove();
     }
   }
 

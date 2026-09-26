@@ -1,0 +1,65 @@
+
+/* 回答時の画面移動・フラッシュ・縮尺変化を完全停止 */
+#sc-quiz,
+#sc-quiz *,
+#sc-quiz *::before,
+#sc-quiz *::after{
+  scroll-behavior:auto!important;
+}
+
+#sc-quiz .btn-ox,
+#sc-quiz .chip,
+#sc-quiz .stamp,
+#sc-quiz .jd,
+#sc-quiz .jd-s,
+#sc-quiz .ans{
+  transition:none!important;
+}
+
+#sc-quiz .btn-ox:active,
+#sc-quiz .chip:active{
+  transform:none!important;
+}
+
+#sc-quiz .stamp{
+  display:none!important;
+  animation:none!important;
+}
+
+/* 自信を選んだ時も案内欄の高さを維持 */
+#sc-quiz #conf-h.hide{
+  display:block!important;
+  visibility:hidden!important;
+}
+
+/* 回答後も○×エリアを残し、ページ高の急変を防ぐ */
+#sc-quiz #ans.answer-locked{
+  display:block!important;
+  pointer-events:none!important;
+  opacity:.48!important;
+}
+
+#sc-quiz #ans.answer-locked .btn-ox,
+#sc-quiz #ans.answer-locked .chip{
+  transform:none!important;
+  animation:none!important;
+}
+
+#sc-quiz #jd.show{
+  display:flex!important;
+  animation:none!important;
+}
+
+/* 旧追加演出がキャッシュから残っても描画させない */
+.battle-fx-root,
+.game-result-pop,
+.game-spark{
+  display:none!important;
+}
+body.battle-screen-shake #sc-quiz,
+body.battle-fail-shake #sc-quiz,
+body.battle-hitstop #sc-quiz{
+  animation:none!important;
+  transform:none!important;
+  filter:none!important;
+}

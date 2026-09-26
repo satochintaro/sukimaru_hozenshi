@@ -1,7 +1,7 @@
 "use strict";
 (() => {
   const VERSION="5.8.3";
-  const RELOAD_KEY="skimaru-pwa-reload-583";
+  const RELOAD_KEY="skimaru-pwa-reload-584";
 
   document.body.classList.add("v58");
 
@@ -63,7 +63,7 @@
 
     window.addEventListener("load",async()=>{
       try{
-        const reg=await navigator.serviceWorker.register("./service-worker.js?v=583",{
+        const reg=await navigator.serviceWorker.register("./service-worker.js?v=584",{
           updateViaCache:"none"
         });
         await reg.update();
