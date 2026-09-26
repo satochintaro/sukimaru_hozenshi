@@ -1,0 +1,75 @@
+
+/* Ver 5.9.0 interaction polish */
+
+/* In-place loading overlay. Underlying screen stays visible and simply softens. */
+body.skimaru-booting::before,
+body.page-transitioning::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:999990;
+  background:rgba(247,249,250,.60);
+  -webkit-backdrop-filter:blur(7px) saturate(.92);
+  backdrop-filter:blur(7px) saturate(.92);
+  animation:skimaruOverlayIn .16s ease-out both;
+  pointer-events:all;
+}
+body.skimaru-booting::after,
+body.page-transitioning::after{
+  content:"";
+  position:fixed;
+  z-index:999991;
+  left:50%;
+  top:50%;
+  width:38px;
+  height:38px;
+  margin:-19px 0 0 -19px;
+  border-radius:50%;
+  background:conic-gradient(from 10deg,#258a61 0 28%,#e8ad20 28% 47%,rgba(37,138,97,.13) 47% 100%);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
+  filter:drop-shadow(0 5px 14px rgba(21,35,49,.13));
+  animation:skimaruSpinner .72s linear infinite;
+  pointer-events:none;
+}
+body.skimaru-booting>section,
+body.skimaru-booting>.toast,
+body.skimaru-booting>.player-detail{
+  visibility:visible!important;
+}
+body.page-transitioning{
+  pointer-events:none!important;
+}
+
+/* subtle tap feedback; no screen movement */
+button:active,
+a.clean-mode-card:active,
+.learning-mode-switch a:active,
+.pn:active,
+.mi:active,
+.pt-category:active{
+  filter:brightness(.97);
+}
+#sc-quiz .btn-ox:active,
+#sc-quiz .chip:active{
+  transform:none!important;
+}
+
+.sound-setting-row .row-i{
+  font-size:18px;
+}
+.sound-setting-row .row-d{
+  line-height:1.35;
+}
+
+@keyframes skimaruSpinner{
+  to{transform:rotate(360deg)}
+}
+@keyframes skimaruOverlayIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+  body.skimaru-booting::after,
+  body.page-transitioning::after{animation-duration:1.4s}
+}

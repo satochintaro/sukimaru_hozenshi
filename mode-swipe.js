@@ -4,24 +4,32 @@
   if(current!=="academic"&&current!=="practical")return;
   const loaded=new Set();
 
-  // 初期化途中の「古いUI→新しいUI→カード追加」を利用者に見せない。
+  // Keep the current screen visible; put a glass loading ring over it.
   const bootStyle=document.createElement("style");
   bootStyle.id="skimaru-boot-style";
   bootStyle.textContent=`
-    body.skimaru-booting{min-height:100dvh;background:#f5f7f8!important}
-    body.skimaru-booting>section,
-    body.skimaru-booting>.toast,
-    body.skimaru-booting>.player-detail{visibility:hidden!important}
     body.skimaru-booting::before{
-      content:"スキマル保全士";
-      position:fixed;inset:0;z-index:999999;
-      display:flex;align-items:center;justify-content:center;
-      background:#f5f7f8;color:#172431;
-      font:800 24px/1.2 -apple-system,BlinkMacSystemFont,"Helvetica Neue","Noto Sans JP",sans-serif;
-      letter-spacing:-.03em
-    }`;
+      content:"";position:fixed;inset:0;z-index:999990;
+      background:rgba(247,249,250,.60);
+      -webkit-backdrop-filter:blur(7px) saturate(.92);
+      backdrop-filter:blur(7px) saturate(.92);
+    }
+    body.skimaru-booting::after{
+      content:"";position:fixed;left:50%;top:50%;z-index:999991;
+      width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;
+      background:conic-gradient(from 10deg,#258a61 0 28%,#e8ad20 28% 47%,rgba(37,138,97,.13) 47% 100%);
+      -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
+      mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
+      animation:skimaruBootSpin .72s linear infinite;
+    }
+    @keyframes skimaruBootSpin{to{transform:rotate(360deg)}}`;
   document.head.appendChild(bootStyle);
   document.body.classList.add("skimaru-booting");
+
+  const safetyTimer=setTimeout(()=>{
+    document.body.classList.remove("skimaru-booting");
+    document.getElementById("skimaru-boot-style")?.remove();
+  },7000);
 
   function loadScript(src){
     if(loaded.has(src)||document.querySelector(`script[src="${src}"]`))return Promise.resolve();
@@ -33,7 +41,6 @@
       document.body.appendChild(s);
     });
   }
-
   function loadStyle(src){
     const existing=document.querySelector(`link[href="${src}"]`);
     if(existing){
@@ -52,26 +59,22 @@
   }
 
   function updateVersion(){
-    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.8.3").replace(/TEST/gi,"");
+    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.0").replace(/TEST/gi,"");
     if(current==="academic"){
       const st=document.querySelector("#sc-set .sts span:last-child");
-      if(st)st.innerHTML='Ver 5.8.3 ／ 全 <span id="st-qn">1000</span> 問';
+      if(st)st.innerHTML='Ver 5.9.0 ／ 全 <span id="st-qn">1000</span> 問';
     }
   }
 
   async function loadEnhancements(){
     try{
-      // まず見た目を全部読み切る。
-      const commonStyles=[
-        "./theme-v58.css",
-        "./coach.css"
-      ];
+      const commonStyles=["./theme-v58.css","./coach.css","./app-polish.css?v=590"];
       if(current==="academic"){
         commonStyles.push("./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15");
       }
       await Promise.all(commonStyles.map(loadStyle));
 
-      await loadScript("./ui-v58.js");
+      await loadScript("./ui-v58.js?v=590");
       await loadScript("./year-mode-core.js");
 
       if(current==="academic"){
@@ -79,14 +82,11 @@
         await loadScript("./year-question-data.js");
         await loadScript("./year-mode.js");
         await loadScript("./academic-ui-v56.js");
-
-        // 元の判定UIを静的表示に変更してから、誤答表示だけを追加。
-        await loadScript("./quiz-static.js?v=15");
+        await loadScript("./quiz-static.js?v=590");
         await loadScript("./coach-shared.js");
         await loadScript("./coach-player.js");
         await loadScript("./game-effects.js?v=14");
-
-        if(typeof APP!=="undefined"&&APP)APP.version="5.8.3";
+        if(typeof APP!=="undefined"&&APP)APP.version="5.9.0";
       }else{
         await loadScript("./practical-year-data.js");
         await loadScript("./practical-year-data-v58.js");
@@ -96,11 +96,11 @@
         await loadScript("./coach-player.js");
       }
 
-      // DOM挿入とCSS適用を2フレーム待ってから、完成画面を一度だけ表示。
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     }catch(error){
       console.error("画面初期化エラー",error);
     }finally{
+      clearTimeout(safetyTimer);
       document.body.classList.remove("skimaru-booting");
       document.getElementById("skimaru-boot-style")?.remove();
     }

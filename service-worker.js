@@ -1,49 +1,19 @@
-const CACHE="skimaru-v5-8-stable-ui-r15";
-const ASSETS=["./","./index.html","./player.html","./practical.html","./admin.html","./viewer.html","./styles.css","./theme-v58.css","./coach.css","./viewer-manager.css","./manager-ui-v55.css","./academic-ui-v56.css","./game-effects.css","./answer-animation-off.css","./quiz-static.css","./questions.js","./year-mode-core.js","./year-question-data.js","./year-mode.js","./practical-questions.js","./practical-year-data.js","./practical-year-data-v58.js","./practical-v58.js","./practical.js","./practical-year-mode.js","./mode-swipe.js","./ui-v58.js","./academic-remove-practical.js","./academic-ui-v56.js","./game-effects.js","./quiz-static.js","./coach-shared.js","./coach-player.js","./coach-manager.js","./manager-organizer.js","./manager-viewer-admin.js","./viewer-manager.js","./practical-gauge.svg","./practical-drawing.svg","./practical-safety.svg","./practical-transmission.svg","./practical-pneumatic.svg","./practical-sensors.svg","./practical-orthographic.svg","./supabase-config.js","./app.js","./admin.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png"];
-
-self.addEventListener("install",e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
-  self.skipWaiting();
-});
-
-self.addEventListener("activate",e=>{
-  e.waitUntil(
-    caches.keys()
-      .then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
-      .then(()=>self.clients.claim())
-  );
-});
-
-self.addEventListener("message",e=>{
-  if(e.data&&e.data.type==="SKIP_WAITING")self.skipWaiting();
-});
-
+const CACHE="skimaru-v5-9-0-polish-r16";
+const ASSETS=["./","./index.html","./player.html","./practical.html","./admin.html","./viewer.html","./styles.css","./theme-v58.css","./app-polish.css","./coach.css","./viewer-manager.css","./manager-ui-v55.css","./academic-ui-v56.css","./game-effects.css","./answer-animation-off.css","./quiz-static.css","./questions.js","./year-mode-core.js","./year-question-data.js","./year-mode.js","./practical-questions.js","./practical-year-data.js","./practical-year-data-v58.js","./practical-v58.js","./practical.js","./practical-year-mode.js","./mode-swipe.js","./ui-v58.js","./academic-remove-practical.js","./academic-ui-v56.js","./game-effects.js","./quiz-static.js","./coach-shared.js","./coach-player.js","./coach-manager.js","./manager-organizer.js","./manager-viewer-admin.js","./viewer-manager.js","./practical-gauge.svg","./practical-drawing.svg","./practical-safety.svg","./practical-transmission.svg","./practical-pneumatic.svg","./practical-sensors.svg","./practical-orthographic.svg","./supabase-config.js","./app.js","./admin.js","./manifest.webmanifest","./icon-v59-192.png","./icon-v59-512.png","./icon-v59-maskable-512.png","./apple-touch-icon-v59.png"];
+self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener("message",e=>{if(e.data&&e.data.type==="SKIP_WAITING")self.skipWaiting();});
 self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET")return;
-  const u=new URL(e.request.url);
-  if(u.origin!==self.location.origin)return;
-
+  const u=new URL(e.request.url);if(u.origin!==self.location.origin)return;
   const dynamic=e.request.mode==="navigate"||/\.(?:html|js|css|webmanifest)$/.test(u.pathname);
-
   if(dynamic){
-    e.respondWith(
-      fetch(e.request,{cache:"no-store"})
-        .then(r=>{
-          const copy=r.clone();
-          caches.open(CACHE).then(c=>c.put(e.request,copy));
-          return r;
-        })
-        .catch(()=>caches.match(e.request).then(hit=>hit||caches.match("./index.html")))
-    );
-    return;
+    e.respondWith(fetch(e.request,{cache:"no-store"}).then(r=>{
+      const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;
+    }).catch(()=>caches.match(e.request).then(hit=>hit||caches.match("./index.html"))));
+  }else{
+    e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{
+      const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;
+    })));
   }
-
-  e.respondWith(
-    caches.match(e.request)
-      .then(hit=>hit||fetch(e.request).then(r=>{
-        const copy=r.clone();
-        caches.open(CACHE).then(c=>c.put(e.request,copy));
-        return r;
-      }))
-  );
 });

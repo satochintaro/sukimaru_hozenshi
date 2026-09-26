@@ -5,7 +5,6 @@
 
   const baseRenderQ=renderQ;
 
-  // 回答後も回答エリアの高さを残し、画面を上下に跳ねさせない。
   renderQ=function(){
     const r=baseRenderQ.apply(this,arguments);
     const ans=document.getElementById("ans");
@@ -21,20 +20,15 @@
     return r;
   };
 
-  // app.js 本来の judge() にある
-  // 1) 回答エリアを消す
-  // 2) スタンプをアニメ表示
-  // 3) 次へボタンへフォーカス
-  // を行わず、同じ画面位置で静かに解説だけ追加する。
   judge=function(ok){
     const q=S.q;
+    window.SkimaruSound?.[ok?"correct":"wrong"]?.();
 
     const panel=document.getElementById("jd-s");
     if(panel)panel.classList.toggle("ng",!ok);
 
     const stamp=document.getElementById("stamp");
     if(stamp){
-      stamp.textContent=ok?"正解":"不正解";
       stamp.classList.remove("show","ng");
       stamp.setAttribute("aria-hidden","true");
     }
@@ -60,7 +54,6 @@
       }
     }
 
-    // 回答ボタンは消さない。操作だけロックしてレイアウトを固定。
     const ans=document.getElementById("ans");
     if(ans){
       ans.classList.remove("hide");
@@ -76,7 +69,5 @@
 
     const sr=document.getElementById("sr-status");
     if(sr)sr.textContent=(ok?"正解。":"不正解。正答は"+(q.answer?"丸":"バツ")+"。")+q.explanation;
-
-    // focus / scroll / requestAnimationFrame はしない。
   };
 })();
