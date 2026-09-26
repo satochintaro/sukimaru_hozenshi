@@ -1,5 +1,5 @@
 
-/* 回答時の画面移動・フラッシュ・縮尺変化を完全停止 */
+/* Ver 5.9.2 回答後表示：元のレイアウト、動きだけ完全停止 */
 #sc-quiz,
 #sc-quiz *,
 #sc-quiz *::before,
@@ -14,6 +14,7 @@
 #sc-quiz .jd-s,
 #sc-quiz .ans{
   transition:none!important;
+  animation:none!important;
 }
 
 #sc-quiz .btn-ox:active,
@@ -21,36 +22,27 @@
   transform:none!important;
 }
 
+/* 正解/不正解の巨大スタンプは表示しない */
 #sc-quiz .stamp{
   display:none!important;
-  animation:none!important;
 }
 
-/* 自信を選んだ時も案内欄の高さを維持 */
+/* 自信選択時の案内だけは高さを維持し、回答前のガクつきを抑える */
 #sc-quiz #conf-h.hide{
   display:block!important;
   visibility:hidden!important;
 }
 
-/* 回答後も○×エリアを残し、ページ高の急変を防ぐ */
-#sc-quiz #ans.answer-locked{
-  display:block!important;
-  pointer-events:none!important;
-  opacity:.48!important;
+/* 回答後は従来通り ans が消え、解説が表示される */
+#sc-quiz #ans.hide{
+  display:none!important;
 }
-
-#sc-quiz #ans.answer-locked .btn-ox,
-#sc-quiz #ans.answer-locked .chip{
-  transform:none!important;
-  animation:none!important;
-}
-
 #sc-quiz #jd.show{
   display:flex!important;
   animation:none!important;
 }
 
-/* 旧追加演出がキャッシュから残っても描画させない */
+/* 古い演出ファイルがキャッシュに残っても無効化 */
 .battle-fx-root,
 .game-result-pop,
 .game-spark{

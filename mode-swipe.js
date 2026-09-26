@@ -5,17 +5,18 @@
 
   const loaded=new Set();
   const preloaded=new Set();
-  let spinnerShown=false;
 
-  // 速い時はローディングを見せない。120msを超えた時だけ表示。
+  // mode-swipe.jsが実行された瞬間から未完成画面を覆う。
+  // リングは120msを超えた時だけ出す。
   const bootStyle=document.createElement("style");
   bootStyle.id="skimaru-boot-style";
   bootStyle.textContent=`
     body.skimaru-booting::before{
       content:"";position:fixed;inset:0;z-index:999990;
-      background:rgba(247,249,250,.54);
-      -webkit-backdrop-filter:blur(5px) saturate(.94);
-      backdrop-filter:blur(5px) saturate(.94)
+      background:rgba(247,249,250,.90);
+      -webkit-backdrop-filter:blur(8px) saturate(.90);
+      backdrop-filter:blur(8px) saturate(.90);
+      pointer-events:all
     }
     body.skimaru-booting::after{
       content:"";position:fixed;left:50%;top:50%;z-index:999991;
@@ -23,14 +24,17 @@
       background:conic-gradient(from 10deg,#258a61 0 30%,#e8ad20 30% 48%,rgba(37,138,97,.12) 48% 100%);
       -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
       mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
-      animation:skimaruBootSpin .68s linear infinite
+      opacity:0;
+      animation:skimaruBootSpin .68s linear infinite;
+      pointer-events:none
     }
+    body.skimaru-booting.skimaru-show-spinner::after{opacity:1}
     @keyframes skimaruBootSpin{to{transform:rotate(360deg)}}`;
   document.head.appendChild(bootStyle);
+  document.body.classList.add("skimaru-booting");
 
   const spinnerTimer=setTimeout(()=>{
-    spinnerShown=true;
-    document.body.classList.add("skimaru-booting");
+    document.body.classList.add("skimaru-show-spinner");
   },120);
 
   const safetyTimer=setTimeout(finishBoot,5000);
@@ -38,47 +42,59 @@
   function finishBoot(){
     clearTimeout(spinnerTimer);
     clearTimeout(safetyTimer);
-    document.body.classList.remove("skimaru-booting");
+    document.body.classList.remove("skimaru-show-spinner","skimaru-booting");
     document.getElementById("skimaru-boot-style")?.remove();
   }
 
   function preload(src,as){
     if(preloaded.has(src))return;
     preloaded.add(src);
-    const l=document.createElement("link");
-    l.rel="preload";
-    l.as=as;
-    l.href=src;
-    document.head.appendChild(l);
+    const link=document.createElement("link");
+    link.rel="preload";
+    link.as=as;
+    link.href=src;
+    document.head.appendChild(link);
   }
 
   function preloadAll(){
     const commonScripts=[
-      "./ui-v58.js?v=591",
+      "./ui-v58.js?v=592",
       "./year-mode-core.js",
       "./coach-shared.js",
       "./coach-player.js"
     ];
+
     const academicScripts=[
       "./academic-remove-practical.js",
       "./year-question-data.js",
       "./year-mode.js",
       "./academic-ui-v56.js",
-      "./quiz-static.js?v=591"
+      "./quiz-static.js?v=592"
     ];
+
     const practicalScripts=[
       "./practical-year-data.js",
       "./practical-year-data-v58.js",
       "./practical-year-mode.js",
       "./practical-v58.js"
     ];
-    const commonStyles=["./theme-v58.css","./coach.css","./app-polish.css?v=591"];
-    const academicStyles=["./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15"];
+
+    const commonStyles=[
+      "./theme-v58.css",
+      "./coach.css",
+      "./app-polish.css?v=592"
+    ];
+
+    const academicStyles=[
+      "./academic-ui-v56.css",
+      "./quiz-static.css?v=592"
+    ];
 
     [...commonScripts,...(current==="academic"?academicScripts:practicalScripts)]
-      .forEach(s=>preload(s,"script"));
+      .forEach(src=>preload(src,"script"));
+
     [...commonStyles,...(current==="academic"?academicStyles:[])]
-      .forEach(s=>preload(s,"style"));
+      .forEach(src=>preload(src,"style"));
   }
 
   function loadScript(src){
@@ -99,7 +115,7 @@
       if(existing.sheet)return Promise.resolve();
       return new Promise(resolve=>{
         existing.addEventListener("load",resolve,{once:true});
-        setTimeout(resolve,500);
+        setTimeout(resolve,400);
       });
     }
     return new Promise(resolve=>{
@@ -113,45 +129,38 @@
   }
 
   function updateVersion(){
-    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.1").replace(/TEST/gi,"");
+    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.2").replace(/TEST/gi,"");
     if(current==="academic"){
-      const st=document.querySelector("#sc-set .sts span:last-child");
-      if(st)st.innerHTML='Ver 5.9.1 ／ 全 <span id="st-qn">1000</span> 問';
+      const qn=document.getElementById("st-qn");
+      if(qn)qn.textContent="1000";
     }
   }
 
   async function loadAcademic(){
-    // 先読み済みなので、依存順に実行しても通信待ちはほぼ発生しない。
+    // 通信自体はpreloadで並列化。実行順が必要なものだけ順番を守る。
     await loadScript("./year-mode-core.js");
 
-    // 互いに依存しないものは並列実行。
     await Promise.all([
-      loadScript("./ui-v58.js?v=591"),
+      loadScript("./ui-v58.js?v=592"),
       loadScript("./academic-remove-practical.js"),
       loadScript("./year-question-data.js"),
       loadScript("./coach-shared.js")
     ]);
 
-    // renderQを包む順番があるものだけ順序を維持。
     await loadScript("./year-mode.js");
     await loadScript("./academic-ui-v56.js");
-    await loadScript("./quiz-static.js?v=591");
-
-    // コーチはホーム初期表示に必要なので最後に1本だけ。
+    await loadScript("./quiz-static.js?v=592");
     await loadScript("./coach-player.js");
+    await loadScript("./coach-sync.js?v=592");
 
-    if(typeof APP!=="undefined"&&APP)APP.version="5.9.1";
-
-    // 誤答バッジ拡張は初期表示をブロックしない。
-    const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,120));
-    idle(()=>loadScript("./game-effects.js?v=14").catch(()=>{}),{timeout:800});
+    if(typeof APP!=="undefined"&&APP)APP.version="5.9.2";
   }
 
   async function loadPractical(){
     await loadScript("./year-mode-core.js");
 
     await Promise.all([
-      loadScript("./ui-v58.js?v=591"),
+      loadScript("./ui-v58.js?v=592"),
       loadScript("./practical-year-data.js"),
       loadScript("./practical-year-data-v58.js"),
       loadScript("./coach-shared.js")
@@ -160,32 +169,33 @@
     await loadScript("./practical-year-mode.js");
     await loadScript("./practical-v58.js");
     await loadScript("./coach-player.js");
+    await loadScript("./coach-sync.js?v=592");
   }
 
-  async function loadEnhancements(){
+  async function boot(){
     try{
       preloadAll();
 
-      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=591"];
+      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=592"];
       if(current==="academic"){
-        styles.push("./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15");
+        styles.push("./academic-ui-v56.css","./quiz-static.css?v=592");
       }
       await Promise.all(styles.map(loadStyle));
 
       if(current==="academic")await loadAcademic();
       else await loadPractical();
 
-      // 1フレームだけ待って完成画面を確定。
-      await new Promise(resolve=>requestAnimationFrame(resolve));
+      // DOM追加・CSS反映が完了したフレームまで待ち、完成形だけ見せる。
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     }catch(error){
-      console.error("高速初期化エラー",error);
+      console.error("初期化エラー",error);
     }finally{
       finishBoot();
     }
   }
 
   updateVersion();
-  loadEnhancements();
+  boot();
 
   let startX=0,startY=0,startAt=0,tracking=false;
   const homeIsActive=()=>current==="academic"
@@ -194,7 +204,8 @@
 
   document.addEventListener("touchstart",e=>{
     if(!homeIsActive()||e.touches.length!==1)return;
-    const t=e.touches[0];startX=t.clientX;startY=t.clientY;startAt=Date.now();tracking=true;
+    const t=e.touches[0];
+    startX=t.clientX;startY=t.clientY;startAt=Date.now();tracking=true;
   },{passive:true});
 
   document.addEventListener("touchend",e=>{
