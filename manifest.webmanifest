@@ -2,11 +2,11 @@
   "name": "スキマル保全士",
   "short_name": "スキマル保全士",
   "description": "自主保全士2級の学科・実技学習と管理者分析を行うアプリ",
-  "start_url": "./index.html?v=580",
+  "start_url": "./index.html?v=583",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#F2F5F7",
-  "theme_color": "#152331",
+  "background_color": "#F7F9FA",
+  "theme_color": "#F7F9FA",
   "lang": "ja",
   "icons": [
     {

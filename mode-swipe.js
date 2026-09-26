@@ -19,10 +19,10 @@
   }
 
   function updateVersion(){
-    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.8.1").replace(/TEST/gi,"");
+    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.8.3").replace(/TEST/gi,"");
     if(current==="academic"){
       const st=document.querySelector("#sc-set .sts span:last-child");
-      if(st)st.innerHTML='Ver 5.8.1 ／ 全 <span id="st-qn">1000</span> 問';
+      if(st)st.innerHTML='Ver 5.8.3 ／ 全 <span id="st-qn">1000</span> 問';
     }
   }
 
@@ -39,7 +39,7 @@
         await loadScript("./year-mode.js");
         loadStyle("./academic-ui-v56.css");
         await loadScript("./academic-ui-v56.js");
-        if(typeof APP!=="undefined"&&APP)APP.version="5.8.1";
+        if(typeof APP!=="undefined"&&APP)APP.version="5.8.3";
       }else{
         await loadScript("./practical-year-data.js");
         await loadScript("./practical-year-data-v58.js");
@@ -55,7 +55,7 @@
         await loadScript("./game-effects.js");
       }
     }catch(error){
-      console.error("Ver 5.8.1 拡張読込エラー",error);
+      console.error("Ver 5.8.3 拡張読込エラー",error);
     }
   }
 

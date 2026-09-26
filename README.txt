@@ -1,21 +1,20 @@
-スキマル保全士 Ver 5.8.1
+Ver 5.8.3 PWA更新修正
 
-ゲーム感は演出・動きだけに限定。
-世界観ワードは使いません。
+目的:
+Safariでは最新版なのに、ホーム画面PWAだけ旧画面が残る問題を修正。
 
-表示文言:
-プレイヤー / マネージャー / 学科 / 実技 / 再挑戦 / 正解 / 不正解 / 克服
+変更:
+- Service Worker登録URLを ?v=583 で更新
+- updateViaCache:"none" を使用
+- 新Service Workerがcontrollerになったら1回だけ自動再読込
+- PWAをバックグラウンドから戻した時にも更新確認
+- HTML/JS/CSSはService Workerでも network-first + no-store
+- manifest start_url を index.html?v=583 に更新
+- サイトデータ削除不要
 
-タイトル:
-白・明るいグレー基調。プレイヤーは緑、マネージャーはネイビー。
-
-実技:
-白ベース＋紫アクセント。ダーク紫背景を廃止。
-
-上書き6ファイル:
+上書き5ファイル:
 index.html
-theme-v58.css
 ui-v58.js
-game-effects.js
 mode-swipe.js
 service-worker.js
+manifest.webmanifest

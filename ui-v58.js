@@ -1,6 +1,8 @@
 "use strict";
 (() => {
-  const VERSION="5.8.1";
+  const VERSION="5.8.3";
+  const RELOAD_KEY="skimaru-pwa-reload-583";
+
   document.body.classList.add("v58");
 
   document.title=document.title
@@ -45,6 +47,39 @@
   }
 
   if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("./service-worker.js").then(r=>r.update()).catch(()=>{});
+    let controllerChanged=false;
+
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{
+      if(controllerChanged)return;
+      controllerChanged=true;
+
+      // Reload only once per browser session so the newly activated worker
+      // immediately supplies the current app shell.
+      if(sessionStorage.getItem(RELOAD_KEY)!=="1"){
+        sessionStorage.setItem(RELOAD_KEY,"1");
+        location.reload();
+      }
+    });
+
+    window.addEventListener("load",async()=>{
+      try{
+        const reg=await navigator.serviceWorker.register("./service-worker.js?v=583",{
+          updateViaCache:"none"
+        });
+        await reg.update();
+
+        // If an updated worker is waiting for any reason, activate it now.
+        if(reg.waiting){
+          reg.waiting.postMessage({type:"SKIP_WAITING"});
+        }
+
+        // Re-check when returning to the installed PWA from background.
+        document.addEventListener("visibilitychange",()=>{
+          if(document.visibilityState==="visible")reg.update().catch(()=>{});
+        });
+      }catch(e){
+        console.warn("PWA update check failed",e);
+      }
+    });
   }
 })();
