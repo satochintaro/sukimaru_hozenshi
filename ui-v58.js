@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-  const VERSION="6.0.0";
+  const VERSION="6.0.1";
   document.body.classList.add("v58");
   document.title=document.title
     .replace(/Ver\s*[56]\.\d+(?:\.\d+)?\s*TEST/gi,`Ver ${VERSION}`)
@@ -26,7 +26,7 @@
       const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,700));
       idle(async()=>{
         try{
-          const reg=await navigator.serviceWorker.register("./service-worker.js?v=600",{updateViaCache:"none"});
+          const reg=await navigator.serviceWorker.register("./service-worker.js?v=601",{updateViaCache:"none"});
           if(reg.waiting)reg.waiting.postMessage({type:"SKIP_WAITING"});
           reg.update().catch(()=>{});
         }catch(e){
