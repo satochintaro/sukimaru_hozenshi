@@ -1,22 +1,20 @@
-Ver 5.9.5 タップ不能 緊急修正
+スキマル保全士 Ver 5.9.6 長文スクロール対応
 
-原因:
-- 5.9.4 mode-swipe.js の loadScript 呼び出しが壊れていた
-- 起動オーバーレイが pointer-events:all でタップを遮断する可能性があった
+変更内容
+- 学科：長い問題文だけ問題カード内スクロール
+- 学科：短い問題文は従来どおり中央表示
+- 実技：課題タイトル・画像・資料をひとまとまりで内部スクロール
+- 実技：回答エリアは別枠にして下側で安定表示
+- 実技：選択肢が非常に多い場合だけ回答エリアも内部スクロール
+- 問題切替時にスクロール位置を自動で先頭へ戻す
+- iPhoneの慣性スクロール対応
+- 横スクロールを抑止
 
-修正:
-- mode-swipe.js を正常な読込順に再構築
-- loadScript(undefined) を完全排除
-- 起動/画面遷移オーバーレイは pointer-events:none
-- page-transitioning / booting が残っても800msで自動解除
-- 問題画面の表示中ボタンは常にタップ可能
-- Service Worker cacheをr21へ更新
-
-アップロード:
-mode-swipe.js
-input-safety-v595.css
-input-safety-v595.js
-ui-v58.js
-service-worker.js
-index.html（同梱時）
-manifest.webmanifest（同梱時）
+アップロード
+question-scroll-v596.css（新規）
+question-scroll-v596.js（新規）
+mode-swipe.js（上書き）
+ui-v58.js（上書き）
+service-worker.js（上書き）
+index.html（上書き）
+manifest.webmanifest（上書き）
