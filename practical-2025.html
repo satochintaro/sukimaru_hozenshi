@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#123a67">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>2025年度 実技｜スキマル保全士 Ver 6.0.1</title>
-<link rel="stylesheet" href="./practical-2025-v601.css?v=601">
+<title>2025年度 実技｜スキマル保全士 Ver 6.0.2</title>
+<link rel="stylesheet" href="./practical-2025-v602.css?v=602">
 </head>
 <body>
 <header class="topbar">
@@ -24,19 +24,13 @@
     <p id="groupPrompt" class="prompt"></p>
   </section>
 
-  <section class="reference card">
-    <div class="reference-title"><b>参照図・資料</b><span class="reference-meta">回答箇所 <b id="referenceBlank" class="reference-blank">①</b>・タップで拡大</span></div>
-    <button id="imageButton" class="image-button" type="button">
-      <img id="referenceImage" alt="問題の参照図">
-    </button>
+  <section class="reference card" aria-label="2025年度の過去問原本">
+    <div class="reference-title"><b>過去問原本の設問・図</b><span>画像をタップで拡大</span></div>
+    <p class="original-hint">元の問題文・空欄・図を省略せず掲載。長いページはこの枠内をスクロールできます。</p>
+    <div id="originalPages" class="original-pages"></div>
   </section>
-
   <section class="answer card">
-    <div id="focusContext" class="focus-context">
-      <div class="focus-context-head"><small>今回の回答箇所</small><b id="focusNo">①</b></div>
-      <div id="focusText" class="focus-text">回答箇所を読み込み中…</div>
-    </div>
-    <div class="answer-kicker"><span id="blankLabel">①</span><b id="questionCaption">空欄①に当てはまるものを選んでください。</b></div>
+    <div class="answer-kicker"><span id="blankLabel">①</span><b id="questionCaption">原本の設問を確認して解答してください。</b></div>
     <div id="choiceList" class="choices"></div>
     <div id="feedback" class="feedback" aria-live="polite"></div>
     <div class="actions">
@@ -84,7 +78,7 @@
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./practical-2025-official.js?v=601"></script>
-<script src="./practical-2025-v601.js?v=601"></script>
+<script src="./practical-2025-official.js?v=602"></script>
+<script src="./practical-2025-v602.js?v=602"></script>
 </body>
 </html>
