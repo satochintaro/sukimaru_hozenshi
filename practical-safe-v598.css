@@ -1,0 +1,41 @@
+html,body{-webkit-text-size-adjust:100%}
+body.practical-body{background:#f4f6f8!important}
+body.practical-body::before,body.practical-body::after{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+#pt-quiz .practical-quiz-pad{
+  display:flex;flex-direction:column;min-height:0;
+  padding-top:12px!important;
+  padding-bottom:calc(22px + env(safe-area-inset-bottom))!important
+}
+#pt-quiz .pt-question-scroll{
+  flex:0 1 auto;max-height:min(48dvh,480px);
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;
+  margin-bottom:12px;padding-right:2px
+}
+#pt-quiz .pt-task-head{margin-bottom:10px!important}
+#pt-quiz .pt-task-head h1{margin:7px 0 4px!important;font-size:20px!important;line-height:1.4!important}
+#pt-quiz .pt-task-head p{margin:0!important;font-size:11px!important;line-height:1.65!important}
+#pt-quiz .pt-figure{margin:10px 0!important;border-radius:14px!important;overflow:hidden!important}
+#pt-quiz .pt-figure img{display:block!important;width:100%!important;height:auto!important;max-height:none!important;object-fit:contain!important}
+#pt-quiz .pt-material{overflow-wrap:anywhere;word-break:normal;line-height:1.75!important}
+#pt-quiz .pt-answer-area{
+  flex:0 0 auto;max-height:min(36dvh,360px);
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;
+  margin-bottom:10px
+}
+#pt-quiz .pt-choice{min-height:46px!important;transition:none!important}
+#pt-quiz .pt-primary{flex:0 0 auto;min-height:50px!important}
+#pt-quiz .pt-feedback.show{
+  max-height:min(42dvh,420px);overflow-y:auto;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain
+}
+.practical-body *,.practical-body *::before,.practical-body *::after{
+  animation-duration:0s!important;transition-duration:0s!important
+}
+@media(max-height:760px){
+  #pt-quiz .pt-question-scroll{max-height:min(40dvh,330px)}
+  #pt-quiz .pt-answer-area{max-height:min(32dvh,270px)}
+}

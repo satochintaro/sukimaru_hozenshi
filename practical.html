@@ -3,48 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>スキマル保全士 実技問題モード Ver 5.2.0 TEST</title>
-<meta name="theme-color" content="#4b2a70">
+<title>スキマル保全士 実技演習 Ver 5.9.8</title>
+<meta name="theme-color" content="#f7f9fa">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="スキマル保全士">
+<link rel="apple-touch-icon" href="./apple-touch-icon-v59.png">
 <link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./theme-v58.css">
+<link rel="stylesheet" href="./practical-safe-v598.css?v=598">
 </head>
-<body class="practical-body" data-learning-mode="practical">
+<body class="practical-body v58" data-learning-mode="practical">
+
 <section id="pt-home" class="active" aria-hidden="false">
-  <div class="hd practical-hd"><a class="hd-back" href="./player.html" aria-label="学科メニューへ戻る">‹</a><div style="flex:1"><div class="hd-ttl">実技問題モード</div><div class="hd-sub">PRACTICAL ／ テスト版</div></div><span class="pt-test-badge">TEST</span></div>
+  <div class="hd practical-hd">
+    <a class="hd-back" href="./player.html" aria-label="学科メニューへ戻る">‹</a>
+    <div style="flex:1">
+      <div class="hd-ttl">実技演習</div>
+      <div class="hd-sub">自主保全士2級 / 実技 / Ver 5.9.8</div>
+    </div>
+  </div>
   <div class="pad practical-pad">
     <nav class="learning-mode-switch" aria-label="問題モード">
-      <a href="./player.html">学科</a><a class="active" href="./practical.html" aria-current="page">実技</a>
+      <a href="./player.html">学科</a>
+      <a class="active" href="./practical.html" aria-current="page">実技</a>
     </nav>
-    <p class="learning-mode-swipe">画面を右へスワイプすると学科へ</p>
-    <div class="pt-hero"><span>TEST MODE</span><h1>選択式・穴埋め実技</h1><p>課題文や精密な技術図を読み、空欄ごとに適切な語句を選択します。</p><small>問題バンク20課題・毎回ランダム10課題／公式問題の転載ではありません</small></div>
-    <div class="pt-stat-grid"><div><b id="pt-total">0</b><span>挑戦課題</span></div><div><b id="pt-accuracy">—</b><span>空欄正答率</span></div><div><b id="pt-wrong">0</b><span>復習課題</span></div></div>
-    <button class="btn pt-primary" onclick="startPracticalTest()">ランダム10課題模試</button>
+    <div class="pt-hero">
+      <span>実技演習</span><h1>実技演習</h1>
+      <p>課題文や図を見ながら、空欄に入る語句を選んで理解を定着させます。</p>
+      <small>全90課題 / ランダム10課題 / 2019〜2025年度ベース</small>
+    </div>
+    <div class="pt-stat-grid">
+      <div><b id="pt-total">0</b><span>挑戦課題</span></div>
+      <div><b id="pt-accuracy">—</b><span>空欄正答率</span></div>
+      <div><b id="pt-wrong">0</b><span>復習課題</span></div>
+    </div>
+    <button class="btn pt-primary" onclick="startPracticalTest()">ランダム10課題</button>
     <button class="btn-g pt-retry" id="pt-retry" onclick="startWrongPractical()">間違えた課題を復習</button>
     <div class="pt-section-head"><div><span>PRACTICE</span><h2>分野別に練習</h2></div></div>
     <div id="pt-categories" class="pt-category-list"></div>
-    <button class="pt-reset" onclick="resetPracticalData()">実技テスト成績をリセット</button>
+    <button class="pt-reset" onclick="resetPracticalData()">実技成績をリセット</button>
   </div>
 </section>
+
 <section id="pt-quiz" aria-hidden="true">
-  <div class="hd practical-hd"><button class="hd-back" onclick="quitPractical()" aria-label="実技メニューへ戻る">‹</button><div style="flex:1"><div class="hd-ttl" id="pt-quiz-title">実技演習</div><div class="hd-sub" id="pt-task-no">課題 1 / 10</div></div></div>
+  <div class="hd practical-hd">
+    <button class="hd-back" onclick="quitPractical()" aria-label="実技メニューへ戻る">‹</button>
+    <div style="flex:1">
+      <div class="hd-ttl" id="pt-quiz-title">実技演習</div>
+      <div class="hd-sub" id="pt-task-no">課題 1 / 10</div>
+    </div>
+  </div>
   <div class="q-bar"><i id="pt-progress" style="width:0%"></i></div>
   <main class="pad practical-quiz-pad">
-    <div class="pt-task-head"><span id="pt-task-category">カテゴリ</span><h1 id="pt-task-title">課題</h1><p id="pt-task-instruction"></p></div>
-    <div class="pt-figure hide" id="pt-task-figure"></div>
-    <div class="pt-material" id="pt-task-material"></div>
+    <div class="pt-question-scroll" id="pt-question-scroll">
+      <div class="pt-task-head"><span id="pt-task-category">カテゴリ</span><h1 id="pt-task-title">課題</h1><p id="pt-task-instruction"></p></div>
+      <div class="pt-figure hide" id="pt-task-figure"></div>
+      <div class="pt-material" id="pt-task-material"></div>
+    </div>
     <div class="pt-answer-area" id="pt-answer-area"></div>
     <button class="btn pt-primary" id="pt-submit" onclick="judgePracticalTask()">採点する</button>
     <div class="pt-feedback" id="pt-feedback" aria-live="polite"></div>
     <button class="btn pt-primary hide" id="pt-next" onclick="nextPracticalTask()">次の課題へ</button>
   </main>
 </section>
+
 <section id="pt-result" aria-hidden="true">
   <div class="hd practical-hd"><div class="hd-ttl">実技結果</div></div>
   <div class="pad practical-result-pad">
-    <div class="pt-result-card" id="pt-result-card"><span id="pt-result-title">実技10課題テスト</span><div><b id="pt-result-score">0</b><small>点</small></div><p id="pt-result-count">0 / 0 空欄正解</p><strong id="pt-result-message"></strong></div>
+    <div class="pt-result-card" id="pt-result-card">
+      <span id="pt-result-title">実技10課題テスト</span>
+      <div><b id="pt-result-score">0</b><small>点</small></div>
+      <p id="pt-result-count">0 / 0 空欄正解</p>
+      <strong id="pt-result-message"></strong>
+    </div>
     <div class="pn practical-submit-card">
-      <div class="submit-summary"><div class="submit-summary-row"><span>プレイヤーNo.</span><b id="pt-submit-no">—</b></div><div class="submit-summary-row"><span>表示名</span><b id="pt-submit-name">未設定</b></div><div class="submit-summary-row"><span>提出内容</span><b id="pt-submit-summary">—</b></div></div>
+      <div class="submit-summary">
+        <div class="submit-summary-row"><span>プレイヤーNo.</span><b id="pt-submit-no">—</b></div>
+        <div class="submit-summary-row"><span>表示名</span><b id="pt-submit-name">未設定</b></div>
+        <div class="submit-summary-row"><span>提出内容</span><b id="pt-submit-summary">—</b></div>
+      </div>
       <button class="btn pt-primary" id="pt-submit-result" onclick="submitPracticalResult()">実技成績を提出</button>
       <p class="note" id="pt-submit-status">実技成績として学科とは分けて集計されます。</p>
     </div>
@@ -52,10 +91,17 @@
     <a class="btn-g pt-link-button" href="./player.html">学科メニューへ戻る</a>
   </div>
 </section>
+
 <div class="toast" id="pt-toast" role="status" aria-live="polite"></div>
+
 <script src="./practical-questions.js"></script>
+<script src="./practical-year-data.js"></script>
+<script src="./practical-year-data-v58.js"></script>
+<script src="./year-mode-core.js"></script>
 <script src="./supabase-config.js"></script>
 <script src="./practical.js"></script>
-<script src="./mode-swipe.js"></script>
+<script src="./practical-year-mode.js"></script>
+<script src="./practical-v58.js"></script>
+<script src="./practical-safe-v598.js?v=598"></script>
 </body>
 </html>

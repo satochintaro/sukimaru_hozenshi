@@ -1,28 +1,31 @@
-スキマル保全士 Ver 5.9.7 緊急軽量化
+Ver 5.9.8 実技ページ Safariクラッシュ対策
 
-原因:
-- 5.9.6の実技スクロール監視が is-scrollable のclass変更を自分で監視し、更新ループになる構造でした。
-- 全画面 backdrop-filter blur もiPhoneで描画負荷が高い状態でした。
-
-修正:
-- MutationObserverを完全撤去
-- 問題を表示した時だけスクロール位置を1回リセット
-- 長文スクロールはCSSの max-height + overflow:auto のみで処理
-- 短い設問は自然な高さのまま
-- 実技の画像・資料は長い時だけ自動スクロール
-- 選択肢が多い時も回答欄だけ自動スクロール
-- ローディングの全画面ぼかしを廃止
-- 軽い半透明ベール＋単純なリングだけに変更
-- Service Workerをr23へ更新
+実技ページを安全モード化:
+- mode-swipe.js を実技ページから外す
+- ui-v58.js を実技ページから外す
+- coach-player.js を実技ページから一旦外す
+- 起動オーバーレイなし
+- DOM監視なし
+- 自動リロードなし
+- 2019〜2025年度データ維持
+- 全90課題維持
+- 長文は問題部分だけ内部スクロール
+- 回答エリアは別スクロール
+- Service WorkerはHTMLをnetwork-firstへ変更
+- 古いキャッシュをactivate時に削除
+- 学習履歴/localStorageは変更しない
 
 アップロード:
-question-scroll-v597.js（新規）
-question-scroll-v597.css（新規）
-performance-v597.css（新規）
-mode-swipe.js
-ui-v58.js
+practical.html
+practical-safe-v598.css
+practical-safe-v598.js
 service-worker.js
+ui-v58.js
 index.html
 manifest.webmanifest
 
-5.9.6の question-scroll-v596.js/css は残っていても読み込みません。
+アップロード後:
+1. practical.htmlを直接開かない
+2. Safariでトップ(index.html)を1回開く
+3. 2〜3秒待つ
+4. プレイヤー → 実技 を開く
