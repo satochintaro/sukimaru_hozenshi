@@ -1,20 +1,28 @@
-スキマル保全士 Ver 5.9.6 長文スクロール対応
+スキマル保全士 Ver 5.9.7 緊急軽量化
 
-変更内容
-- 学科：長い問題文だけ問題カード内スクロール
-- 学科：短い問題文は従来どおり中央表示
-- 実技：課題タイトル・画像・資料をひとまとまりで内部スクロール
-- 実技：回答エリアは別枠にして下側で安定表示
-- 実技：選択肢が非常に多い場合だけ回答エリアも内部スクロール
-- 問題切替時にスクロール位置を自動で先頭へ戻す
-- iPhoneの慣性スクロール対応
-- 横スクロールを抑止
+原因:
+- 5.9.6の実技スクロール監視が is-scrollable のclass変更を自分で監視し、更新ループになる構造でした。
+- 全画面 backdrop-filter blur もiPhoneで描画負荷が高い状態でした。
 
-アップロード
-question-scroll-v596.css（新規）
-question-scroll-v596.js（新規）
-mode-swipe.js（上書き）
-ui-v58.js（上書き）
-service-worker.js（上書き）
-index.html（上書き）
-manifest.webmanifest（上書き）
+修正:
+- MutationObserverを完全撤去
+- 問題を表示した時だけスクロール位置を1回リセット
+- 長文スクロールはCSSの max-height + overflow:auto のみで処理
+- 短い設問は自然な高さのまま
+- 実技の画像・資料は長い時だけ自動スクロール
+- 選択肢が多い時も回答欄だけ自動スクロール
+- ローディングの全画面ぼかしを廃止
+- 軽い半透明ベール＋単純なリングだけに変更
+- Service Workerをr23へ更新
+
+アップロード:
+question-scroll-v597.js（新規）
+question-scroll-v597.css（新規）
+performance-v597.css（新規）
+mode-swipe.js
+ui-v58.js
+service-worker.js
+index.html
+manifest.webmanifest
+
+5.9.6の question-scroll-v596.js/css は残っていても読み込みません。

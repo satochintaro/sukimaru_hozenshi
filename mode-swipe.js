@@ -11,9 +11,9 @@
   bootStyle.textContent=`
     body.skimaru-booting::before{
       content:"";position:fixed;inset:0;z-index:999990;
-      background:rgba(247,249,250,.90);
-      -webkit-backdrop-filter:blur(8px) saturate(.90);
-      backdrop-filter:blur(8px) saturate(.90);
+      background:rgba(247,249,250,.94);
+      -webkit-backdrop-filter:none;
+      backdrop-filter:none;
       pointer-events:none!important
     }
     body.skimaru-booting::after{
@@ -55,11 +55,11 @@
 
   function preloadAll(){
     const commonScripts=[
-      "./ui-v58.js?v=596",
+      "./ui-v58.js?v=597",
       "./year-mode-core.js",
       "./coach-shared.js",
       "./coach-player.js",
-      "./question-scroll-v596.js?v=596"
+      "./question-scroll-v597.js?v=597"
     ];
 
     const academicScripts=[
@@ -67,9 +67,9 @@
       "./year-question-data.js",
       "./year-mode.js",
       "./academic-ui-v56.js",
-      "./quiz-static.js?v=596",
-      "./quiz-balance-v594.js?v=596",
-      "./coach-sync.js?v=596"
+      "./quiz-static.js?v=597",
+      "./quiz-balance-v594.js?v=597",
+      "./coach-sync.js?v=597"
     ];
 
     const practicalScripts=[
@@ -77,20 +77,21 @@
       "./practical-year-data-v58.js",
       "./practical-year-mode.js",
       "./practical-v58.js",
-      "./coach-sync.js?v=596"
+      "./coach-sync.js?v=597"
     ];
 
     const commonStyles=[
       "./theme-v58.css",
       "./coach.css",
-      "./app-polish.css?v=596",
-      "./question-scroll-v596.css?v=596"
+      "./app-polish.css?v=597",
+      "./question-scroll-v597.css?v=597",
+      "./performance-v597.css?v=597"
     ];
 
     const academicStyles=[
       "./academic-ui-v56.css",
-      "./quiz-static.css?v=596",
-      "./quiz-balance-v594.css?v=596"
+      "./quiz-static.css?v=597",
+      "./quiz-balance-v594.css?v=597"
     ];
 
     [...commonScripts,...(current==="academic"?academicScripts:practicalScripts)]
@@ -136,7 +137,7 @@
   }
 
   function updateVersion(){
-    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.6").replace(/TEST/gi,"");
+    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.7").replace(/TEST/gi,"");
     const qn=document.getElementById("st-qn");
     if(current==="academic"&&qn)qn.textContent="1000";
   }
@@ -145,7 +146,7 @@
     await loadScript("./year-mode-core.js");
 
     await Promise.all([
-      loadScript("./ui-v58.js?v=596"),
+      loadScript("./ui-v58.js?v=597"),
       loadScript("./academic-remove-practical.js"),
       loadScript("./year-question-data.js"),
       loadScript("./coach-shared.js")
@@ -153,20 +154,20 @@
 
     await loadScript("./year-mode.js");
     await loadScript("./academic-ui-v56.js");
-    await loadScript("./quiz-static.js?v=596");
+    await loadScript("./quiz-static.js?v=597");
     await loadScript("./coach-player.js");
-    await loadScript("./coach-sync.js?v=596");
-    await loadScript("./quiz-balance-v594.js?v=596");
-    await loadScript("./question-scroll-v596.js?v=596");
+    await loadScript("./coach-sync.js?v=597");
+    await loadScript("./quiz-balance-v594.js?v=597");
+    await loadScript("./question-scroll-v597.js?v=597");
 
-    if(typeof APP!=="undefined"&&APP)APP.version="5.9.6";
+    if(typeof APP!=="undefined"&&APP)APP.version="5.9.7";
   }
 
   async function loadPractical(){
     await loadScript("./year-mode-core.js");
 
     await Promise.all([
-      loadScript("./ui-v58.js?v=596"),
+      loadScript("./ui-v58.js?v=597"),
       loadScript("./practical-year-data.js"),
       loadScript("./practical-year-data-v58.js"),
       loadScript("./coach-shared.js")
@@ -175,20 +176,20 @@
     await loadScript("./practical-year-mode.js");
     await loadScript("./practical-v58.js");
     await loadScript("./coach-player.js");
-    await loadScript("./coach-sync.js?v=596");
-    await loadScript("./question-scroll-v596.js?v=596");
+    await loadScript("./coach-sync.js?v=597");
+    await loadScript("./question-scroll-v597.js?v=597");
   }
 
   async function boot(){
     try{
       preloadAll();
 
-      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=596","./question-scroll-v596.css?v=596","./input-safety-v595.css?v=596"];
+      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=597","./question-scroll-v597.css?v=597","./performance-v597.css?v=597","./input-safety-v595.css?v=597"];
       if(current==="academic"){
         styles.push(
           "./academic-ui-v56.css",
-          "./quiz-static.css?v=596",
-          "./quiz-balance-v594.css?v=596"
+          "./quiz-static.css?v=597",
+          "./quiz-balance-v594.css?v=597"
         );
       }
 
@@ -197,7 +198,7 @@
       if(current==="academic")await loadAcademic();
       else await loadPractical();
 
-      await loadScript("./input-safety-v595.js?v=596");
+      await loadScript("./input-safety-v595.js?v=597");
       await new Promise(resolve=>requestAnimationFrame(resolve));
     }catch(error){
       console.error("初期化エラー",error);

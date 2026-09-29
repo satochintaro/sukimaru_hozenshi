@@ -1,7 +1,7 @@
 "use strict";
 (() => {
-  const VERSION="5.9.6";
-  const RELOAD_KEY="skimaru-pwa-reload-596";
+  const VERSION="5.9.7";
+  const RELOAD_KEY="skimaru-pwa-reload-597";
   const SOUND_KEY="skimaru-sound-enabled";
 
   document.body.classList.add("v58");
@@ -160,7 +160,7 @@
     window.addEventListener("load",()=>{
       const run=async()=>{
         try{
-          const reg=await navigator.serviceWorker.register("./service-worker.js?v=596",{updateViaCache:"none"});
+          const reg=await navigator.serviceWorker.register("./service-worker.js?v=597",{updateViaCache:"none"});
           if(reg.waiting)reg.waiting.postMessage({type:"SKIP_WAITING"});
           reg.update().catch(()=>{});
           document.addEventListener("visibilitychange",()=>{

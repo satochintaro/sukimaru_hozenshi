@@ -1,13 +1,13 @@
-const CACHE="skimaru-v5-9-6-scroll-r22";
+const CACHE="skimaru-v5-9-7-fast-r23";
 
 const CORE=[
   "./","./index.html","./player.html","./practical.html",
   "./styles.css","./theme-v58.css","./app-polish.css","./coach.css",
-  "./academic-ui-v56.css","./quiz-static.css","./quiz-balance-v594.css","./question-scroll-v596.css","./input-safety-v595.css",
+  "./academic-ui-v56.css","./quiz-static.css","./quiz-balance-v594.css","./question-scroll-v597.css","./performance-v597.css","./input-safety-v595.css",
   "./questions.js","./app.js","./supabase-config.js",
   "./mode-swipe.js","./ui-v58.js",
   "./year-mode-core.js","./year-question-data.js","./year-mode.js",
-  "./academic-remove-practical.js","./academic-ui-v56.js","./quiz-static.js","./quiz-balance-v594.js","./question-scroll-v596.js","./input-safety-v595.js",
+  "./academic-remove-practical.js","./academic-ui-v56.js","./quiz-static.js","./quiz-balance-v594.js","./question-scroll-v597.js","./input-safety-v595.js",
   "./coach-shared.js","./coach-player.js","./coach-sync.js",
   "./practical-questions.js","./practical.js",
   "./practical-year-data.js","./practical-year-data-v58.js",
