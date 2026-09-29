@@ -1,0 +1,20 @@
+スマホ用 Ver 6.0.0 フラット版
+
+重要:
+このZIP自体をGitHubへ置かないでください。
+iPhoneの「ファイル」アプリでZIPをタップして解凍し、
+できたフォルダの中のファイルをすべて選択して、
+GitHubリポジトリ main の一番上（ルート）へアップロードしてください。
+
+assetsフォルダは不要です。
+画像もすべてルートに置く仕様へ変更済みです。
+
+アップロード後にGitHubのルートで確認:
+- index.html → Ver 6.0.0
+- practical.html
+- practical-2025.html
+- practical-2025-v600.js
+- practical-2025-official.js
+- 2025_t1_sheet.webp
+- 2025_t9_a.webp
+- 2025_t9_b.webp

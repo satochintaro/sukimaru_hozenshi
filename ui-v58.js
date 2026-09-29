@@ -1,10 +1,10 @@
 "use strict";
 (() => {
-  const VERSION="5.9.8";
+  const VERSION="6.0.0";
   document.body.classList.add("v58");
   document.title=document.title
-    .replace(/Ver\s*5\.\d+(?:\.\d+)?\s*TEST/gi,`Ver ${VERSION}`)
-    .replace(/5\.\d+(?:\.\d+)?/g,VERSION)
+    .replace(/Ver\s*[56]\.\d+(?:\.\d+)?\s*TEST/gi,`Ver ${VERSION}`)
+    .replace(/[56]\.\d+(?:\.\d+)?/g,VERSION)
     .replace(/\bTEST\b/gi,"");
 
   const mode=document.body.dataset.learningMode;
@@ -26,7 +26,7 @@
       const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,700));
       idle(async()=>{
         try{
-          const reg=await navigator.serviceWorker.register("./service-worker.js?v=598",{updateViaCache:"none"});
+          const reg=await navigator.serviceWorker.register("./service-worker.js?v=600",{updateViaCache:"none"});
           if(reg.waiting)reg.waiting.postMessage({type:"SKIP_WAITING"});
           reg.update().catch(()=>{});
         }catch(e){
