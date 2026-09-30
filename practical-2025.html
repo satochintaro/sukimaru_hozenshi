@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#123a67">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>2025年度 実技｜スキマル保全士 Ver 6.0.2</title>
-<link rel="stylesheet" href="./practical-2025-v602.css?v=602">
+<title>2025年度 実技｜スキマル保全士 Ver 6.0.4</title>
+<link rel="stylesheet" href="./practical-2025-v604.css?v=604">
 </head>
 <body>
 <header class="topbar">
@@ -21,13 +21,21 @@
   <section class="question-head card">
     <div class="head-row"><span id="category" class="pill">安全・環境</span><span id="groupLabel" class="group-label">設問1 / 5</span></div>
     <h1 id="taskTitle">課題1：危険予知訓練</h1>
-    <p id="groupPrompt" class="prompt"></p>
+    <div class="original-question-label">原本の設問文</div>
+    <p id="groupPrompt" class="prompt original-question"></p>
+    <div class="focus-answer"><span id="focusLabel">⑤</span><div><small>今回の解答箇所</small><b id="focusDetail"></b></div></div>
   </section>
 
   <section class="reference card" aria-label="2025年度の過去問原本">
-    <div class="reference-title"><b>過去問原本の設問・図</b><span>画像をタップで拡大</span></div>
-    <p class="original-hint">元の問題文・空欄・図を省略せず掲載。長いページはこの枠内をスクロールできます。</p>
-    <div id="originalPages" class="original-pages"></div>
+    <div class="reference-title"><b>設問に必要な図・資料</b><span>タップで拡大</span></div>
+    <button id="figureButton" class="figure-button" type="button" aria-label="設問の図を拡大">
+      <img id="figureImage" alt="設問の参照図">
+      <span>図を拡大して見る <b>↗</b></span>
+    </button>
+    <details class="full-original">
+      <summary>原本の該当ページを確認する</summary>
+      <div id="originalPages" class="original-pages"></div>
+    </details>
   </section>
   <section class="answer card">
     <div class="answer-kicker"><span id="blankLabel">①</span><b id="questionCaption">原本の設問を確認して解答してください。</b></div>
@@ -72,13 +80,24 @@
   </div>
 </section>
 
-<div id="zoom" class="zoom" aria-hidden="true">
-  <button id="zoomClose" type="button" aria-label="閉じる">×</button>
-  <div class="zoom-scroll"><img id="zoomImage" alt="拡大した参照図"></div>
+<button id="referenceFab" class="reference-fab" type="button" aria-label="参照図・原本を開く">📄 図・問題文を見る</button>
+<div id="zoom" class="zoom" aria-hidden="true" role="dialog" aria-modal="true" aria-label="過去問原本・参照図">
+  <div class="zoom-toolbar">
+    <button id="zoomClose" type="button" aria-label="問題に戻る">← 問題に戻る</button>
+    <strong id="zoomTitle">原本・参照図</strong>
+    <button id="zoomFit" type="button" aria-pressed="false">ページ全体</button>
+  </div>
+  <div id="zoomScroll" class="zoom-scroll"><img id="zoomImage" alt="拡大した参照図"></div>
+  <div class="zoom-bottom">
+    <button id="zoomPrev" type="button">‹ 前のページ</button>
+    <span id="zoomPage">1 / 1</span>
+    <button id="zoomNext" type="button">次のページ ›</button>
+  </div>
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./practical-2025-official.js?v=602"></script>
-<script src="./practical-2025-v602.js?v=602"></script>
+<script src="./practical-2025-official.js?v=604"></script>
+<script src="./practical-2025-original-prompts.js?v=604"></script>
+<script src="./practical-2025-v604.js?v=604"></script>
 </body>
 </html>
