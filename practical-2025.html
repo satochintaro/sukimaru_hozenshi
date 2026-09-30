@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#123a67">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>2025年度 実技｜スキマル保全士 Ver 6.0.9</title>
-<link rel="stylesheet" href="./practical-2025-v609.css?v=609">
+<title>2025年度 実技｜スキマル保全士 Ver 7.0.0</title>
+<link rel="stylesheet" href="./practical-2025-v700.css?v=700">
 </head>
 <body>
 <header class="topbar">
@@ -33,29 +33,7 @@
     <div class="focus-answer"><span id="focusLabel">⑤</span><div><small>今回の解答箇所</small><b id="focusDetail"></b></div></div>
   </section>
 
-  <section class="reference card" aria-label="2025年度の過去問原本">
-    <div class="reference-title"><b>設問に必要な図・資料</b><span>タップで拡大</span></div>
-    <div id="tpmReadable" class="tpm-readable" hidden>
-      <h3>TPMの定義</h3>
-      <p>TPMは、次のように定義されている。</p>
-      <ol>
-        <li>生産システム効率化の極限追求（総合的効率化）をする <mark>⑦</mark> を目標にして、</li>
-        <li>生産システムのライフサイクル全体を対象とした「災害ゼロ・不良ゼロ・故障ゼロ」など、あらゆるロスを <mark>⑧</mark> する仕組みを現場・現物で構築し、</li>
-        <li>生産部門をはじめ、開発、営業、管理などのあらゆる部門にわたって、</li>
-        <li>トップから第一線従業員に至るまで <mark>⑨</mark> し、</li>
-        <li><mark>⑩</mark> により、ロス・ゼロを達成することをいう。</li>
-      </ol>
-      <p class="source-note">原本の定義を読みやすく組み直したものです。下に原本の図も掲載しています。</p>
-    </div>
-    <button id="figureButton" class="figure-button" type="button" aria-label="設問の図を拡大">
-      <img id="figureImage" alt="設問の参照図">
-      <span>図を拡大して見る <b>↗</b></span>
-    </button>
-    <details class="full-original">
-      <summary>原本の該当ページを確認する</summary>
-      <div id="originalPages" class="original-pages"></div>
-    </details>
-  </section>
+  <section id="sourceCard" class="source-card card"><div class="source-head"><strong>原本の資料</strong><div class="source-tools"><button id="pinSource" type="button" aria-pressed="false">📌 資料を固定</button><button id="openSource" type="button">原本全体 ↗</button></div></div><div id="sourceContent" class="source-content"></div><div id="originalPages" hidden></div></section>
   <section class="answer card">
     <div class="answer-kicker"><span id="blankLabel">①</span><b id="questionCaption">原本の設問を確認して解答してください。</b></div>
     <div id="choiceList" class="choices"></div>
@@ -99,7 +77,7 @@
   </div>
 </section>
 
-<button id="referenceFab" class="reference-fab" type="button" aria-label="参照図・原本を開く">📄 図・問題文を見る</button>
+<button id="referenceFab" hidden class="reference-fab" type="button" aria-label="参照図・原本を開く">📄 図・問題文を見る</button>
 <div id="zoom" class="zoom" aria-hidden="true" role="dialog" aria-modal="true" aria-label="過去問原本・参照図">
   <div class="zoom-toolbar">
     <button id="zoomClose" type="button" aria-label="問題に戻る">← 問題に戻る</button>
@@ -111,8 +89,9 @@
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./practical-2025-official.js?v=609"></script>
-<script src="./practical-2025-original-prompts.js?v=609"></script>
-<script src="./practical-2025-v609.js?v=609"></script>
+<script src="./practical-2025-official.js?v=700"></script>
+<script src="./practical-2025-original-prompts.js?v=700"></script>
+<script src="./practical-2025-source-layout.js?v=700"></script>
+<script src="./practical-2025-v700.js?v=700"></script>
 </body>
 </html>
