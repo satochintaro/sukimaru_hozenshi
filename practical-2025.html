@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#123a67">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>2025年度 実技｜スキマル保全士 Ver 6.0.7</title>
-<link rel="stylesheet" href="./practical-2025-v607.css?v=607">
+<title>2025年度 実技｜スキマル保全士 Ver 6.0.9</title>
+<link rel="stylesheet" href="./practical-2025-v609.css?v=609">
 </head>
 <body>
 <header class="topbar">
   <button id="exitBtn" class="back-btn" type="button" aria-label="実技メニューへ戻る">‹</button>
-  <div class="top-title"><b>2025年度 実技</b><button id="taskJumpBtn" class="task-jump-trigger" type="button" aria-expanded="false" aria-controls="taskJumpPanel">課題1 / 9 <span aria-hidden="true">⌄</span></button><span id="topMeta" class="visually-hidden">課題1 / 9</span></div>
+  <div class="top-title"><b>2025年度 実技</b><span id="topMeta" class="visually-hidden">課題1 / 9</span></div>
   <div class="top-count" id="topCount">1 / 72</div>
 </header>
 <div id="taskJumpBackdrop" class="task-jump-backdrop" hidden></div>
@@ -22,6 +22,7 @@
   <div id="taskJumpList" class="task-jump-list"></div>
 </section>
 <div class="progress"><i id="progressBar"></i></div>
+<nav class="jump-nav" aria-label="課題の移動"><button id="taskJumpBtn" class="task-jump-trigger" type="button" aria-expanded="false" aria-controls="taskJumpPanel">課題1 / 9 <span aria-hidden="true">⌄</span></button><span class="jump-nav-hint">タップして課題を移動</span></nav>
 
 <main id="examScreen" class="screen active">
   <section class="question-head card">
@@ -103,19 +104,15 @@
   <div class="zoom-toolbar">
     <button id="zoomClose" type="button" aria-label="問題に戻る">← 問題に戻る</button>
     <strong id="zoomTitle">原本・参照図</strong>
-    <button id="zoomFit" type="button" aria-pressed="false">ページ全体</button>
+    <button id="zoomFit" type="button" aria-pressed="false">原本全体</button>
   </div>
-  <div id="zoomScroll" class="zoom-scroll"><img id="zoomImage" alt="拡大した参照図"></div>
-  <div class="zoom-bottom">
-    <button id="zoomPrev" type="button">‹ 前のページ</button>
-    <span id="zoomPage">1 / 1</span>
-    <button id="zoomNext" type="button">次のページ ›</button>
-  </div>
+  <div id="zoomScroll" class="zoom-scroll"><div id="zoomPages" class="zoom-pages"></div></div>
+  <div class="zoom-bottom"><span id="zoomPage">上下にスクロールして続きが読めます</span></div>
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./practical-2025-official.js?v=607"></script>
-<script src="./practical-2025-original-prompts.js?v=607"></script>
-<script src="./practical-2025-v607.js?v=607"></script>
+<script src="./practical-2025-official.js?v=609"></script>
+<script src="./practical-2025-original-prompts.js?v=609"></script>
+<script src="./practical-2025-v609.js?v=609"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-  const VERSION="6.0.7";
+  const VERSION="6.0.9";
   document.body.classList.add("v58");
   document.title=document.title
     .replace(/Ver\s*[56]\.\d+(?:\.\d+)?\s*TEST/gi,`Ver ${VERSION}`)
