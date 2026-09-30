@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#123a67">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>2025年度 実技｜スキマル保全士 Ver 7.3.0</title>
-<link rel="stylesheet" href="./practical-2025-v730.css?v=730">
+<title>2025年度 実技｜スキマル保全士 Ver 7.4.0</title>
+<link rel="stylesheet" href="./practical-2025-v740.css?v=740">
 </head>
 <body>
 <header class="topbar">
@@ -33,7 +33,10 @@
     <div class="focus-answer"><span id="focusLabel">⑤</span><div><small>今回の解答箇所</small><b id="focusDetail"></b></div></div>
   </section>
 
-  <section id="sourceCard" class="source-card card"><div class="source-head"><strong>原本の図・資料</strong><div class="source-tools"><button id="openSource" type="button">原本ページを確認 ↗</button></div></div><div id="sourceContent" class="source-content"></div><div id="originalPages" hidden></div></section>
+  <section id="sourceCard" class="source-card card" aria-label="過去問原本">
+    <div class="source-head"><strong>過去問原本</strong><span class="original-scroll-note">原本のページ順に、下へスクロール</span></div>
+    <div id="originalPages" class="original-pages"></div>
+  </section>
   <section class="answer card">
     <div class="answer-kicker"><span id="blankLabel">①</span><b id="questionCaption">原本の設問を確認して解答してください。</b></div>
     <div id="choiceList" class="choices"></div>
@@ -77,21 +80,10 @@
   </div>
 </section>
 
-<button id="referenceFab" hidden class="reference-fab" type="button" aria-label="参照図・原本を開く">📄 図・問題文を見る</button>
-<div id="zoom" class="zoom" aria-hidden="true" role="dialog" aria-modal="true" aria-label="過去問原本・参照図">
-  <div class="zoom-toolbar">
-    <button id="zoomClose" type="button" aria-label="問題に戻る">← 問題に戻る</button>
-    <strong id="zoomTitle">原本・参照図</strong>
-    <button id="zoomFit" type="button" aria-pressed="false">原本全体</button>
-  </div>
-  <div id="zoomScroll" class="zoom-scroll"><div id="zoomPages" class="zoom-pages"></div></div>
-  <div class="zoom-bottom"><span id="zoomPage">上下にスクロールして続きが読めます</span></div>
-</div>
-
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./practical-2025-official.js?v=730"></script>
-<script src="./practical-2025-original-prompts.js?v=730"></script>
-<script src="./practical-2025-source-layout.js?v=730"></script>
-<script src="./practical-2025-v730.js?v=730"></script>
+<script src="./practical-2025-official.js?v=740"></script>
+<script src="./practical-2025-original-prompts.js?v=740"></script>
+
+<script src="./practical-2025-v740.js?v=740"></script>
 </body>
 </html>
