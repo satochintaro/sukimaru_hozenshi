@@ -6,15 +6,21 @@
 <meta name="theme-color" content="#123a67">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>2025年度 実技｜スキマル保全士 Ver 6.0.6</title>
-<link rel="stylesheet" href="./practical-2025-v606.css?v=606">
+<title>2025年度 実技｜スキマル保全士 Ver 6.0.7</title>
+<link rel="stylesheet" href="./practical-2025-v607.css?v=607">
 </head>
 <body>
 <header class="topbar">
   <button id="exitBtn" class="back-btn" type="button" aria-label="実技メニューへ戻る">‹</button>
-  <div class="top-title"><b>2025年度 実技</b><span id="topMeta">課題1 / 9</span></div>
+  <div class="top-title"><b>2025年度 実技</b><button id="taskJumpBtn" class="task-jump-trigger" type="button" aria-expanded="false" aria-controls="taskJumpPanel">課題1 / 9 <span aria-hidden="true">⌄</span></button><span id="topMeta" class="visually-hidden">課題1 / 9</span></div>
   <div class="top-count" id="topCount">1 / 72</div>
 </header>
+<div id="taskJumpBackdrop" class="task-jump-backdrop" hidden></div>
+<section id="taskJumpPanel" class="task-jump-panel" aria-label="課題へジャンプ" hidden>
+  <div class="task-jump-heading"><b>課題を選択</b><button id="taskJumpClose" type="button" aria-label="閉じる">×</button></div>
+  <p>課題をタップすると、未回答の最初の問題へ移動します。</p>
+  <div id="taskJumpList" class="task-jump-list"></div>
+</section>
 <div class="progress"><i id="progressBar"></i></div>
 
 <main id="examScreen" class="screen active">
@@ -108,8 +114,8 @@
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./practical-2025-official.js?v=606"></script>
-<script src="./practical-2025-original-prompts.js?v=606"></script>
-<script src="./practical-2025-v606.js?v=606"></script>
+<script src="./practical-2025-official.js?v=607"></script>
+<script src="./practical-2025-original-prompts.js?v=607"></script>
+<script src="./practical-2025-v607.js?v=607"></script>
 </body>
 </html>

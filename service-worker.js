@@ -1,4 +1,4 @@
-const CACHE="skimaru-v6-0-6-readable-prompt-r31";
+const CACHE="skimaru-v6-0-7-task-jump-r32";
 self.addEventListener("install",()=>self.skipWaiting());
 self.addEventListener("activate",event=>{
   event.waitUntil(
