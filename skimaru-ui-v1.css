@@ -35,3 +35,6 @@ button,.options button,.choice,.controls button,.actions button{min-height:44px}
  .question-grid button{min-height:44px!important}
 }
 @media(min-width:900px){.source,.source-card{max-width:980px;margin-left:auto;margin-right:auto}.wrap{max-width:980px}}
+
+/* 2022–23: full-width original pages and larger grouped answer buttons */
+#tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;padding:8px 0}#tabs button{flex:0 0 auto;min-width:68px}#questions .q{margin:14px 0;padding:12px;border:1px solid #dbe5f0;border-radius:12px;background:#fff}#questions .options{display:flex;flex-wrap:wrap;gap:9px}#questions .options button{min-width:46px;flex:0 0 auto}#source img{width:100%;height:auto;display:block}#source{max-height:none;overflow:visible}#nav{position:static}#questions .q strong{display:block;margin-bottom:10px}

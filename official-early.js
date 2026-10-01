@@ -6,6 +6,6 @@
  const id=state.attemptId||(state.attemptId=`${y}-${kind}-${Date.now()}`);
  if(history.some(r=>r.id===id))return;
  history.push({id,year:y,kind,total,correct:good,rate:Math.round(good/total*100),
-   completedAt:state.completedAt||new Date().toISOString(),branch:state.branch||null});
+   completedAt:state.completedAt||new Date().toISOString(),branch:state.branch||null,answers:{...state.answers}});
  localStorage.setItem(historyKey,JSON.stringify(history));save();
 }function showResults(){if(!state.finished||answered()<total){alert('全問解答後に採点できます');return}$('exam').classList.add('hidden');$('results').classList.remove('hidden');const correct=info[kind];let good=0;const host=$('resultList');host.replaceChildren();for(let n=1;n<=total;n++){const ok=state.answers[n]===correct[n];if(ok)good++;const row=document.createElement('div');row.className='result-row';row.innerHTML=`<span>問題${n}　あなた：${safe(state.answers[n])}　正解：<b>${safe(correct[n])}</b></span><b class="${ok?'good':'bad'}">${ok?'○':'×'}</b>`;host.append(row)}$('score').textContent=`${good} / ${total}問（${Math.round(good/total*100)}%）`;$('resultBack').onclick=()=>{$('results').classList.add('hidden');$('exam').classList.remove('hidden');render()};window.scrollTo(0,0)}$('reset').onclick=()=>{if(!confirm('この年度の回答をすべて消去しますか？'))return;state={answers:{},branch:practical?'A':null,finished:false};save();taskIndex=0;$('results').classList.add('hidden');$('exam').classList.remove('hidden');render()};render();if(state.finished&&answered()===total){recordHistory();showResults();}})();

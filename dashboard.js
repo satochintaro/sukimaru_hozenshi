@@ -73,16 +73,36 @@ function migrateLegacy(){
   if(!r.complete||r.correct===null)continue;
   const raw=load(r.key)||{};
   const id=raw.attemptId||`legacy-${r.year}-${r.kind}-${raw.completedAt||'first'}`;
-  if(h.some(x=>x.id===id))continue;
+  const existing=h.find(x=>x.id===id);
+  if(existing){
+    if(!existing.answers&&(!r.branch||r.branch==='A')){
+      existing.answers=r.year<2024?{...r.answers}:Object.fromEntries(Object.entries(r.answers).map(([n,a])=>[n,a?.picked]));
+      changed=true;
+    }
+    continue;
+  }
   h.push({id,year:r.year,kind:r.kind,total:r.total,correct:r.correct,
     rate:pct(r.correct,r.total),completedAt:raw.completedAt||null,branch:r.branch||null,
-    legacy:true});
+    answers:r.year<2024?{...r.answers}:Object.fromEntries(Object.entries(r.answers).map(([n,a])=>[n,a?.picked])),legacy:true});
   changed=true;
  }
  if(changed)localStorage.setItem(HISTORY_KEY,JSON.stringify(h));
  return h;
 }
 const history=migrateLegacy();
+// SVG chart is rendered locally: no external libraries or network calls.
+function chartFor(items){
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('viewBox','0 0 340 142');svg.setAttribute('role','img');
+ svg.setAttribute('aria-label',`受験回数${items.length}回、正答率推移 ${items.map(x=>x.rate+'%').join('、')}`);
+ svg.style.cssText='display:block;width:100%;max-width:520px;margin:12px auto';
+ const NS='http://www.w3.org/2000/svg',node=(tag,attrs)=>{const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);svg.append(n);return n};
+ [0,50,100].forEach(v=>{const y=110-v;node('line',{x1:35,y1:y,x2:326,y2:y,stroke:'#dce5f0','stroke-dasharray':'3 3'});const t=node('text',{x:0,y:y+4,'font-size':11,fill:'#64748b'});t.textContent=v+'%'});
+ const pts=items.map((h,i)=>[items.length===1?180:35+i*291/(items.length-1),110-Math.max(0,Math.min(100,h.rate))]);
+ if(pts.length>1)node('polyline',{points:pts.map(p=>p.join(',')).join(' '),fill:'none',stroke:'#2563eb','stroke-width':3,'stroke-linejoin':'round'});
+ pts.forEach(([x,y],i)=>{node('circle',{cx:x,cy:y,r:4,fill:'#2563eb'});const t=node('text',{x,y:Math.max(10,y-9),'text-anchor':'middle','font-size':10,fill:'#1e3a5f'});t.textContent=items[i].rate+'%'});
+ return svg;
+}
 const historyHost=$("history");
 if(!history.length)historyHost.append(el("div","empty","試験を最後まで解くと、受験履歴がここに蓄積されます。"));
 else{
@@ -93,7 +113,7 @@ else{
   const section=el("div","year");
   section.append(el("h3","",`${spec.year}年度 ${spec.kind==="gakka"?"学科":"実技"}　${items.length}回`));
   const best=Math.max(...items.map(x=>x.rate)),last=items[items.length-1];
-  section.append(el("p","",`自己ベスト ${best}% ／ 最新 ${last.rate}%`));
+  section.append(el("p","",`自己ベスト ${best}% ／ 最新 ${last.rate}%`));section.append(chartFor(items));
   if(items.length>1){
     const diff=last.rate-items[items.length-2].rate;
     section.append(el("span",diff>0?"tag":"muted",`前回比 ${diff>0?"+":""}${diff}ポイント`));
