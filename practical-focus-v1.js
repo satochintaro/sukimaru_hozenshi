@@ -28,7 +28,25 @@
       viewImg.removeAttribute("src");
     };
     viewer.querySelector(".practical-focus-close").addEventListener("click",close);
-    viewer.addEventListener("click",e=>{if(e.target===viewer||e.target.classList.contains("practical-focus-stage"))close();});
+    // 拡大後は画像をダブルタップすると閉じる。
+    // 1回タップでは閉じないので、ピンチ・スクロール操作を邪魔しません。
+    let lastTap=0;
+    viewer.addEventListener("touchend",e=>{
+      if(!viewer.classList.contains("open"))return;
+      const now=Date.now();
+      if(now-lastTap>0&&now-lastTap<330){
+        e.preventDefault();
+        lastTap=0;
+        close();
+        return;
+      }
+      lastTap=now;
+    },{passive:false});
+    viewer.addEventListener("dblclick",e=>{
+      if(!viewer.classList.contains("open"))return;
+      e.preventDefault();
+      close();
+    });
     document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
 
     document.addEventListener("click",e=>{
