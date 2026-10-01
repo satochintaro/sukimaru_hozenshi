@@ -1,5 +1,7 @@
-const CACHE="skimaru-concerns-fix-20261001";
-self.addEventListener("install",()=>self.skipWaiting());
+const CACHE="skimaru-live-20261002-v2";
+self.addEventListener("install",event=>{
+  self.skipWaiting();
+});
 self.addEventListener("activate",event=>{
   event.waitUntil(
     caches.keys()
@@ -10,34 +12,42 @@ self.addEventListener("activate",event=>{
 self.addEventListener("message",event=>{
   if(event.data&&event.data.type==="SKIP_WAITING")self.skipWaiting();
 });
-async function networkFirst(request){
-  const cache=await caches.open(CACHE);
-  try{
-    const response=await fetch(request,{cache:"no-store"});
-    if(response&&response.ok)cache.put(request,response.clone());
-    return response;
-  }catch(error){
-    const hit=await cache.match(request);
-    if(hit)return hit;
-    throw error;
-  }
-}
-async function cacheFirst(request){
-  const cache=await caches.open(CACHE);
-  const hit=await cache.match(request);
-  if(hit)return hit;
-  const response=await fetch(request,{cache:"no-cache"});
-  if(response&&response.ok)cache.put(request,response.clone());
-  return response;
-}
 self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET")return;
   const url=new URL(event.request.url);
   if(url.origin!==self.location.origin)return;
+
+  // HTML/navigation must always come from the network so practical.html cannot stay on an old screen.
   if(event.request.mode==="navigate"||url.pathname.endsWith(".html")||url.pathname.endsWith("/")){
-    event.respondWith(networkFirst(event.request));return;
+    event.respondWith(
+      fetch(event.request,{cache:"no-store"}).catch(()=>caches.match(event.request))
+    );
+    return;
   }
-  if(/\.(?:js|css|webmanifest|png|jpg|jpeg|webp|svg)$/.test(url.pathname)){
-    event.respondWith(cacheFirst(event.request));
+
+  // Static assets may be cached, but refresh them from network when possible.
+  if(/\.(?:js|css|webmanifest)$/.test(url.pathname)){
+    event.respondWith(
+      fetch(event.request,{cache:"no-store"}).then(async response=>{
+        if(response&&response.ok){
+          const cache=await caches.open(CACHE);
+          cache.put(event.request,response.clone());
+        }
+        return response;
+      }).catch(()=>caches.match(event.request))
+    );
+    return;
+  }
+
+  if(/\.(?:png|jpg|jpeg|webp|svg)$/.test(url.pathname)){
+    event.respondWith(
+      caches.open(CACHE).then(async cache=>{
+        const hit=await cache.match(event.request);
+        if(hit)return hit;
+        const response=await fetch(event.request);
+        if(response&&response.ok)cache.put(event.request,response.clone());
+        return response;
+      })
+    );
   }
 });
