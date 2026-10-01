@@ -1,4 +1,4 @@
-const CACHE="skimaru-step2-unanswered-nav-20261001";
+const CACHE="skimaru-step4-history-20261001";
 self.addEventListener("install",()=>self.skipWaiting());
 self.addEventListener("activate",event=>{
   event.waitUntil(

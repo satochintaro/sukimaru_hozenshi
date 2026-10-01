@@ -64,6 +64,50 @@ else{
   weakness.append(box);
  }
 }
+
+const HISTORY_KEY='skimaruExamHistory_v1';
+function getHistory(){try{const h=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');return Array.isArray(h)?h:[]}catch{return []}}
+function migrateLegacy(){
+ const h=getHistory();let changed=false;
+ for(const r of results){
+  if(!r.complete||r.correct===null)continue;
+  const raw=load(r.key)||{};
+  const id=raw.attemptId||`legacy-${r.year}-${r.kind}-${raw.completedAt||'first'}`;
+  if(h.some(x=>x.id===id))continue;
+  h.push({id,year:r.year,kind:r.kind,total:r.total,correct:r.correct,
+    rate:pct(r.correct,r.total),completedAt:raw.completedAt||null,branch:r.branch||null,
+    legacy:true});
+  changed=true;
+ }
+ if(changed)localStorage.setItem(HISTORY_KEY,JSON.stringify(h));
+ return h;
+}
+const history=migrateLegacy();
+const historyHost=$("history");
+if(!history.length)historyHost.append(el("div","empty","試験を最後まで解くと、受験履歴がここに蓄積されます。"));
+else{
+ for(const spec of specs){
+  const items=history.filter(h=>h.year===spec.year&&h.kind===spec.kind)
+    .sort((a,b)=>String(a.completedAt||"").localeCompare(String(b.completedAt||"")));
+  if(!items.length)continue;
+  const section=el("div","year");
+  section.append(el("h3","",`${spec.year}年度 ${spec.kind==="gakka"?"学科":"実技"}　${items.length}回`));
+  const best=Math.max(...items.map(x=>x.rate)),last=items[items.length-1];
+  section.append(el("p","",`自己ベスト ${best}% ／ 最新 ${last.rate}%`));
+  if(items.length>1){
+    const diff=last.rate-items[items.length-2].rate;
+    section.append(el("span",diff>0?"tag":"muted",`前回比 ${diff>0?"+":""}${diff}ポイント`));
+  }
+  items.forEach((r,i)=>{
+    const line=el("div","topic");
+    const date=r.completedAt?new Date(r.completedAt).toLocaleDateString("ja-JP"):"過去の採点済み記録";
+    line.append(el("div","",`${i+1}回目・${date}　${r.correct}/${r.total}問（${r.rate}%）${r.branch?"・選択"+r.branch:""}`),bar(r.rate));
+    section.append(line);
+  });
+  historyHost.append(section);
+ }
+}
+
 const next=$("nextStudy");
 const first=results.find(r=>!r.complete);
 if(first){
