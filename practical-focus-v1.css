@@ -32,3 +32,19 @@
   .source img,.original-inline-image{width:100%!important;max-width:none!important}
   .practical-focus-stage img{width:165%}
 }
+
+/* iPhone/PWA: 左上の戻る操作を確実にタップできる領域へ */
+.early-top{
+  padding-top:calc(10px + env(safe-area-inset-top))!important;
+  position:relative;z-index:20
+}
+.early-back{
+  display:inline-flex!important;align-items:center;gap:5px;
+  min-height:44px;padding:7px 10px 7px 2px;
+  position:relative;z-index:21;
+  text-decoration:none!important;
+  -webkit-tap-highlight-color:rgba(255,255,255,.16);
+  touch-action:manipulation
+}
+.early-back span{pointer-events:none}
+.early-top h1{margin-top:2px!important}
