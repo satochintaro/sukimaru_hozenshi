@@ -200,7 +200,7 @@
   }
   function prev(){if(current>1){current--;render();}}
   function showBranch(){closeTaskJump();updateTaskJump();showScreen('branchScreen');$('topMeta').textContent='課題3 / 選択式';$('topCount').textContent='14 / 74';$('progressBar').style.width=`${13/74*100}%`;}
-  function chooseBranch(branch){if(state.branch&&state.branch!==branch){for(let n=14;n<=20;n++)delete state.answers[n];}state.branch=branch;state.completedAt=null;state.synced=false;save();current=14;render();}
+  function chooseBranch(branch){if(state.completedAt){toast('採点済みです。再挑戦する場合は最初から解いてください。');return;}if(state.branch&&state.branch!==branch){for(let n=14;n<=20;n++)delete state.answers[n];}state.branch=branch;state.completedAt=null;state.synced=false;save();current=14;render();}
   function correctCount(){let c=0;for(let n=1;n<=74;n++)if(state.answers[n]?.picked===blankFor(n)?.answer)c++;return c;}
   function recordHistory(){
     const key='skimaruExamHistory_v1';

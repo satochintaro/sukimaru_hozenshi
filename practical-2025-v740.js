@@ -257,7 +257,7 @@
   }
   function prev(){if(current>1){current--;render();}}
   function showBranch(){closeTaskJump();updateTaskJump();showScreen('branchScreen');$('topMeta').textContent='課題9 / 選択式';$('topCount').textContent='64 / 72';$('progressBar').style.width=`${63/72*100}%`;}
-  function chooseBranch(branch){state.branch=branch;state.completedAt=null;state.synced=false;save();current=64;render();}
+  function chooseBranch(branch){if(state.completedAt){toast('採点済みです。再挑戦する場合は最初から解いてください。');return;}if(state.branch&&state.branch!==branch){for(let n=64;n<=72;n++)delete state.answers[n];state.attemptId=null;}state.branch=branch;state.completedAt=null;state.synced=false;save();current=64;render();}
   function correctCount(){let c=0;for(let n=1;n<=72;n++)if(state.answers[n]?.picked===blankFor(n)?.answer)c++;return c;}
   function recordHistory(){
     const key='skimaruExamHistory_v1';
