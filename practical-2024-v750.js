@@ -1,6 +1,7 @@
 "use strict";
 (() => {
   const VERSION="7.5.0";
+  const TOTAL=74,BRANCH_START=14,BRANCH_END=20;
   const STORE="skimaruPractical2024V750";
   const LEGACY="skimaruPracticalDataTestV1";
   const tasks=(window.SKIMARU_2024_OFFICIAL_TASKS||[]).slice().sort((a,b)=>(a.officialOrder||0)-(b.officialOrder||0));
@@ -69,6 +70,29 @@
       host.appendChild(btn);
     });
   }
+  function updateQuestionGrid(){
+    const done=Object.keys(state.answers).filter(k=>Number(k)>=1&&Number(k)<=TOTAL).length;
+    $('answerProgress').textContent=`回答済み ${done} / ${TOTAL}・未回答 ${TOTAL-done}`;
+    const btn=$('jumpUnansweredBtn');btn.disabled=done===TOTAL;
+    btn.textContent=done===TOTAL?'全問回答済み ✓':'次の未回答へ →';
+    const grid=$('questionGrid');grid.replaceChildren();
+    for(let n=1;n<=TOTAL;n++){
+      const b=document.createElement('button');b.type='button';b.textContent=String(n);
+      const answered=Boolean(state.answers[n]);
+      b.className=(answered?'answered':'unanswered')+(n===current?' current':'');
+      b.setAttribute('aria-label',`問題${n}：${answered?'回答済み':'未回答'}`);
+      if(n===current)b.setAttribute('aria-current','step');
+      b.addEventListener('click',()=>{current=n;if(n>=BRANCH_START&&n<=BRANCH_END&&!state.branch){showBranch();return;}render();});
+      grid.appendChild(b);
+    }
+  }
+  function jumpToUnanswered(){
+    let target=null;
+    for(let n=current+1;n<=TOTAL;n++)if(!state.answers[n]){target=n;break;}
+    if(target===null)for(let n=1;n<=current;n++)if(!state.answers[n]){target=n;break;}
+    if(target===null){toast('全問回答済みです');return;}
+    current=target;if(current>=BRANCH_START&&current<=BRANCH_END&&!state.branch){showBranch();return;}render();
+  }
   function openTaskJump(){
     updateTaskJump();
     $('taskJumpPanel').hidden=false;
@@ -84,6 +108,7 @@
     $('topMeta').textContent=`課題${tno} / 11`;
     $('topCount').textContent=`${current} / 74`;
     updateTaskJump();
+    updateQuestionGrid();
     $('progressBar').style.width=`${(current-1)/74*100}%`;
     $('category').textContent=info.category;
     $('groupLabel').textContent=group.label;
@@ -134,8 +159,8 @@
     const host=$('originalPages');host.replaceChildren();
     pageList.forEach((page,index)=>{const section=document.createElement('section');section.className='official-page';const heading=document.createElement('div');heading.className='official-page-label';heading.textContent=`原本 ${page-3}ページ`;const img=document.createElement('img');img.loading=index?'lazy':'eager';img.decoding='async';img.src=`./official_2024_p${page}.png`;img.alt=`2024年度 実技 原本 ${page-3}ページ`;img.className='original-inline-image';section.append(heading,img);host.appendChild(section);});
   }
-  function pick(idx){if(state.completedAt)return;selected=idx;if(state.answers[current]){state.answers[current]={picked:idx,at:new Date().toISOString()};save();applyAnswered(state.answers[current],blankFor(current));}else{for(const b of $('choiceList').children)b.classList.toggle('selected',Number(b.dataset.index)===idx);$('submitBtn').disabled=false;}}
-  function submit(){if(selected===null||state.completedAt)return;state.answers[current]={picked:selected,at:new Date().toISOString()};state.synced=false;save();applyAnswered(state.answers[current],blankFor(current));}
+  function pick(idx){if(state.completedAt)return;selected=idx;if(state.answers[current]){state.answers[current]={picked:idx,at:new Date().toISOString()};save();updateQuestionGrid();applyAnswered(state.answers[current],blankFor(current));}else{for(const b of $('choiceList').children)b.classList.toggle('selected',Number(b.dataset.index)===idx);$('submitBtn').disabled=false;}}
+  function submit(){if(selected===null||state.completedAt)return;state.answers[current]={picked:selected,at:new Date().toISOString()};state.synced=false;save();updateQuestionGrid();applyAnswered(state.answers[current],blankFor(current));}
   function firstUnanswered(){for(let i=1;i<=74;i++)if(!state.answers[i])return i;return null;}
   function applyAnswered(answer,blank){
     selected=answer.picked;
@@ -181,6 +206,8 @@
   function resetExam(){if(!confirm('2024年度の実技回答をリセットして最初から解きますか？'))return;state=emptyState();save();current=1;render();}
   function exit(){location.href='./practical.html';}
 
+  $('jumpUnansweredBtn').addEventListener('click',jumpToUnanswered);
+  $('toggleQuestionGrid').addEventListener('click',()=>{const grid=$('questionGrid');grid.hidden=!grid.hidden;$('toggleQuestionGrid').setAttribute('aria-expanded',String(!grid.hidden));$('toggleQuestionGrid').textContent=grid.hidden?'問題一覧を表示 ▾':'問題一覧を閉じる ▴';});
   $('taskJumpBtn').addEventListener('click',()=>{$('taskJumpPanel').hidden?openTaskJump():closeTaskJump();});
   $('taskJumpClose').addEventListener('click',closeTaskJump);
   $('taskJumpBackdrop').addEventListener('click',closeTaskJump);

@@ -1,4 +1,4 @@
-const CACHE="skimaru-v7-6-4-deferred-grading";
+const CACHE="skimaru-step2-unanswered-nav-20261001";
 self.addEventListener("install",()=>self.skipWaiting());
 self.addEventListener("activate",event=>{
   event.waitUntil(

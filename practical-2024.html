@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>2024年度 実技｜スキマル保全士 Ver 7.5.0</title>
-<link rel="stylesheet" href="./practical-2024-v750.css?v=751">
-</head>
+<link rel="stylesheet" href="./practical-2024-v750.css?v=765">
+<style>.unanswered-nav{margin:12px 0;padding:12px!important;max-width:100%;overflow:visible!important}.unanswered-head{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.unanswered-head strong{font-size:15px}.unanswered-head button{font-size:13px;min-height:40px;padding:8px 12px;white-space:normal}.question-grid-toggle{display:block;width:100%;margin-top:8px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:8px;padding:9px;color:#24435e;font-weight:700}.question-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(42px,1fr));gap:7px;padding-top:10px;max-width:100%;overflow:visible}.question-grid[hidden]{display:none!important}.question-grid button{min-width:0;min-height:42px;padding:7px 2px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:13px;font-weight:700}.question-grid button.answered{background:#e0f2fe;border-color:#7dd3fc;color:#075985}.question-grid button.current{outline:3px solid #f59e0b;outline-offset:0}.question-grid button.unanswered{background:#fff7ed;border-color:#fdba74;color:#9a3412}@media(max-width:390px){.unanswered-nav{padding:9px!important}.question-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}}</style></head>
 <body>
 <header class="topbar">
   <button id="exitBtn" class="back-btn" type="button" aria-label="実技メニューへ戻る">‹</button>
@@ -25,6 +25,7 @@
 <nav class="jump-nav" aria-label="課題の移動"><button id="taskJumpBtn" class="task-jump-trigger" type="button" aria-expanded="false" aria-controls="taskJumpPanel">課題1 / 11 <span aria-hidden="true">⌄</span></button><span class="jump-nav-hint">タップして課題を移動</span></nav>
 
 <main id="examScreen" class="screen active">
+<section id="unansweredNav" class="unanswered-nav card" aria-label="回答進捗と未回答への移動"><div class="unanswered-head"><strong id="answerProgress">回答済み 0 / 74</strong><button id="jumpUnansweredBtn" type="button" class="secondary">次の未回答へ →</button></div><button id="toggleQuestionGrid" class="question-grid-toggle" type="button" aria-expanded="false" aria-controls="questionGrid">問題一覧を表示 ▾</button><div id="questionGrid" class="question-grid" hidden></div></section>
   <section class="question-head card">
     <div class="head-row"><span id="category" class="pill">安全・環境</span><span id="groupLabel" class="group-label">設問 / 課題1</span></div>
     <h1 id="taskTitle">課題1：作業の安全</h1>
@@ -79,7 +80,7 @@
 </section>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./practical-2024-official.js?v=751"></script>
-<script src="./practical-2024-v750.js?v=764"></script>
+<script src="./practical-2024-official.js?v=765"></script>
+<script src="./practical-2024-v750.js?v=765"></script>
 </body>
 </html>
