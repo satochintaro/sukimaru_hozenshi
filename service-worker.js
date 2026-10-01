@@ -1,4 +1,4 @@
-const CACHE="skimaru-v7-5-1-2024-r41";
+const CACHE="skimaru-v7-6-2-2022-only-r43";
 self.addEventListener("install",()=>self.skipWaiting());
 self.addEventListener("activate",event=>{
   event.waitUntil(
