@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="./styles.css">
 <link rel="stylesheet" href="./theme-v58.css">
 <link rel="stylesheet" href="./practical-safe-v598.css?v=600">
+<style>#pt-home [hidden]{display:none!important}#pt-home .pt-hero{margin-bottom:12px}#pt-home .pn a.btn-g{display:flex;align-items:center;justify-content:center;min-height:64px;box-sizing:border-box}</style>
 </head>
 <body class="practical-body v58" data-learning-mode="practical">
 
@@ -31,17 +32,17 @@
     </nav>
     <div class="pt-hero">
       <span>実技演習</span><h1>実技演習</h1>
-      <p>課題文や図を見ながら、空欄に入る語句を選んで理解を定着させます。</p>
-      <small>全90課題 / ランダム10課題 / 2019〜2025年度</small>
+      <p>年度を選んで、過去問の原本を確認しながら解答できます。</p>
+      <small>2022〜2025年度の実技過去問</small>
     </div>
-    <div class="pt-stat-grid">
+    <div class="pt-stat-grid" hidden>
       <div><b id="pt-total">0</b><span>挑戦課題</span></div>
       <div><b id="pt-accuracy">—</b><span>空欄正答率</span></div>
       <div><b id="pt-wrong">0</b><span>復習課題</span></div>
     </div>
-    <button class="btn pt-primary" onclick="startPracticalTest()">ランダム10課題</button>
-    <button class="btn-g pt-retry" id="pt-retry" onclick="startWrongPractical()">間違えた課題を復習</button>
-    <!-- 年度別の実技問題だけを追加。既存のランダム演習と成績提出は変更しない。 -->
+    <button class="btn pt-primary" onclick="startPracticalTest()" hidden>ランダム10課題</button>
+    <button class="btn-g pt-retry" id="pt-retry" onclick="startWrongPractical()" hidden>間違えた課題を復習</button>
+    <!-- 実技の問題は2022〜2025年度の過去問のみを表示します。 -->
     <section class="pn" aria-label="年度別実技過去問" style="margin:14px 0;padding:14px">
       <div class="lb" style="margin-bottom:10px">年度別 実技過去問（選択課題Aのみ）</div>
       <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px">
@@ -51,9 +52,9 @@
         <a class="btn-g" style="text-align:center;text-decoration:none;padding:12px 4px" href="./jitugi-2022.html">2022年度・76問</a>
       </div>
     </section>
-    <div class="pt-section-head"><div><span>PRACTICE</span><h2>分野別に練習</h2></div></div>
-    <div id="pt-categories" class="pt-category-list"></div>
-    <button class="pt-reset" onclick="resetPracticalData()">実技成績をリセット</button>
+    <div class="pt-section-head" hidden><div><span>PRACTICE</span><h2>分野別に練習</h2></div></div>
+    <div id="pt-categories" class="pt-category-list" hidden></div>
+    <button class="pt-reset" onclick="resetPracticalData()" hidden>実技成績をリセット</button>
   </div>
 </section>
 
@@ -110,7 +111,7 @@
 <script src="./year-mode-core.js"></script>
 <script src="./supabase-config.js"></script>
 <script src="./practical.js"></script>
-<script src="./practical-year-mode.js"></script>
+<!-- Older year-mode panel is disabled: use official 2022-2025 pages above. -->
 <script src="./practical-v58.js"></script>
 <script src="./practical-safe-v598.js?v=600"></script>
 </body>
