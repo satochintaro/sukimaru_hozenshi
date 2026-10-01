@@ -77,7 +77,7 @@
   }
   function render(){
     if(current>=14&&current<=20&&!state.branch){showBranch();return;}
-    if(current>74){showResult();return;}
+    if(current>74){current=74;}
     showScreen('examScreen');
     const tno=taskNoFor(current), info=taskInfo[tno], group=groupFor(current), blank=blankFor(current);
     if(!blank){toast('問題データを読み込めませんでした');return;}
@@ -134,18 +134,50 @@
     const host=$('originalPages');host.replaceChildren();
     pageList.forEach((page,index)=>{const section=document.createElement('section');section.className='official-page';const heading=document.createElement('div');heading.className='official-page-label';heading.textContent=`原本 ${page-3}ページ`;const img=document.createElement('img');img.loading=index?'lazy':'eager';img.decoding='async';img.src=`./official_2024_p${page}.png`;img.alt=`2024年度 実技 原本 ${page-3}ページ`;img.className='original-inline-image';section.append(heading,img);host.appendChild(section);});
   }
-  function pick(idx){if(state.answers[current])return;selected=idx;for(const b of $('choiceList').children)b.classList.toggle('selected',Number(b.dataset.index)===idx);$('submitBtn').disabled=false;}
-  function submit(){const blank=blankFor(current);if(selected===null)return;const ok=selected===blank.answer;state.answers[current]={picked:selected,ok,at:new Date().toISOString()};state.completedAt=null;state.synced=false;save();applyAnswered(state.answers[current],blank);}
-  function applyAnswered(answer,blank){for(const b of $('choiceList').children){const idx=Number(b.dataset.index);b.disabled=true;b.classList.remove('selected','correct','wrong');if(idx===blank.answer)b.classList.add('correct');if(idx===answer.picked&&idx!==blank.answer)b.classList.add('wrong');}
-    const fb=$('feedback');fb.className=`feedback show ${answer.ok?'ok':'ng'}`;fb.innerHTML=`<b>${answer.ok?'正解':'不正解'}　正答：${escapeHtml(blank.choices[blank.answer])}</b><span>${escapeHtml(blank.explanation||'')}</span>`;
-    $('submitBtn').classList.add('hide');$('nextBtn').classList.remove('hide');$('nextBtn').textContent=current===13&&!state.branch?'課題3を選ぶ':current===74?'結果を見る':'次へ';
+  function pick(idx){if(state.completedAt)return;selected=idx;if(state.answers[current]){state.answers[current]={picked:idx,at:new Date().toISOString()};save();applyAnswered(state.answers[current],blankFor(current));}else{for(const b of $('choiceList').children)b.classList.toggle('selected',Number(b.dataset.index)===idx);$('submitBtn').disabled=false;}}
+  function submit(){if(selected===null||state.completedAt)return;state.answers[current]={picked:selected,at:new Date().toISOString()};state.synced=false;save();applyAnswered(state.answers[current],blankFor(current));}
+  function firstUnanswered(){for(let i=1;i<=74;i++)if(!state.answers[i])return i;return null;}
+  function applyAnswered(answer,blank){
+    selected=answer.picked;
+    for(const b of $('choiceList').children){
+      const idx=Number(b.dataset.index);
+      b.disabled=Boolean(state.completedAt);
+      b.classList.toggle('selected',idx===answer.picked);
+      b.classList.remove('correct','wrong');
+      if(state.completedAt){
+        if(idx===blank.answer)b.classList.add('correct');
+        if(idx===answer.picked&&idx!==blank.answer)b.classList.add('wrong');
+      }
+    }
+    const fb=$('feedback');
+    if(state.completedAt){
+      const ok=answer.picked===blank.answer;
+      fb.className=`feedback show ${ok?'ok':'ng'}`;
+      fb.innerHTML=`<b>${ok?'正解':'不正解'}　正答：${escapeHtml(blank.choices[blank.answer])}</b><span>${escapeHtml(blank.explanation||'')}</span>`;
+    }else{
+      fb.className='feedback show';
+      fb.textContent='回答を保存しました。採点は全問解答後です。別の選択肢で変更できます。';
+    }
+    $('submitBtn').classList.add('hide');$('nextBtn').classList.remove('hide');
+    $('nextBtn').textContent=current===13&&!state.branch?'選択課題へ':current===74?'採点へ':'次へ';
   }
-  function next(){if(!state.answers[current])return;if(current===13&&!state.branch){showBranch();return;}current++;render();}
+  function next(){
+    if(!state.answers[current])return;
+    if(current===13&&!state.branch){showBranch();return;}
+    if(current===74){
+      const missing=firstUnanswered();
+      if(missing!==null){toast('未回答があります。未回答の問題へ移動します。');current=missing;render();return;}
+      if(!state.branch){showBranch();return;}
+      if(!state.completedAt&&!confirm('全74問の回答を確定して、まとめて採点しますか？'))return;
+      showResult();return;
+    }
+    current++;render();
+  }
   function prev(){if(current>1){current--;render();}}
   function showBranch(){closeTaskJump();updateTaskJump();showScreen('branchScreen');$('topMeta').textContent='課題3 / 選択式';$('topCount').textContent='14 / 74';$('progressBar').style.width=`${13/74*100}%`;}
   function chooseBranch(branch){if(state.branch&&state.branch!==branch){for(let n=14;n<=20;n++)delete state.answers[n];}state.branch=branch;state.completedAt=null;state.synced=false;save();current=14;render();}
-  function correctCount(){let c=0;for(let n=1;n<=74;n++)if(state.answers[n]?.ok)c++;return c;}
-  function showResult(){closeTaskJump();state.completedAt=state.completedAt||new Date().toISOString();save();showScreen('resultScreen');$('topMeta').textContent='結果';$('topCount').textContent='74 / 74';$('progressBar').style.width='100%';const c=correctCount(),rate=Math.round(c/74*100);$('resultScore').textContent=c;$('resultRate').textContent=`正答率 ${rate}%・課題3 選択${state.branch}`;const list=$('resultTaskList');list.innerHTML='';taskRanges.forEach((r,i)=>{let ok=0;for(let n=r[0];n<=r[1];n++)if(state.answers[n]?.ok)ok++;const row=document.createElement('div');row.className='result-row';row.innerHTML=`<span>${escapeHtml(taskInfo[i+1].title)}</span><b>${ok} / ${r[1]-r[0]+1}</b>`;list.appendChild(row);});}
+  function correctCount(){let c=0;for(let n=1;n<=74;n++)if(state.answers[n]?.picked===blankFor(n)?.answer)c++;return c;}
+  function showResult(){const missing=[];for(let n=1;n<=74;n++)if(!state.answers[n])missing.push(n);if(missing.length){current=missing[0];toast('未回答が'+missing.length+'問あります。全問解答後に採点します。');render();return;}closeTaskJump();if(!state.completedAt){state.completedAt=new Date().toISOString();for(let n=1;n<=74;n++)state.answers[n].ok=state.answers[n].picked===blankFor(n)?.answer;save();}showScreen('resultScreen');$('topMeta').textContent='結果';$('topCount').textContent='74 / 74';$('progressBar').style.width='100%';const c=correctCount(),rate=Math.round(c/74*100);$('resultScore').textContent=c;$('resultRate').textContent=`正答率 ${rate}%・課題3 選択${state.branch}`;const list=$('resultTaskList');list.innerHTML='';taskRanges.forEach((r,i)=>{let ok=0;for(let n=r[0];n<=r[1];n++)if(state.answers[n]?.ok)ok++;const row=document.createElement('div');row.className='result-row';row.innerHTML=`<span>${escapeHtml(taskInfo[i+1].title)}</span><b>${ok} / ${r[1]-r[0]+1}</b>`;list.appendChild(row);});const review=document.createElement('div');review.className='answer-review';review.innerHTML='<h2>全74問の正解・解答</h2>';for(let n=1;n<=74;n++){const b=blankFor(n);if(!b)continue;const a=state.answers[n];const line=document.createElement('div');line.className='result-row';line.textContent=`問題${n}　解答：${b.choices[a.picked]}　正解：${b.choices[b.answer]}　${a.ok?'○':'×'}`;review.appendChild(line);}list.appendChild(review);}
   function resetExam(){if(!confirm('2024年度の実技回答をリセットして最初から解きますか？'))return;state=emptyState();save();current=1;render();}
   function exit(){location.href='./practical.html';}
 
@@ -157,6 +189,6 @@
 
   // Resume at the first unanswered question across all 74 questions.
   let first=1;while(first<=74&&state.answers[first])first++;
-  current=first;
+  current=first<=74?first:74;
   render();
 })();

@@ -1,4 +1,4 @@
-const CACHE="skimaru-v7-6-3-2023-addon";
+const CACHE="skimaru-v7-6-4-deferred-grading";
 self.addEventListener("install",()=>self.skipWaiting());
 self.addEventListener("activate",event=>{
   event.waitUntil(
@@ -37,7 +37,7 @@ self.addEventListener("fetch",event=>{
   if(event.request.mode==="navigate"||url.pathname.endsWith(".html")||url.pathname.endsWith("/")){
     event.respondWith(networkFirst(event.request));return;
   }
-  if(/\.(?:js|css|webmanifest|png|jpg|svg)$/.test(url.pathname)){
+  if(/\.(?:js|css|webmanifest|png|svg)$/.test(url.pathname)){
     event.respondWith(cacheFirst(event.request));
   }
 });
