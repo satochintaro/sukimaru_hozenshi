@@ -23,7 +23,7 @@
   };
   const taskInfo={1:{category:"安全・環境",title:"課題1：作業の安全"},2:{category:"5S",title:"課題2：5Sに関する知識"},3:{category:"効率化とロス",title:"課題3：設備効率を阻害するロス"},4:{category:"設備保全",title:"課題4：故障ゼロの考え方"},5:{category:"自主保全",title:"課題5：自主保全活動支援ツール"},6:{category:"自主保全",title:"課題6：発生源・困難個所対策"},7:{category:"改善・解析",title:"課題7：QCストーリー"},8:{category:"改善・解析",title:"課題8：なぜなぜ分析"},9:{category:"改善・解析",title:"課題9：改善の4原則（ECRS）"},10:{category:"設備保全",title:"課題10：検出機器（センサー）"},11:{category:"図面・測定",title:"課題11：図面の見方"}};
 
-  function emptyState(){return {version:VERSION,branch:null,answers:{},startedAt:new Date().toISOString(),completedAt:null,synced:false};}
+  function emptyState(){return {version:VERSION,branch:"A",answers:{},startedAt:new Date().toISOString(),completedAt:null,synced:false};}
   function loadState(){try{return Object.assign(emptyState(),JSON.parse(localStorage.getItem(STORE)||"null")||{});}catch(e){return emptyState();}}
   let state=loadState();
   let selected=null;
@@ -33,6 +33,11 @@
   const $=id=>document.getElementById(id);
   function save(){localStorage.setItem(STORE,JSON.stringify(state));}
   function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),1800);}
+  // A-only migration: keep completed B attempts for history, but switch unfinished B to A.
+  if(!state.completedAt && state.branch!=="A"){
+    if(state.branch==="B"){for(let n=14;n<=20;n++)delete state.answers[n];state.attemptId=null;}
+    state.branch="A";state.synced=false;save();
+  }
   function taskFor(n,branch=state.branch){const t=taskNoFor(n);return tasks.find(x=>x.officialOrder===t&&(!x.choiceBranch||x.choiceBranch===branch));}
   function blankFor(n){const t=taskFor(n);return t?.blanks.find(b=>Number(String(b.id).replace("q",""))===n);}
   function taskNoFor(n){if(n<=8)return 1;if(n<=13)return 2;if(n<=20)return 3;if(n<=29)return 4;if(n<=33)return 5;if(n<=41)return 6;if(n<=51)return 7;if(n<=55)return 8;if(n<=59)return 9;if(n<=66)return 10;return 11;}
@@ -199,8 +204,8 @@
     current++;render();
   }
   function prev(){if(current>1){current--;render();}}
-  function showBranch(){closeTaskJump();updateTaskJump();showScreen('branchScreen');$('topMeta').textContent='課題3 / 選択式';$('topCount').textContent='14 / 74';$('progressBar').style.width=`${13/74*100}%`;}
-  function chooseBranch(branch){if(state.completedAt){toast('採点済みです。再挑戦する場合は最初から解いてください。');return;}if(state.branch&&state.branch!==branch){for(let n=14;n<=20;n++)delete state.answers[n];}state.branch=branch;state.completedAt=null;state.synced=false;save();current=14;render();}
+  function showBranch(){if(!state.completedAt){state.branch="A";save();current=BRANCH_START;render();return;}closeTaskJump();updateTaskJump();showScreen('branchScreen');$('topMeta').textContent='課題3 / 選択式';$('topCount').textContent='14 / 74';$('progressBar').style.width=`${13/74*100}%`;}
+  function chooseBranch(branch){branch="A";if(state.completedAt){toast('採点済みです。再挑戦する場合は最初から解いてください。');return;}if(state.branch&&state.branch!==branch){for(let n=14;n<=20;n++)delete state.answers[n];}state.branch=branch;state.completedAt=null;state.synced=false;save();current=14;render();}
   function correctCount(){let c=0;for(let n=1;n<=74;n++)if(state.answers[n]?.picked===blankFor(n)?.answer)c++;return c;}
   function recordHistory(){
     const key='skimaruExamHistory_v1';
