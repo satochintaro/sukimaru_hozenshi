@@ -1,0 +1,9 @@
+practical-2024.html と practical-2025.html に以下を追加します。
+
+</head> の直前:
+<link rel="stylesheet" href="./practical-late-viewport-v7.css?v=7">
+
+</body> の直前:
+<script src="./practical-late-viewport-v7.js?v=7"></script>
+
+既存の回答保存・採点ロジックは変更しません。
