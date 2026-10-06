@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja">
-<head>
+<head><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://kuioqlwpkvdpudollhpz.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>スキマル保全士 閲覧モード Ver 5.7.0 QUEST UI</title>
@@ -34,7 +34,7 @@
     <button type="button" data-viewer-mode="academic">学科分析</button>
     <button type="button" data-viewer-mode="practical">実技分析</button>
   </div>
-  <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><small>拠点情報のない従来データは四日市として表示します。</small></div><div id="viewer-report" class="scroll manager-report"></div>
+  <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><small>個人成績は担当拠点のみ。他拠点は集計値で比較できます。</small></div><div id="viewer-report" class="scroll manager-report"></div>
 </div>
 </main>
 
@@ -50,8 +50,8 @@
     <a class="manager-login-back" href="./admin.html">‹ 管理者・開発者の選択へ戻る</a>
     <div class="manager-login-icon">👁️</div>
     <h1 id="viewer-login-title">管理者</h1>
-    <p>管理者から共有された管理者パスワードを入力してください。</p>
-    <label for="viewer-password">管理者パスワード</label>
+    <p>開発者から発行された管理者IDとパスワードを入力してください。担当拠点の成績を閲覧できます。</p>
+    <label for="viewer-account">管理者ID</label><input id="viewer-account" autocomplete="username" maxlength="40" placeholder="管理者ID"><label for="viewer-password">管理者パスワード</label>
     <input id="viewer-password" type="password" autocomplete="current-password" placeholder="管理者パスワード">
     <button class="btn" id="viewer-login-btn">管理者画面を開く</button>
     <div class="manager-login-message" id="viewer-login-message"></div>
@@ -62,7 +62,7 @@
 <div class="toast" id="viewer-toast" role="status" aria-live="polite"></div>
 <script src="./supabase-config.js"></script>
 <script src="./coach-shared.js"></script>
-<script src="./manager-metrics.js?v=12"></script><script src="./viewer-manager.js"></script>
+<script src="./manager-metrics.js?v=12"></script><script src="./viewer-manager.js?v=15"></script>
 <script src="./ui-v57.js"></script>
 </body>
 </html>

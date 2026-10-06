@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja">
-<head>
+<head><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://kuioqlwpkvdpudollhpz.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>スキマル保全士 Manager Ver 5.7.0 QUEST UI</title>
@@ -67,22 +67,11 @@
   </div>
 </div>
 
-<div class="player-detail" id="manager-viewer-settings" aria-hidden="true">
-  <div class="player-detail-card viewer-settings-card">
-    <button class="player-detail-close" id="manager-viewer-set-close" aria-label="閉じる">×</button>
-    <div class="manager-section-head"><div><h2>管理者パスワード</h2><p>成績と分析だけを見せる共通パスワードです。</p></div></div>
-    <label class="viewer-set-label" for="manager-viewer-set-input">新しい管理者パスワード</label>
-    <input id="manager-viewer-set-input" type="password" minlength="8" maxlength="64" placeholder="8文字以上">
-    <button class="btn" id="manager-viewer-set-save">設定・変更する</button>
-    <p class="note viewer-set-note">変更すると、すでに閲覧中の人は自動的にログアウトされます。</p>
-  </div>
-</div>
-
 <script src="./supabase-config.js"></script>
-<script src="./manager-metrics.js?v=12"></script><script>document.getElementById("developer-choice").onclick=function(){document.getElementById("developer-fields").hidden=false;document.getElementById("manager-email").focus();};</script><script src="./admin.js"></script>
+<script src="./manager-metrics.js?v=12"></script><script>document.getElementById("developer-choice").onclick=function(){document.getElementById("developer-fields").hidden=false;document.getElementById("manager-email").focus();};</script><script src="./developer-security-v15.js?v=15"></script><script src="./admin.js?v=15"></script>
 <script src="./coach-shared.js"></script>
 <script src="./coach-manager.js"></script>
-<script src="./manager-viewer-admin.js"></script>
+
 <script src="./manager-organizer.js"></script>
 <script src="./developer-players.js?v=13"></script><script src="./ui-v57.js"></script>
 </body>

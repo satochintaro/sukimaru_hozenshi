@@ -1,5 +1,6 @@
 "use strict";
 const CLOUD=window.SKIMARU_SUPABASE||{};
+localStorage.removeItem("skimaru-supabase-manager-session-v1");
 const SESSION_KEY="skimaru-supabase-manager-session-v1";
 const HIDDEN_PLAYERS_KEY="skimaru-manager-hidden-players-v1";
 const SUBJ=["生産の基本","設備の日常保全","効率化とロス","改善・解析","設備保全の基礎"];
@@ -16,8 +17,8 @@ let rows=[],groups=[],excludedGroups=[],serverAvailable=false,timer,authenticate
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function notify(m){const e=document.getElementById("toast");e.textContent=m;e.classList.add("show");clearTimeout(timer);timer=setTimeout(()=>e.classList.remove("show"),2400);}
 function configured(){return /^https:\/\//.test(CLOUD.url||"")&&String(CLOUD.publishableKey||"").startsWith("sb_publishable_");}
-function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null");}catch(e){return null;}}
-function saveSession(v){session=v;try{v?localStorage.setItem(SESSION_KEY,JSON.stringify(v)):localStorage.removeItem(SESSION_KEY);}catch(e){}}
+function readSession(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY)||"null");}catch(e){return null;}}
+function saveSession(v){session=v;try{v?sessionStorage.setItem(SESSION_KEY,JSON.stringify(v)):sessionStorage.removeItem(SESSION_KEY);}catch(e){}}
 function readHiddenPlayers(){try{const value=JSON.parse(localStorage.getItem(HIDDEN_PLAYERS_KEY)||"[]");return new Set(Array.isArray(value)?value:[]);}catch(e){return new Set();}}
 function saveHiddenPlayers(){try{localStorage.setItem(HIDDEN_PLAYERS_KEY,JSON.stringify([...hiddenPlayers]));}catch(e){notify("除外設定を保存できませんでした");}}
 function rowPlayerKey(row){return row.playerNo||`LEGACY:${row.site==="四日市"?"":row.site+": "}${row.name}`;}
@@ -36,9 +37,9 @@ function showLogin(message=""){authenticated=false;document.getElementById("mana
 function hideLogin(){authenticated=true;document.getElementById("manager-login").classList.remove("show");document.getElementById("manager-password").value="";document.getElementById("login-message").textContent="";}
 async function refreshSession(){if(!session?.refresh_token)return false;try{const r=await fetch(`${CLOUD.url}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{apikey:CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token}),cache:"no-store"});if(!r.ok)throw new Error();const j=await r.json();saveSession({...j,expires_at_ms:Date.now()+(Number(j.expires_in)||3600)*1000});return true;}catch(e){saveSession(null);return false;}}
 async function ensureSession(){if(!session?.access_token)return false;if((session.expires_at_ms||0)>Date.now()+60000)return true;return refreshSession();}
-async function checkAuth(){if(!configured()){showLogin("Supabase接続設定がありません。");return;}if(await ensureSession()){hideLogin();await loadRows(true);}else showLogin();}
-async function login(){const email=document.getElementById("manager-email").value.trim(),password=document.getElementById("manager-password").value,btn=document.getElementById("login-btn");if(!email||!password){showLogin("メールアドレスとパスワードを入力してください。");return;}btn.disabled=true;btn.textContent="確認中…";try{const r=await fetch(`${CLOUD.url}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error_description||j.msg||j.message||"ログインできませんでした");saveSession({...j,expires_at_ms:Date.now()+(Number(j.expires_in)||3600)*1000});hideLogin();await loadRows(true);notify("ログインしました");}catch(e){showLogin(e.message||"ログインできませんでした");}finally{btn.disabled=false;btn.textContent="開発者としてログイン";}}
-async function logout(){saveSession(null);rows=[];groups=[];render();showLogin("ログアウトしました。");}
+async function checkAuth(){if(!configured()){showLogin("Supabase接続設定がありません。");return;}if(await ensureSession()){try{if(await window.SKIMARU_SECURITY.mfa()){hideLogin();await loadRows(true);}else showLogin();}catch(e){saveSession(null);showLogin(e.message);}}else showLogin();}
+async function login(){const email=document.getElementById("manager-email").value.trim(),password=document.getElementById("manager-password").value,btn=document.getElementById("login-btn");if(!email||!password){showLogin("メールアドレスとパスワードを入力してください。");return;}btn.disabled=true;btn.textContent="確認中…";try{const r=await fetch(`${CLOUD.url}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error_description||j.msg||j.message||"ログインできませんでした");saveSession({...j,expires_at_ms:Date.now()+(Number(j.expires_in)||3600)*1000});if(!(await window.SKIMARU_SECURITY.mfa())){showLogin();return;}hideLogin();await loadRows(true);notify("ログインしました");}catch(e){showLogin(e.message||"ログインできませんでした");}finally{btn.disabled=false;btn.textContent="開発者としてログイン";}}
+async function logout(){if(session?.access_token){try{await fetch(`${CLOUD.url}/auth/v1/logout`,{method:"POST",headers:authHeaders(session.access_token)});}catch{}}closeDetail();saveSession(null);rows=[];groups=[];render();showLogin("ログアウトしました。");}
 function fmtDate(v){if(!v)return"–";const d=new Date(v);return Number.isNaN(d.getTime())?esc(v):d.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});}
 function signed(n){return `${n>0?"+":""}${n}pt`;}
 function buildGroups(){

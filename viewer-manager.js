@@ -2,11 +2,15 @@
 (() => {
   const CLOUD=window.SKIMARU_SUPABASE||{};
   const C=window.SKIMARU_COACH||{};
-  const KEY="skimaru-manager-viewer-session-v1";
+  const KEY="skimaru-manager-site-session-v15";
   const ACADEMIC=["生産の基本","設備の日常保全","効率化とロス","改善・解析","設備保全の基礎"];
   const PRACTICAL=["安全・環境","TPM・5S","自主保全","改善・解析","設備保全","図面・測定","効率化とロス"];
+  let lastActivity=Date.now();
+  for(const event of ["pointerdown","keydown","touchstart"])document.addEventListener(event,()=>lastActivity=Date.now(),{passive:true});
   let viewerSession=readSession(),rows=[],mode="combined",groups=[],toastTimer=null;
 
+  function setSite(){const select=document.getElementById("site-filter");if(select&&viewerSession?.site){select.replaceChildren(new Option(viewerSession.site,viewerSession.site));select.value=viewerSession.site;select.disabled=true;}}
+  async function comparison(){const data=await rpc("skimaru_manager_comparison",{p_token:viewerSession.token});let root=document.getElementById("site-comparison");if(!root){root=document.createElement("div");root.id="site-comparison";root.className="pn";root.style.cssText="padding:16px;margin:16px 0;overflow:auto";document.getElementById("viewer-report").before(root);}root.replaceChildren();const heading=document.createElement("h3");heading.textContent="拠点間比較（個人名なし・各人の最新提出）";root.append(heading);const table=document.createElement("table");table.style.cssText="width:100%;min-width:540px;border-collapse:collapse";const header=table.insertRow();["拠点","区分","人数","平均正解率","回答数","記録学習時間"].forEach(t=>{const c=document.createElement("th");c.style.cssText="text-align:left;padding:8px;border-bottom:1px solid #d4e1d8";c.textContent=t;header.append(c);});for(const x of data){const r=table.insertRow();[x.site,x.type==="practical"?"実技":"学科",x.learners,`${x.accuracy??"—"}%`,x.answers,`${Math.round((x.seconds||0)/60)}分`].forEach(t=>{const cell=r.insertCell();cell.textContent=t;cell.style.padding="8px";});}root.append(table);}
   function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function parse(v,f){if(v==null)return f;if(typeof v==="string"){try{return JSON.parse(v);}catch(e){return f;}}return v;}
   function readSession(){try{return JSON.parse(sessionStorage.getItem(KEY)||"null");}catch(e){return null;}}
@@ -40,7 +44,7 @@
 
   async function valid(){
     if(!viewerSession?.token)return false;
-    try{return (await rpc("manager_viewer_valid",{p_token:viewerSession.token}))===true;}
+    try{return Array.isArray(await rpc("skimaru_manager_rows",{p_token:viewerSession.token}));}
     catch(e){return false;}
   }
 
@@ -49,32 +53,32 @@
     if(!password){showLogin("管理者パスワードを入力してください。");return;}
     btn.disabled=true;btn.textContent="確認中…";
     try{
-      const j=await rpc("manager_viewer_login",{p_password:password});
+      const j=await rpc("skimaru_manager_login",{p_account:document.getElementById("viewer-account").value.trim(),p_password:password});
       const row=Array.isArray(j)?j[0]:j;
-      if(!row?.token)throw new Error();
-      saveSession({token:row.token,expires_at:row.expires_at});
+      if(!row?.token)throw new Error(row?.error||"login_failed");
+      lastActivity=Date.now();saveSession({token:row.token,expires_at:row.expires_at,site:row.site,account:row.account});setSite();
       hideLogin();await load();notify("管理者画面を開きました");
-    }catch(e){showLogin("管理者パスワードが違います。");}
+    }catch(e){showLogin(e.message==="rate_limited"?"試行回数が上限に達しました。15分後にお試しください。":"管理者IDまたはパスワードが違います。");}
     finally{btn.disabled=false;btn.textContent="管理者画面を開く";}
   }
 
   async function logout(){
-    if(viewerSession?.token){try{await rpc("manager_viewer_logout",{p_token:viewerSession.token});}catch(e){}}
-    saveSession(null);rows=[];render();showLogin("退出しました。");
+    const token=viewerSession?.token;closeDetail();saveSession(null);rows=[];groups=[];document.getElementById("site-comparison")?.remove();render();showLogin("退出しました。");
+    if(token){try{await rpc("skimaru_manager_logout",{p_token:token});}catch(e){}}
   }
 
   async function load(){
     if(!viewerSession?.token){showLogin();return;}
     setConnection(false,"読み込み中…");
     try{
-      const j=await rpc("manager_viewer_rows",{p_token:viewerSession.token});
+      const j=await rpc("skimaru_manager_rows",{p_token:viewerSession.token});
       if(!Array.isArray(j))throw new Error();
-      rows=j.map(normalize);
+      rows=j.map(normalize);setSite();await comparison();
       buildGroups();
       setConnection(true,mode==="combined"?"総合分析":mode==="academic"?"学科分析":"実技分析");
       render();
     }catch(e){
-      saveSession(null);rows=[];groups=[];setConnection(false,"認証切れ");render();showLogin("閲覧セッションの有効期限が切れました。");
+      closeDetail();document.getElementById("site-comparison")?.remove();saveSession(null);rows=[];groups=[];setConnection(false,"認証切れ");render();showLogin("閲覧セッションの有効期限が切れました。");
     }
   }
 
@@ -210,6 +214,7 @@
   function closeDetail(){const m=document.getElementById("viewer-detail");m.classList.remove("show");m.setAttribute("aria-hidden","true");}
 
   document.getElementById("viewer-login-btn").addEventListener("click",login);
+  setInterval(async()=>{if(viewerSession&&(Date.now()-lastActivity>30*60*1000||!(await valid())))logout();},60000);
   document.getElementById("viewer-password").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
   document.getElementById("viewer-logout").addEventListener("click",logout);
   document.getElementById("viewer-refresh").addEventListener("click",load);

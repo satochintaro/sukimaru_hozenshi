@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261007-v14";
+const CACHE="skimaru-live-20261007-v15-security";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

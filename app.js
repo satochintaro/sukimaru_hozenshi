@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"14.0",schema:7};
+const APP={id:"skimaru-hozenshi",version:"15.0",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -848,8 +848,8 @@ async function submitResult(){
   document.getElementById("sd-title").textContent=serverSaved?"クラウドへ提出しました":"通信待ちとして端末に保存しました";
   const dt=new Date(receivedAt);
   const when=dt.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-  document.getElementById("sd-message").textContent=`プレイヤーNo.：${ensurePlayerNo()} ／ 提出者：${U.name} ／ 提出日時：${when}${serverSaved?" ／ Supabaseへ保存済み":"。オンライン復帰時に自動再送します。"}`;
-  notify(serverSaved?"クラウド提出が完了しました":"通信待ちとして保存しました");
+  document.getElementById("sd-message").textContent=`プレイヤーNo.：${ensurePlayerNo()} ／ 提出者：${U.name} ／ 提出日時：${when}${serverSaved?" ／ 成績・復旧用バックアップを自動保存済み":"。オンライン復帰時に自動再送します。"}`;
+  notify(serverSaved?"提出・自動バックアップが完了しました":"通信待ちとして保存しました");
   btn.disabled=false;btn.textContent="もう一度送付";
 }
 function dlJson(){
