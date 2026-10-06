@@ -1,0 +1,26 @@
+{
+  "version": "12.0",
+  "browser": "Chromium headless",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "checks": [
+    "initial registration",
+    "profile persisted on reload",
+    "settings edit/cancel",
+    "pending alert/submit clears alert",
+    "academic time submitted",
+    "2022/2023/2024/2025 practical grading and timed history",
+    "clock paused after grading",
+    "developer role/email login",
+    "manager bathlife login/wrong password rejected",
+    "site filter",
+    "metric sorting",
+    "legacy time unknown",
+    "duplicate submissions not summed"
+  ],
+  "test_submission_destination": "mock only",
+  "page_errors": [],
+  "live_database": "read-only password configuration verification"
+}

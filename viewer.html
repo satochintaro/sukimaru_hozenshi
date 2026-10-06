@@ -17,9 +17,9 @@
   <a class="hd-back" href="./admin.html" aria-label="マネージャー認証へ戻る">‹</a>
   <div class="manager-header-title">
     <div class="hd-ttl">スキマル保全士</div>
-    <div class="hd-sub">MANAGER / QUEST UI / 閲覧専用</div>
+    <div class="hd-sub">MANAGER / QUEST UI / 管理者</div>
   </div>
-  <span class="manager-role-badge viewer">閲覧専用</span>
+  <span class="manager-role-badge viewer">管理者</span>
   <button class="manager-logout" id="viewer-logout">退出</button>
   <button class="manager-refresh" id="viewer-refresh">↻</button>
 </header>
@@ -34,7 +34,7 @@
     <button type="button" data-viewer-mode="academic">学科分析</button>
     <button type="button" data-viewer-mode="practical">実技分析</button>
   </div>
-  <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><label>メンバー検索<input id="member-search" type="search" placeholder="名前・プレイヤーNo."></label><small>拠点情報のない従来データは四日市として表示します。</small></div><div id="viewer-report" class="scroll manager-report"></div>
+  <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><small>拠点情報のない従来データは四日市として表示します。</small></div><div id="viewer-report" class="scroll manager-report"></div>
 </div>
 </main>
 
@@ -47,13 +47,13 @@
 
 <div class="manager-login show" id="viewer-login" role="dialog" aria-modal="true" aria-labelledby="viewer-login-title">
   <div class="manager-login-card">
-    <a class="manager-login-back" href="./admin.html">‹ 管理者ログインへ戻る</a>
+    <a class="manager-login-back" href="./admin.html">‹ 管理者・開発者の選択へ戻る</a>
     <div class="manager-login-icon">👁️</div>
-    <h1 id="viewer-login-title">閲覧モード</h1>
-    <p>管理者から共有された閲覧用パスワードを入力してください。</p>
-    <label for="viewer-password">閲覧用パスワード</label>
-    <input id="viewer-password" type="password" autocomplete="current-password" placeholder="閲覧用パスワード">
-    <button class="btn" id="viewer-login-btn">見るだけで開く</button>
+    <h1 id="viewer-login-title">管理者</h1>
+    <p>管理者から共有された管理者パスワードを入力してください。</p>
+    <label for="viewer-password">管理者パスワード</label>
+    <input id="viewer-password" type="password" autocomplete="current-password" placeholder="管理者パスワード">
+    <button class="btn" id="viewer-login-btn">管理者画面を開く</button>
     <div class="manager-login-message" id="viewer-login-message"></div>
     <small>閲覧モードでは成績・学科・実技・総合分析のみ確認できます。</small>
   </div>
@@ -62,7 +62,7 @@
 <div class="toast" id="viewer-toast" role="status" aria-live="polite"></div>
 <script src="./supabase-config.js"></script>
 <script src="./coach-shared.js"></script>
-<script src="./viewer-manager.js"></script>
+<script src="./manager-metrics.js?v=12"></script><script src="./viewer-manager.js"></script>
 <script src="./ui-v57.js"></script>
 </body>
 </html>

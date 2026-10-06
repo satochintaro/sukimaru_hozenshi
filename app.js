@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"5.2.0-test",schema:7};
+const APP={id:"skimaru-hozenshi",version:"12.0",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -71,7 +71,7 @@ let U=load();
 if(!U.playerNo){U.playerNo=generatePlayerNo();save();}
 let S={mode:"normal",subject:null,queue:[],i:0,ok:0,wrong:[],answered:false,
        conf:null,sure:false,everOK:false,q:null,isMock:false};
-let currentSubject=null;
+let currentSubject=null;window.SKIMARU_TIME?.start("core","core",true);
 
 function save(){
   try{
@@ -706,7 +706,7 @@ function resetData(){
   const nm=U.name, site=U.site, playerNo=ensurePlayerNo();
   localStorage.removeItem(KEY); localStorage.removeItem(AUTO_BACKUP_KEY);
   try{const ledger=JSON.parse(localStorage.getItem("skimaru-submitted-v11")||"{}");ledger.academic=0;localStorage.setItem("skimaru-submitted-v11",JSON.stringify(ledger));}catch{}
-  U=baseData(); U.progressEpoch=Date.now(); U.name=nm; U.site=site; U.playerNo=playerNo; save();
+  window.SKIMARU_TIME?.resetCore();U=baseData(); U.progressEpoch=Date.now(); U.name=nm; U.site=site; U.playerNo=playerNo; save();
   alert("リセットしました。");
   goHome();
 }
@@ -729,7 +729,7 @@ function build(){
     return {id:q.id,cat:q.category,text:q.text,rate:t>0?Math.round(s.c/t*100):0,
             guess:s.guess||0,relapse:(s.w>0&&s.everOK)?1:0};
   });
-  return {v:7,playerNo:ensurePlayerNo(),name:U.name||"(未記入)",site:U.site||"四日市",academicSnapshot:U.total,progressEpoch:U.progressEpoch||0,historyIds:academicYearHistory().map(r=>r.id),pastYearHistory:academicYearHistory(),date:today(),total:U.total,correct:U.correct,
+  return {v:7,playerNo:ensurePlayerNo(),name:U.name||"(未記入)",site:U.site||"四日市",academicSnapshot:U.total,progressEpoch:U.progressEpoch||0,studyMetricsV12:window.SKIMARU_TIME?.snapshot(),elapsedSeconds:window.SKIMARU_TIME?.seconds("core"),historyIds:academicYearHistory().map(r=>r.id),pastYearHistory:academicYearHistory(),date:today(),total:U.total,correct:U.correct,
           streak:U.streak,cats,wrongCount:U.wrongIds.length,mastered:masteredCount(),alerts:al};
 }
 function checksum(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16).padStart(8,"0");}
@@ -772,7 +772,7 @@ function cloudRow(record){
     total_questions:total,
     correct_count:correct,
     correct_rate:total?Math.round(correct/total*100):0,
-    elapsed_seconds:0,
+    elapsed_seconds:Number(record.elapsedSeconds)||0,
     exam_version:APP.version,
     submitted_at:record.sentAt,
     streak:Number(record.streak)||0,
@@ -853,6 +853,7 @@ function dlJson(){
   a.click(); URL.revokeObjectURL(u);
 }
 function exportBackup(){
+  U.studyTimeV12=window.SKIMARU_TIME?.exportData();
   const raw=JSON.stringify(U);
   const payload={app:APP.id,version:APP.version,schema:APP.schema,exportedAt:new Date().toISOString(),checksum:checksum(raw),data:U};
   const b=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
@@ -872,7 +873,7 @@ function importBackup(event){
       if(payload.checksum&&payload.checksum!==checksum(JSON.stringify(candidate)))throw new Error("checksum");
       const data=normalizeData(candidate);if(!data||!plainObject(data.stats))throw new Error("data");
       if(!confirm("現在の学習履歴を、選択したバックアップで置き換えますか？"))return;
-      U=data;if(!save())throw new Error("save");
+      U=data;if(!save())throw new Error("save");window.SKIMARU_TIME?.importData(data.studyTimeV12);
       notify("学習履歴を復元しました");setTimeout(()=>location.reload(),700);
     }catch(e){notify(e.message==="checksum"?"バックアップが破損しています":"バックアップを読み込めませんでした");}
     finally{input.value="";}

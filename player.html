@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>スキマル保全士 プレイヤー Ver 5.2.0 TEST</title>
+<title>スキマル保全士 プレイヤー</title>
 <link href="./manifest.webmanifest" rel="manifest"/>
 <meta content="#1C2B3A" name="theme-color"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
@@ -12,7 +12,7 @@
 <meta content="スキマル保全士" name="apple-mobile-web-app-title"/>
 <link href="./apple-touch-icon.png" rel="apple-touch-icon"/>
 
-<link href="./styles.css" rel="stylesheet"/><script src="./supabase-config.js"></script><script src="./member-profile.js?v=11"></script></head>
+<link href="./styles.css" rel="stylesheet"/><script src="./supabase-config.js"></script><script src="./study-time.js?v=12"></script><script src="./member-profile.js?v=12"></script></head>
 <body data-learning-mode="academic">
 <!-- ============ ホーム（1画面完結） ============ -->
 <section aria-hidden="false" class="active" id="sc-home">
@@ -22,7 +22,7 @@
 <div class="hd-ttl">スキマル保全士</div>
 <div class="hd-sub">PLAYER ／ 自主保全士2級 学科・設備診断</div>
 </div>
-<span class="hd-no" id="hd-no">No.—</span>
+<span hidden class="hd-no" id="hd-no">No.—</span>
 <button aria-label="設定を開く" class="hd-ico" onclick="showSettings()">⚙</button>
 </div>
 <div class="hz"></div>
@@ -91,7 +91,7 @@
 </div>
 
 <div class="sts">
-<span class="blink">● 学習者 ： <b id="h-name">未設定</b></span>
+<span hidden><b id="h-name">未設定</b></span>
 <span id="h-date">—</span>
 </div>
 </div>
@@ -327,10 +327,10 @@
 </div>
 <div class="pad">
 <div class="scroll">
-<p class="note">■ 学習者</p>
+<p class="note">■ 登録情報</p>
 <button class="pn row" onclick="editName()" style="margin-bottom:10px">
 <span class="row-i">👤</span>
-<span class="row-b"><span class="row-t" id="st-name">名前を入力</span><span class="row-d">ニックネームでも登録できます</span></span>
+<span class="row-b"><span class="row-t" id="st-name">名前を入力</span><span class="row-d">拠点・名前の確認と変更</span></span>
 <span class="row-go">›</span>
 </button>
 <div class="pn row" style="margin-bottom:10px"><span class="row-i">#</span><span class="row-b"><span class="row-t">プレイヤーNo.</span><span class="row-d" id="st-player-no">発行中…</span></span></div>

@@ -19,7 +19,7 @@
     <div class="hd-ttl">スキマル保全士</div>
     <div class="hd-sub">MANAGER / QUEST UI / 全体・個人分析</div>
   </div>
-  <span class="manager-role-badge">管理者</span>
+  <span class="manager-role-badge">開発者</span>
   <button class="manager-logout" id="logout" aria-label="マネージャーからログアウト">退出</button>
   <button class="manager-refresh" id="refresh" aria-label="提出データを更新">↻</button>
 </header>
@@ -38,7 +38,7 @@
     <button class="btn-g" id="csv-learners">提出一覧CSV</button>
     <button class="btn-g" id="clear">提出データを削除</button>
   </div>
-  <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><label>メンバー検索<input id="member-search" type="search" placeholder="名前・プレイヤーNo."></label><small>拠点情報のない従来データは四日市として表示します。</small></div><div id="ad-rep" class="scroll manager-report"></div>
+  <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><small>拠点情報のない従来データは四日市として表示します。</small></div><div id="ad-rep" class="scroll manager-report"></div>
 
   <div class="player-detail" id="player-detail" aria-hidden="true">
     <div class="player-detail-card">
@@ -54,14 +54,14 @@
   <div class="manager-login-card">
     <a class="manager-login-back" href="./index.html">‹ モード選択へ戻る</a>
     <div class="manager-login-icon">🔐</div>
-    <h1 id="login-title">マネージャー認証</h1>
-    <p>管理者はSupabase Authでログインしてください。</p>
+    <h1 id="login-title">マネージャー</h1><div class="manager-role-choice"><a class="btn" href="./viewer.html">管理者</a><button class="btn-g" type="button" id="developer-choice">開発者</button></div><div id="developer-fields" hidden>
+    <p>開発者用のメールアドレスとパスワードでログインしてください。</p>
     <label for="manager-email">メールアドレス</label>
-    <input id="manager-email" type="email" inputmode="email" autocomplete="username" placeholder="manager@example.com">
+    <input id="manager-email" type="email" inputmode="email" autocomplete="username" placeholder="メールアドレス" value="jyeuutmc@i.softbank.jp">
     <label for="manager-password">パスワード</label>
     <input id="manager-password" type="password" autocomplete="current-password" placeholder="パスワード">
-    <button class="btn" id="login-btn">管理者としてログイン</button>
-    <a class="btn-g viewer-login-link" href="./viewer.html">👁️ 閲覧用パスワードで見る</a>
+    <button class="btn" id="login-btn">開発者としてログイン</button>
+    </div>
     <div class="manager-login-message" id="login-message"></div>
     <small>管理者は設定変更・メッセージ送信・削除が可能です。</small>
   </div>
@@ -70,8 +70,8 @@
 <div class="player-detail" id="manager-viewer-settings" aria-hidden="true">
   <div class="player-detail-card viewer-settings-card">
     <button class="player-detail-close" id="manager-viewer-set-close" aria-label="閉じる">×</button>
-    <div class="manager-section-head"><div><h2>閲覧用パスワード</h2><p>成績と分析だけを見せる共通パスワードです。</p></div></div>
-    <label class="viewer-set-label" for="manager-viewer-set-input">新しい閲覧用パスワード</label>
+    <div class="manager-section-head"><div><h2>管理者パスワード</h2><p>成績と分析だけを見せる共通パスワードです。</p></div></div>
+    <label class="viewer-set-label" for="manager-viewer-set-input">新しい管理者パスワード</label>
     <input id="manager-viewer-set-input" type="password" minlength="8" maxlength="64" placeholder="8文字以上">
     <button class="btn" id="manager-viewer-set-save">設定・変更する</button>
     <p class="note viewer-set-note">変更すると、すでに閲覧中の人は自動的にログアウトされます。</p>
@@ -79,7 +79,7 @@
 </div>
 
 <script src="./supabase-config.js"></script>
-<script src="./admin.js"></script>
+<script src="./manager-metrics.js?v=12"></script><script>document.getElementById("developer-choice").onclick=function(){document.getElementById("developer-fields").hidden=false;document.getElementById("manager-email").focus();};</script><script src="./admin.js"></script>
 <script src="./coach-shared.js"></script>
 <script src="./coach-manager.js"></script>
 <script src="./manager-viewer-admin.js"></script>

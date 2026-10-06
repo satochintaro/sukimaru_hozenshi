@@ -20,7 +20,10 @@
     }
   }
   let current = 1;
+  function startClock(){if(state.finished&&!state.measurementId)return;state.measurementId ||= crypto.randomUUID();window.SKIMARU_TIME?.start(KEY,state.measurementId,!state.finished);}
+  startClock();
   const save = () => localStorage.setItem(KEY, JSON.stringify(state));
+  save();
   const answered = () => questions.filter(q => q.options.some(o => o.letter === state.answers[q.number])).length;
   const taskOf = n => tasks.findIndex(t => n >= t.start && n <= t.end);
   const progress = () => {
@@ -109,7 +112,7 @@
     const good = questions.filter(q => state.answers[q.number] === info.jitugi[q.number]).length;
     const id = state.attemptId || (state.attemptId = `2023-jitugi-${Date.now()}`);
     if (!history.some(r => r.id === id)) {
-      history.push({id,year:2023,kind:'jitugi',total:78,correct:good,rate:Math.round(good/78*100),completedAt:state.completedAt,branch:'A',answers:{...state.answers}});
+      history.push({elapsedSeconds:window.SKIMARU_TIME?.seconds(KEY,state.measurementId),timeMeasured:!!state.measurementId,id,year:2023,kind:'jitugi',total:78,correct:good,rate:Math.round(good/78*100),completedAt:state.completedAt,branch:'A',answers:{...state.answers}});
       localStorage.setItem('skimaruExamHistory_v1',JSON.stringify(history)); save();
     }
   }
@@ -117,7 +120,7 @@
     if (answered() < 78) { alert(`未回答が${78-answered()}問あります。全問回答するまで正解は表示されません。`); return; }
     if (!state.finished) {
       if (!confirm('全問の解答を確定し、採点結果と正解を表示しますか？')) return;
-      state.finished = true; state.completedAt = new Date().toISOString(); save(); recordHistory();
+      window.SKIMARU_TIME?.stop();state.finished = true; state.completedAt = new Date().toISOString(); save(); recordHistory();
     }
     showResults();
   }
@@ -136,7 +139,7 @@
   $('resultBack').onclick = () => { $('results').classList.add('hidden'); $('exam').classList.remove('hidden'); render(); };
   $('reset').onclick = () => {
     if (!confirm('この年度の回答をすべて消去しますか？')) return;
-    state={answers:{},branch:'A',finished:false}; save(); current=1;
+    state={answers:{},branch:'A',finished:false};startClock(); save(); current=1;
     $('results').classList.add('hidden'); $('exam').classList.remove('hidden'); render();
   };
   // A dedicated viewer uses the complete page image. The inline window never alters image bytes.

@@ -152,7 +152,7 @@
     if(!selectedPlayerKey||!people.some(p=>p.key===selectedPlayerKey))selectedPlayerKey=people[0].key;
     return `<div class="manager-section mgr-player-picker">
       <label for="mgr-player-select"><span>PLAYER</span>確認するプレイヤー</label>
-      <select id="mgr-player-select">${people.map(p=>`<option value="${safeEsc(p.key)}"${p.key===selectedPlayerKey?" selected":""}>${safeEsc(p.site)} ｜ ${safeEsc(p.name)} ｜ ${safeEsc(p.playerNo)}</option>`).join("")}</select>
+      <select id="mgr-player-select">${people.map(p=>`<option value="${safeEsc(p.key)}"${p.key===selectedPlayerKey?" selected":""}>${safeEsc(p.site)} ｜ ${safeEsc(p.name)}</option>`).join("")}</select>
     </div>`;
   }
 
@@ -176,7 +176,7 @@
 
     let h=playerPicker(people);
     h+=`<div class="mgr-page-head person"><div><span>PERSONAL</span><h2>${safeEsc(p.name)}・${label}</h2><p>${safeEsc(p.site)} ／ ${safeEsc(p.playerNo)} ／ 最終 ${fmtDate(row.receivedAt||row.sentAt)}</p></div></div>`;
-    h+=`<div class="manager-stat-grid mgr-summary-grid">${stat("最新",row.rate+"%")}${stat("最高",best+"%")}${stat("前回比",prev?signed(row.rate-prev.rate):"—")}${stat("回答数",row.total+unit)}</div>`;
+    h+=`<div class="manager-stat-grid mgr-summary-grid">${stat("最新",row.rate+"%")}${stat("最高",best+"%")}${stat("前回比",prev?signed(row.rate-prev.rate):"—")}${stat("回答数",row.total+unit)}${stat("学習時間",window.SKIMARU_METRICS.time(window.SKIMARU_METRICS.metrics(p,type).seconds))}</div>`;
 
     h+=`<div class="mgr-focus-grid">
       <section class="manager-section mgr-focus weak-focus">
@@ -240,7 +240,7 @@
     }else{
       html=managerExamMode==="combined"?renderIndividualCombined():renderIndividualSingle(managerExamMode);
     }
-    B.innerHTML=html;
+    B.innerHTML=(managerScope==="overall"?window.SKIMARU_METRICS.html(peopleForMode(),managerExamMode):"")+html;window.SKIMARU_METRICS.bind(B,renderManagerOrganized,key=>{selectedPlayerKey=key;managerScope="person";renderManagerOrganized();});
     bindReport();
     updateTopTabs();
   }

@@ -25,7 +25,10 @@
   state.startedAt ||= new Date().toISOString();
   state.version = '10.0.0';
   let current = 1;
+  function startClock(){if(state.finished&&!state.measurementId)return;state.measurementId ||= crypto.randomUUID();window.SKIMARU_TIME?.start(KEY,state.measurementId,!state.finished);}
+  startClock();
   const save = () => localStorage.setItem(KEY, JSON.stringify(state));
+  save();
   const answered = () => questions.filter(q => q.options.some(o => o.letter === picked(q.number))).length;
   const taskOf = n => tasks.findIndex(t => n >= t.start && n <= t.end);
   const progress = () => {
@@ -128,7 +131,7 @@
     const good = questions.filter(q => picked(q.number) === info.jitugi[q.number]).length;
     const id = state.attemptId || (state.attemptId = `${YEAR}-jitugi-${Date.now()}`);
     if (!history.some(r => r.id === id)) {
-      history.push({id,year:YEAR,kind:'jitugi',total:TOTAL,correct:good,rate:Math.round(good/TOTAL*100),completedAt:state.completedAt,branch:'A',answers:info.modern ? Object.fromEntries(Object.entries(state.answers).map(([n,a])=>[n,a.picked])) : {...state.answers}});
+      history.push({elapsedSeconds:window.SKIMARU_TIME?.seconds(KEY,state.measurementId),timeMeasured:!!state.measurementId,id,year:YEAR,kind:'jitugi',total:TOTAL,correct:good,rate:Math.round(good/TOTAL*100),completedAt:state.completedAt,branch:'A',answers:info.modern ? Object.fromEntries(Object.entries(state.answers).map(([n,a])=>[n,a.picked])) : {...state.answers}});
       localStorage.setItem('skimaruExamHistory_v1',JSON.stringify(history)); save();
     }
   }
@@ -136,7 +139,7 @@
     if (answered() < TOTAL) { alert(`未回答が${TOTAL-answered()}問あります。全問回答するまで正解は表示されません。`); return; }
     if (!state.finished) {
       if (!confirm('全問の解答を確定し、採点結果と正解を表示しますか？')) return;
-      state.finished = true; state.completedAt = new Date().toISOString();
+      window.SKIMARU_TIME?.stop();state.finished = true; state.completedAt = new Date().toISOString();
       if(info.modern) for(const q of questions) state.answers[q.number].ok=picked(q.number)===info.jitugi[q.number];
       save();
     }
@@ -183,7 +186,7 @@
   $('resultBack').onclick = () => { $('results').classList.add('hidden'); $('exam').classList.remove('hidden'); render(); };
   $('reset').onclick = () => {
     if (!confirm('この年度の回答をすべて消去しますか？')) return;
-    state={answers:{},branch:'A',finished:false,completedAt:null,synced:false,version:'10.0.0',startedAt:new Date().toISOString()}; save(); current=1;
+    state={answers:{},branch:'A',finished:false,completedAt:null,synced:false,version:'10.0.0',startedAt:new Date().toISOString()};startClock(); save(); current=1;
     $('results').classList.add('hidden'); $('exam').classList.remove('hidden'); render();
   };
   // A dedicated viewer uses the complete page image. The inline window never alters image bytes.

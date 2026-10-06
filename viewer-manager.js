@@ -46,16 +46,16 @@
 
   async function login(){
     const input=document.getElementById("viewer-password"),btn=document.getElementById("viewer-login-btn"),password=input.value;
-    if(!password){showLogin("閲覧用パスワードを入力してください。");return;}
+    if(!password){showLogin("管理者パスワードを入力してください。");return;}
     btn.disabled=true;btn.textContent="確認中…";
     try{
       const j=await rpc("manager_viewer_login",{p_password:password});
       const row=Array.isArray(j)?j[0]:j;
       if(!row?.token)throw new Error();
       saveSession({token:row.token,expires_at:row.expires_at});
-      hideLogin();await load();notify("閲覧モードで開きました");
-    }catch(e){showLogin("閲覧用パスワードが違います。");}
-    finally{btn.disabled=false;btn.textContent="見るだけで開く";}
+      hideLogin();await load();notify("管理者画面を開きました");
+    }catch(e){showLogin("管理者パスワードが違います。");}
+    finally{btn.disabled=false;btn.textContent="管理者画面を開く";}
   }
 
   async function logout(){
@@ -94,8 +94,8 @@
     };
   }
 
-  function matchesSite(r){const site=document.getElementById("site-filter")?.value||"",q=(document.getElementById("member-search")?.value||"").trim().toLowerCase();return (!site||r.site===site)&&(!q||(r.name+" "+r.playerNo).toLowerCase().includes(q));}
-  ["site-filter","member-search"].forEach(id=>document.getElementById(id)?.addEventListener(id==="member-search"?"input":"change",()=>{closeDetail();buildGroups();render();setConnection(true,"拠点・メンバーで絞り込み中");}));
+  function matchesSite(r){const site=document.getElementById("site-filter")?.value||"";return !site||r.site===site;}
+  ["site-filter"].forEach(id=>document.getElementById(id)?.addEventListener("change",()=>{closeDetail();buildGroups();render();setConnection(true,"拠点で絞り込み中");}));
   function buildGroups(){
     const map=new Map();
     rows.filter(matchesSite).forEach(r=>{
@@ -157,7 +157,7 @@
     h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>プレイヤー総合一覧</h2><p>学科・実技を同じPlayerNoでまとめています。</p></div></div><div class="player-table-wrap"><table class="player-table"><thead><tr><th>拠点</th><th>No.</th><th>表示名</th><th>学科</th><th>実技</th><th>総合</th><th>重点</th><th>最終</th></tr></thead><tbody>`;
     groups.forEach((g,i)=>h+=`<tr class="player-row" data-viewer-group="${i}" tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${g.academic?g.academic.rate+"%":"—"}</strong></td><td><strong>${g.practical?g.practical.rate+"%":"—"}</strong></td><td><strong>${g.overall==null?"—":g.overall+"%"}</strong></td><td>${g.weak?esc(g.weak.theme):"—"}</td><td>${fmt(g.latest?.at)}</td></tr>`);
     h+="</tbody></table></div></div>";
-    root.innerHTML=h;bindRows();
+    root.innerHTML=window.SKIMARU_METRICS.html(groups.filter(g=>mode==="combined"||g[mode]),mode)+h;bindRows();window.SKIMARU_METRICS.bind(root,render,key=>openDetail(groups.find(g=>g.key===key)));
   }
 
   function renderType(type){
@@ -173,7 +173,7 @@
       h+=`<tr class="player-row" data-viewer-group="${idx}" tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${latest.rate}%</strong></td><td>${best}%</td><td>${hist.length}回</td><td>${fmt(latest.at)}</td></tr>`;
     });
     h+="</tbody></table></div></div>";
-    root.innerHTML=h;bindRows();
+    root.innerHTML=window.SKIMARU_METRICS.html(groups.filter(g=>mode==="combined"||g[mode]),mode)+h;bindRows();window.SKIMARU_METRICS.bind(root,render,key=>openDetail(groups.find(g=>g.key===key)));
   }
 
   function bindRows(){
