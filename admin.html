@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="./manager-ui-v55.css">
 <link rel="stylesheet" href="./theme-v57.css">
 <meta name="theme-color" content="#172431">
-</head>
+<link rel="stylesheet" href="./member-manager.css?v=11"></head>
 <body class="manager-body quest-v57">
 <main class="admin-main">
 <header class="hd manager-header">
@@ -38,7 +38,7 @@
     <button class="btn-g" id="csv-learners">提出一覧CSV</button>
     <button class="btn-g" id="clear">提出データを削除</button>
   </div>
-  <div id="ad-rep" class="scroll manager-report"></div>
+  <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><label>メンバー検索<input id="member-search" type="search" placeholder="名前・プレイヤーNo."></label><small>拠点情報のない従来データは四日市として表示します。</small></div><div id="ad-rep" class="scroll manager-report"></div>
 
   <div class="player-detail" id="player-detail" aria-hidden="true">
     <div class="player-detail-card">

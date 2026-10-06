@@ -15,7 +15,7 @@ let loadMessage="";
 let storageHealthy=true;
 
 function baseData(){
-  return {schemaVersion:APP.schema,updatedAt:null,name:"",playerNo:"",streak:0,lastDate:null,total:0,correct:0,
+  return {schemaVersion:APP.schema,updatedAt:null,name:"",site:"",playerNo:"",streak:0,lastDate:null,total:0,correct:0,
     wrongIds:[],recentIds:[],daily:{},showWarn:true,useSRS:true,largeText:false,highContrast:false,
     onboardingDone:false,stats:{}};
 }
@@ -678,19 +678,14 @@ function ensurePlayerNo(){
   return U.playerNo;
 }
 function showSettings(){
-  document.getElementById("st-name").textContent=U.name||"名前を入力";
+  document.getElementById("st-name").textContent=(U.site?U.site+" ／ ":"")+(U.name||"名前を入力");
   const pn=document.getElementById("st-player-no");if(pn)pn.textContent=ensurePlayerNo();
   setSwitch("sw-warn",U.showWarn); setSwitch("sw-srs",U.useSRS);
   setSwitch("sw-large",U.largeText); setSwitch("sw-contrast",U.highContrast);
   document.getElementById("st-qn").textContent=QUESTIONS.length;
   updateStorageStatus(); show("sc-set");
 }
-function editName(){
-  const v=prompt("名前を入力してください（成績送信で使われます）",U.name||"");
-  if(v===null) return;
-  U.name=v.trim().slice(0,20); save();
-  document.getElementById("st-name").textContent=U.name||"名前を入力";
-}
+function editName(){window.SKIMARU_MEMBER?.edit();}
 function toggleWarn(){U.showWarn=!U.showWarn;save();setSwitch("sw-warn",U.showWarn);}
 function toggleSRS(){U.useSRS=!U.useSRS;save();setSwitch("sw-srs",U.useSRS);}
 function toggleLargeText(){U.largeText=!U.largeText;save();applyPreferences();setSwitch("sw-large",U.largeText);}
@@ -708,9 +703,10 @@ function restoreAutoBackup(){
 function resetData(){
   if(!confirm("学習履歴をすべて削除します。\n成績・苦手リスト・ブックマーク・日次記録が消えます。\nこの操作は取り消せません。")) return;
   if(!confirm("本当にリセットしますか？")) return;
-  const nm=U.name, playerNo=ensurePlayerNo();
+  const nm=U.name, site=U.site, playerNo=ensurePlayerNo();
   localStorage.removeItem(KEY); localStorage.removeItem(AUTO_BACKUP_KEY);
-  U=baseData(); U.name=nm; U.playerNo=playerNo; save();
+  try{const ledger=JSON.parse(localStorage.getItem("skimaru-submitted-v11")||"{}");ledger.academic=0;localStorage.setItem("skimaru-submitted-v11",JSON.stringify(ledger));}catch{}
+  U=baseData(); U.progressEpoch=Date.now(); U.name=nm; U.site=site; U.playerNo=playerNo; save();
   alert("リセットしました。");
   goHome();
 }
@@ -720,6 +716,7 @@ function resetData(){
    ============================================================ */
 
 
+function academicYearHistory(){try{return JSON.parse(localStorage.getItem("skimaruExamHistory_v1")||"[]").filter(r=>r.kind==="gakka"&&r.completedAt);}catch{return [];}}
 function build(){
   const cats={};
   QUESTIONS.forEach(q=>{
@@ -732,7 +729,7 @@ function build(){
     return {id:q.id,cat:q.category,text:q.text,rate:t>0?Math.round(s.c/t*100):0,
             guess:s.guess||0,relapse:(s.w>0&&s.everOK)?1:0};
   });
-  return {v:7,playerNo:ensurePlayerNo(),name:U.name||"(未記入)",date:today(),total:U.total,correct:U.correct,
+  return {v:7,playerNo:ensurePlayerNo(),name:U.name||"(未記入)",site:U.site||"四日市",academicSnapshot:U.total,progressEpoch:U.progressEpoch||0,historyIds:academicYearHistory().map(r=>r.id),pastYearHistory:academicYearHistory(),date:today(),total:U.total,correct:U.correct,
           streak:U.streak,cats,wrongCount:U.wrongIds.length,mastered:masteredCount(),alerts:al};
 }
 function checksum(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16).padStart(8,"0");}
@@ -812,7 +809,7 @@ function showSend(){
   }
   // 提出内容のサマリーを表示
   const a=alerts().length;
-  document.getElementById("sb-name").textContent=U.name;
+  document.getElementById("sb-name").textContent=(U.site?U.site+" ／ ":"")+U.name;
   const pn=document.getElementById("sb-player-no");if(pn)pn.textContent=ensurePlayerNo();
   document.getElementById("sb-total").textContent=U.total+" 問";
   document.getElementById("sb-acc").textContent=U.total>0?Math.round(U.correct/U.total*100)+"%":"–";
@@ -904,3 +901,5 @@ window.addEventListener("load",()=>{
   retryPendingSubmissions();
   if("serviceWorker" in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
 });
+
+window.addEventListener("skimaru-profile",e=>{U.name=e.detail.name||"";U.site=e.detail.site||"";U.playerNo=e.detail.playerNo||U.playerNo;const n=document.getElementById("h-name");if(n)n.textContent=U.site+" ／ "+U.name;});

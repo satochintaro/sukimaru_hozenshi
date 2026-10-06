@@ -1,0 +1,62 @@
+[
+  {
+    "year": 2022,
+    "questions": 76,
+    "graphicOptionWindows": 51,
+    "score": "100%",
+    "errors": [],
+    "checks": [
+      "all questions rendered and images decoded",
+      "select and change without submit",
+      "390px no horizontal overflow",
+      "navigation and reload persistence",
+      "incomplete scoring blocked",
+      "pinch and double-tap close",
+      "final score correct and answers locked",
+      "history and 2025 legacy sync deduplicated",
+      "per-year reset isolation",
+      "old answer format retained",
+      "A-only migration retains common answers"
+    ]
+  },
+  {
+    "year": 2024,
+    "questions": 74,
+    "graphicOptionWindows": 45,
+    "score": "100%",
+    "errors": [],
+    "checks": [
+      "all questions rendered and images decoded",
+      "select and change without submit",
+      "390px no horizontal overflow",
+      "navigation and reload persistence",
+      "incomplete scoring blocked",
+      "pinch and double-tap close",
+      "final score correct and answers locked",
+      "history and 2025 legacy sync deduplicated",
+      "per-year reset isolation",
+      "old answer format retained",
+      "A-only migration retains common answers"
+    ]
+  },
+  {
+    "year": 2025,
+    "questions": 72,
+    "graphicOptionWindows": 42,
+    "score": "100%",
+    "errors": [],
+    "checks": [
+      "all questions rendered and images decoded",
+      "select and change without submit",
+      "390px no horizontal overflow",
+      "navigation and reload persistence",
+      "incomplete scoring blocked",
+      "pinch and double-tap close",
+      "final score correct and answers locked",
+      "history and 2025 legacy sync deduplicated",
+      "per-year reset isolation",
+      "old answer format retained",
+      "A-only migration retains common answers"
+    ]
+  }
+]
