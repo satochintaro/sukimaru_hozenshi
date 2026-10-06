@@ -10,9 +10,9 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="スキマル保全士" name="apple-mobile-web-app-title"/>
-<link href="./apple-touch-icon-v13.png" rel="apple-touch-icon"/>
+<link href="./apple-touch-icon-v14.png" rel="apple-touch-icon"/>
 
-<link href="./styles.css" rel="stylesheet"/><script src="./supabase-config.js"></script><script src="./study-time.js?v=12"></script><script src="./member-profile.js?v=13"></script><link rel="stylesheet" href="./rollout.css?v=13"><script src="./rollout.js?v=13"></script></head>
+<link href="./styles.css" rel="stylesheet"/><script src="./supabase-config.js"></script><script src="./study-time.js?v=12"></script><script src="./member-profile.js?v=13"></script><link rel="stylesheet" href="./rollout.css?v=13"><script src="./rollout.js?v=14"></script><link rel="icon" href="./icon-v14-192.png"><link rel="stylesheet" href="./app-look-v14.css?v=14"></head>
 <body data-learning-mode="academic">
 <!-- ============ ホーム（1画面完結） ============ -->
 <section aria-hidden="false" class="active" id="sc-home">
@@ -20,7 +20,7 @@
 <a class="hd-back role-home-link" href="./index.html" aria-label="役割選択へ戻る">‹</a>
 <div style="flex:1">
 <div class="hd-ttl">スキマル保全士</div>
-<div class="hd-sub">PLAYER ／ 自主保全士2級 学科・設備診断</div>
+<div class="hd-sub">自主保全士2級 / 学科</div>
 </div>
 <span hidden class="hd-no" id="hd-no">No.—</span>
 <button aria-label="設定を開く" class="hd-ico" onclick="showSettings()">⚙</button>
@@ -32,14 +32,15 @@
 </nav>
 <p class="learning-mode-swipe">画面を左へスワイプすると実技へ</p>
 <div class="player-menu-head">
-  <span>PLAYER MENU</span>
-  <h2>学習メニュー</h2>
+  <span>LEARNING QUEST</span>
+  <h2>今日は、何を伸ばす？</h2>
 </div>
 <a class="practical-entry" href="./practical.html">
   <span class="practical-entry-icon">実</span>
   <span class="practical-entry-body"><small>TEST MODE</small><b>実技問題モード</b><em>20課題からランダム10課題を出題</em></span>
   <span class="practical-entry-go">›</span>
 </a>
+<div class="quick-card" id="quick-card"><div class="quick-eyebrow">DAILY CHALLENGE <span>5 QUESTIONS</span></div><h2>スキマ時間に、<br>ひとつ前進。</h2><p>全科目から5問。間違いは次の復習へ。</p><button type="button" onclick="startQuick()">サクッと5問 <span>→</span></button><div class="quick-goal" id="quick-goal">今日のミッション　0 / 5問</div><div class="quick-track"><i id="quick-progress"></i></div></div>
 <!-- メニューを最初に表示 -->
 <div class="menu player-main-menu">
 <button class="mi" onclick="showSubjects()">
@@ -364,7 +365,7 @@
 </button>
 </div>
 <div class="sts">
-<span>スキマル保全士</span><span>Ver 5.0 ／ 全 <span id="st-qn">600</span> 問</span>
+<span>スキマル保全士</span><span>Ver 14.0 ／ 全 <span id="st-qn">600</span> 問</span>
 </div>
 </div>
 </section>

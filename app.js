@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"13.0",schema:7};
+const APP={id:"skimaru-hozenshi",version:"14.0",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -216,6 +216,8 @@ function renderHome(){
   const bm=bookmarks().length, bb=document.getElementById("m-bm");
   bb.classList.toggle("hide",bm===0); bb.textContent=bm;
 
+  const count=Number(U.daily[today()])||0,goal=document.getElementById("quick-goal");
+  if(goal){goal.textContent=count>=5?"今日のミッション達成！":`今日のミッション　${count} / 5問`;document.getElementById("quick-progress").style.width=Math.min(100,count/5*100)+"%";document.getElementById("quick-card").classList.toggle("complete",count>=5);}
   show("sc-home");
 }
 function renderHomeSubjects(){
@@ -283,9 +285,13 @@ function rec(qs){
   U.recentIds=r; save();
 }
 function launch(queue,title,isMock){
-  S.queue=queue; S.i=0; S.ok=0; S.wrong=[]; S.isMock=!!isMock;
+  S.quick=false; S.queue=queue; S.i=0; S.ok=0; S.wrong=[]; S.isMock=!!isMock;
   document.getElementById("q-ttl").textContent=title;
   renderQ(); show("sc-quiz");
+}
+function startQuick(){
+  if(!window.SKIMARU_MEMBER?.valid()){window.SKIMARU_MEMBER?.startRegistration?.();return;}
+  const q=balancedPick(QUESTIONS,5);S.mode="normal";S.subject=null;rec(q);launch(q,"サクッと5問");S.quick=true;
 }
 function startQuiz(mode,subject,setIdx){
   let q,t;
@@ -524,7 +530,7 @@ function quitQuiz(){ if(confirm("中断しますか？ここまでの回答は�
    ============================================================ */
 function result(){
   const t=S.queue.length, c=S.ok, p=Math.round(c/t*100);
-  document.getElementById("res-ttl").textContent=S.isMock?"模擬試験 結果":"結果";
+  document.getElementById("res-ttl").textContent=S.quick?"5問クリア！":S.isMock?"模擬試験 結果":"結果";
   document.getElementById("res-c").textContent=c;
   document.getElementById("res-t").textContent=t;
   document.getElementById("res-p").textContent=`正答率 ${p}%`;
@@ -554,10 +560,10 @@ function result(){
   }
   const ag=document.getElementById("res-ag");
   ag.classList.toggle("hide", S.mode!=="normal");
-  ag.textContent=S.subject?`「${S.subject}」でもう10問`:"もう10問";
+  ag.textContent=S.quick?"もう5問チャレンジ":S.subject?`「${S.subject}」でもう10問`:"もう10問";
   show("sc-res");
 }
-function again(){ startQuiz("normal", S.subject||undefined); }
+function again(){ if(S.quick)startQuick();else startQuiz("normal", S.subject||undefined); }
 
 /* ============================================================
    分析

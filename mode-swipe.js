@@ -2,213 +2,117 @@
 (() => {
   const current=document.body.dataset.learningMode;
   if(current!=="academic"&&current!=="practical")return;
-
   const loaded=new Set();
-  const preloaded=new Set();
 
+  // Keep the current screen visible; put a glass loading ring over it.
   const bootStyle=document.createElement("style");
   bootStyle.id="skimaru-boot-style";
   bootStyle.textContent=`
     body.skimaru-booting::before{
       content:"";position:fixed;inset:0;z-index:999990;
-      background:rgba(247,249,250,.94);
-      -webkit-backdrop-filter:none;
-      backdrop-filter:none;
-      pointer-events:none!important
+      background:rgba(247,249,250,.60);
+      -webkit-backdrop-filter:blur(7px) saturate(.92);
+      backdrop-filter:blur(7px) saturate(.92);
     }
     body.skimaru-booting::after{
       content:"";position:fixed;left:50%;top:50%;z-index:999991;
-      width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;
-      background:conic-gradient(from 10deg,#258a61 0 30%,#e8ad20 30% 48%,rgba(37,138,97,.12) 48% 100%);
+      width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;
+      background:conic-gradient(from 10deg,#258a61 0 28%,#e8ad20 28% 47%,rgba(37,138,97,.13) 47% 100%);
       -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
       mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
-      opacity:0;animation:skimaruBootSpin .68s linear infinite;
-      pointer-events:none!important
+      animation:skimaruBootSpin .72s linear infinite;
     }
-    body.skimaru-booting.skimaru-show-spinner::after{opacity:1}
     @keyframes skimaruBootSpin{to{transform:rotate(360deg)}}`;
   document.head.appendChild(bootStyle);
   document.body.classList.add("skimaru-booting");
 
-  const spinnerTimer=setTimeout(()=>{
-    document.body.classList.add("skimaru-show-spinner");
-  },120);
-
-  const safetyTimer=setTimeout(finishBoot,2500);
-
-  function finishBoot(){
-    clearTimeout(spinnerTimer);
-    clearTimeout(safetyTimer);
-    document.body.classList.remove("skimaru-show-spinner","skimaru-booting");
+  const safetyTimer=setTimeout(()=>{
+    document.body.classList.remove("skimaru-booting");
     document.getElementById("skimaru-boot-style")?.remove();
-  }
-
-  function preload(src,as){
-    if(!src||preloaded.has(src))return;
-    preloaded.add(src);
-    const link=document.createElement("link");
-    link.rel="preload";
-    link.as=as;
-    link.href=src;
-    document.head.appendChild(link);
-  }
-
-  function preloadAll(){
-    const commonScripts=[
-      "./ui-v58.js?v=597",
-      "./year-mode-core.js",
-      "./coach-shared.js",
-      "./coach-player.js",
-      "./question-scroll-v597.js?v=597"
-    ];
-
-    const academicScripts=[
-      "./academic-remove-practical.js",
-      "./year-question-data.js",
-      "./year-mode.js",
-      "./academic-ui-v56.js",
-      "./quiz-static.js?v=597",
-      "./quiz-balance-v594.js?v=597",
-      "./coach-sync.js?v=597"
-    ];
-
-    const practicalScripts=[
-      "./practical-year-data.js",
-      "./practical-year-data-v58.js",
-      "./practical-year-mode.js",
-      "./practical-v58.js",
-      "./coach-sync.js?v=597"
-    ];
-
-    const commonStyles=[
-      "./theme-v58.css",
-      "./coach.css",
-      "./app-polish.css?v=597",
-      "./question-scroll-v597.css?v=597",
-      "./performance-v597.css?v=597"
-    ];
-
-    const academicStyles=[
-      "./academic-ui-v56.css",
-      "./quiz-static.css?v=597",
-      "./quiz-balance-v594.css?v=597"
-    ];
-
-    [...commonScripts,...(current==="academic"?academicScripts:practicalScripts)]
-      .forEach(src=>preload(src,"script"));
-
-    [...commonStyles,...(current==="academic"?academicStyles:[])]
-      .forEach(src=>preload(src,"style"));
-  }
+  },7000);
 
   function loadScript(src){
-    if(!src)return Promise.resolve();
     if(loaded.has(src)||document.querySelector(`script[src="${src}"]`))return Promise.resolve();
-
     return new Promise((resolve,reject)=>{
       const s=document.createElement("script");
-      s.src=src;
-      s.async=false;
+      s.src=src;s.async=false;
       s.onload=()=>{loaded.add(src);resolve();};
       s.onerror=()=>reject(new Error(`load failed: ${src}`));
       document.body.appendChild(s);
     });
   }
-
   function loadStyle(src){
-    if(!src)return Promise.resolve();
-    const existing=document.querySelector(`link[rel="stylesheet"][href="${src}"]`);
+    const existing=document.querySelector(`link[href="${src}"]`);
     if(existing){
       if(existing.sheet)return Promise.resolve();
       return new Promise(resolve=>{
         existing.addEventListener("load",resolve,{once:true});
-        setTimeout(resolve,350);
+        setTimeout(resolve,1200);
       });
     }
-
     return new Promise(resolve=>{
       const l=document.createElement("link");
-      l.rel="stylesheet";
-      l.href=src;
-      l.onload=resolve;
-      l.onerror=resolve;
+      l.rel="stylesheet";l.href=src;
+      l.onload=resolve;l.onerror=resolve;
       document.head.appendChild(l);
     });
   }
 
   function updateVersion(){
-    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.7").replace(/TEST/gi,"");
-    const qn=document.getElementById("st-qn");
-    if(current==="academic"&&qn)qn.textContent="1000";
+    document.title=document.title.replace(/5\.\d+(?:\.\d+)?/g,"5.9.0").replace(/TEST/gi,"");
+    if(current==="academic"){
+      const st=document.querySelector("#sc-set .sts span:last-child");
+      if(st)st.innerHTML='Ver 5.9.0 ／ 全 <span id="st-qn">1000</span> 問';
+    }
   }
 
-  async function loadAcademic(){
-    await loadScript("./year-mode-core.js");
-
-    await Promise.all([
-      loadScript("./ui-v58.js?v=597"),
-      loadScript("./academic-remove-practical.js"),
-      loadScript("./year-question-data.js"),
-      loadScript("./coach-shared.js")
-    ]);
-
-    await loadScript("./year-mode.js");
-    await loadScript("./academic-ui-v56.js");
-    await loadScript("./quiz-static.js?v=597");
-    await loadScript("./coach-player.js");
-    await loadScript("./coach-sync.js?v=597");
-    await loadScript("./quiz-balance-v594.js?v=597");
-    await loadScript("./question-scroll-v597.js?v=597");
-
-    if(typeof APP!=="undefined"&&APP)APP.version="5.9.7";
-  }
-
-  async function loadPractical(){
-    await loadScript("./year-mode-core.js");
-
-    await Promise.all([
-      loadScript("./ui-v58.js?v=597"),
-      loadScript("./practical-year-data.js"),
-      loadScript("./practical-year-data-v58.js"),
-      loadScript("./coach-shared.js")
-    ]);
-
-    await loadScript("./practical-year-mode.js");
-    await loadScript("./practical-v58.js");
-    await loadScript("./coach-player.js");
-    await loadScript("./coach-sync.js?v=597");
-    await loadScript("./question-scroll-v597.js?v=597");
-  }
-
-  async function boot(){
+  async function loadEnhancements(){
     try{
-      preloadAll();
-
-      const styles=["./theme-v58.css","./coach.css","./app-polish.css?v=597","./question-scroll-v597.css?v=597","./performance-v597.css?v=597","./input-safety-v595.css?v=597"];
+      const commonStyles=["./theme-v58.css","./coach.css","./app-polish.css?v=590"];
       if(current==="academic"){
-        styles.push(
-          "./academic-ui-v56.css",
-          "./quiz-static.css?v=597",
-          "./quiz-balance-v594.css?v=597"
-        );
+        commonStyles.push("./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15");
+      }
+      await Promise.all(commonStyles.map(loadStyle));
+
+      await loadScript("./ui-v58.js?v=590");
+      await loadScript("./year-mode-core.js");
+
+      if(current==="academic"){
+        await loadScript("./academic-remove-practical.js");
+        await loadScript("./year-question-data.js");
+        await loadScript("./year-mode.js");
+        await loadScript("./academic-ui-v56.js");
+        await loadScript("./quiz-static.js?v=590");
+        await loadScript("./coach-shared.js");
+        await loadScript("./coach-player.js");
+        await loadScript("./game-effects.js?v=14");
+        if(typeof APP!=="undefined"&&APP)APP.version="14.0";
+      }else{
+        await loadScript("./practical-year-data.js");
+        await loadScript("./practical-year-data-v58.js");
+        await loadScript("./practical-year-mode.js");
+        await loadScript("./practical-v58.js");
+        await loadScript("./coach-shared.js");
+        await loadScript("./coach-player.js");
       }
 
-      await Promise.all(styles.map(loadStyle));
-
-      if(current==="academic")await loadAcademic();
-      else await loadPractical();
-
-      await loadScript("./input-safety-v595.js?v=597");
-      await new Promise(resolve=>requestAnimationFrame(resolve));
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     }catch(error){
-      console.error("初期化エラー",error);
+      console.error("画面初期化エラー",error);
     }finally{
-      finishBoot();
+      const look=document.querySelector('link[href*="app-look-v14.css"]');if(look)document.head.append(look);
+      if(typeof APP!=="undefined")APP.version="14.0";
+      const sub=document.querySelector('#sc-home .hd-sub');if(sub)sub.textContent='自主保全士2級 / 学科';
+      const ver=document.querySelector('#sc-set .sts span:last-child');if(ver)ver.innerHTML='Ver 14.0 ／ 全 <span id="st-qn">'+(window.QUESTIONS?.length||1000)+'</span> 問';
+
+      clearTimeout(safetyTimer);
+      document.body.classList.remove("skimaru-booting");
+      document.getElementById("skimaru-boot-style")?.remove();
     }
   }
 
   updateVersion();
-  boot();
+  loadEnhancements();
 
   let startX=0,startY=0,startAt=0,tracking=false;
   const homeIsActive=()=>current==="academic"
@@ -217,8 +121,7 @@
 
   document.addEventListener("touchstart",e=>{
     if(!homeIsActive()||e.touches.length!==1)return;
-    const t=e.touches[0];
-    startX=t.clientX;startY=t.clientY;startAt=Date.now();tracking=true;
+    const t=e.touches[0];startX=t.clientX;startY=t.clientY;startAt=Date.now();tracking=true;
   },{passive:true});
 
   document.addEventListener("touchend",e=>{
