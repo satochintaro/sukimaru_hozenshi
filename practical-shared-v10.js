@@ -65,10 +65,17 @@
     figure.setAttribute('aria-label', `${q.figure.title}：原本PDF ${q.figure.page}ページを全画面表示`);
     figure.append(viewport(q.figure)); figure.onclick = () => openOriginal(q.figure.page, figure);
     $('source').append(label, figure);
+    if(q.questionFigure){
+      const questionLabel=document.createElement('div');questionLabel.className='oneq-figure-label v10-question-label';
+      questionLabel.textContent=q.questionFigure.title;
+      const questionImage=document.createElement('div');questionImage.className='v10-inline-question';
+      questionImage.append(viewport(q.questionFigure));
+      $('source').append(questionLabel,questionImage);
+    }
     const sourcePage=q.sourcePage || q.figure.page;
     $('oneqSource').textContent=q.sourcePage ? '設問の原本を見る' : '原本を見る';
     $('oneqSource').onclick = () => openOriginal(sourcePage, $('oneqSource'));
-    if(sourcePage!==q.figure.page){
+    if(sourcePage!==q.figure.page && !q.questionFigure){
       const sceneSource=document.createElement('button');sceneSource.type='button';
       sceneSource.className='oneq-source';sceneSource.textContent='状況図の原本を見る';
       sceneSource.onclick=()=>openOriginal(q.figure.page,sceneSource);$('source').append(sceneSource);
