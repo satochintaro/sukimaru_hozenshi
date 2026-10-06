@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"12.0",schema:7};
+const APP={id:"skimaru-hozenshi",version:"13.0",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -853,7 +853,7 @@ function dlJson(){
   a.click(); URL.revokeObjectURL(u);
 }
 function exportBackup(){
-  U.studyTimeV12=window.SKIMARU_TIME?.exportData();
+  U.studyTimeV12=window.SKIMARU_TIME?.exportData();U.registrationV13=window.SKIMARU_MEMBER?.backupRegistration();
   const raw=JSON.stringify(U);
   const payload={app:APP.id,version:APP.version,schema:APP.schema,exportedAt:new Date().toISOString(),checksum:checksum(raw),data:U};
   const b=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
@@ -873,7 +873,7 @@ function importBackup(event){
       if(payload.checksum&&payload.checksum!==checksum(JSON.stringify(candidate)))throw new Error("checksum");
       const data=normalizeData(candidate);if(!data||!plainObject(data.stats))throw new Error("data");
       if(!confirm("現在の学習履歴を、選択したバックアップで置き換えますか？"))return;
-      U=data;if(!save())throw new Error("save");window.SKIMARU_TIME?.importData(data.studyTimeV12);
+      U=data;if(!save())throw new Error("save");window.SKIMARU_TIME?.importData(data.studyTimeV12);window.SKIMARU_MEMBER?.restoreRegistration(data.registrationV13);
       notify("学習履歴を復元しました");setTimeout(()=>location.reload(),700);
     }catch(e){notify(e.message==="checksum"?"バックアップが破損しています":"バックアップを読み込めませんでした");}
     finally{input.value="";}

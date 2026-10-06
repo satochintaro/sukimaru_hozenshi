@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261006-v12";
+const CACHE="skimaru-live-20261006-v13";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
@@ -20,7 +20,7 @@ self.addEventListener("fetch",event=>{
   // HTML/navigation must always come from the network so practical.html cannot stay on an old screen.
   if(event.request.mode==="navigate"||url.pathname.endsWith(".html")||url.pathname.endsWith("/")){
     event.respondWith(
-      fetch(event.request,{cache:"no-store"}).catch(()=>caches.match(event.request))
+      fetch(event.request,{cache:"no-store"}).then(async response=>{if(response.ok){try{const cache=await caches.open(CACHE);await cache.put(event.request,response.clone());}catch{}}return response;}).catch(async()=>await caches.match(event.request)||new Response("<!doctype html><meta charset=utf-8><meta name=viewport content=width=device-width,initial-scale=1><p>この画面はまだ端末に保存されていません。通信が戻ってから開いてください。</p><a href=./index.html>トップへ戻る</a>",{headers:{"Content-Type":"text/html;charset=utf-8"}}))
     );
     return;
   }

@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "posts": 1,
+  "deleteCalls": 1,
+  "pageErrors": [],
+  "checks": [
+    "mandatory registration",
+    "network failure blocks registration",
+    "registration persisted",
+    "registered profile editing",
+    "registered submission and time",
+    "tokens not submitted in raw data",
+    "registry includes unsubmitted users",
+    "per-user delete confirmation",
+    "no bulk delete",
+    "other user data retained",
+    "revocation clears local learning",
+    "manager has no delete UI",
+    "iPhone guidance",
+    "Android native install prompt"
+  ],
+  "directPages": {
+    "passed": true,
+    "pages": [
+      "dashboard.html",
+      "gakka-2022.html",
+      "gakka-2023.html",
+      "jitugi-2022.html",
+      "jitugi-2023.html",
+      "player.html",
+      "practical-2024.html",
+      "practical-2025.html",
+      "practical.html",
+      "review.html"
+    ]
+  },
+  "database": {
+    "passed": true,
+    "transactionRolledBack": true,
+    "remainingTestPlayers": 0,
+    "checks": [
+      "developer-only access",
+      "token verification",
+      "target deletion",
+      "other users retained",
+      "revoked submissions rejected"
+    ]
+  },
+  "pdfGuides": {
+    "playerPages": 1,
+    "managerPages": 1,
+    "embeddedJapaneseFont": true
+  }
+}

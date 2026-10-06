@@ -1,31 +1,43 @@
 {
+  "id": "./",
   "name": "スキマル保全士",
-  "short_name": "スキマル保全士",
-  "description": "自主保全士2級の学科・実技学習と管理者分析を行うアプリ",
-  "start_url": "./index.html?v=605",
+  "short_name": "スキマル",
+  "description": "自主保全士2級の学科・実技学習と拠点別の教育フォロー",
+  "lang": "ja",
+  "start_url": "./index.html?launch=home",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#F7F9FA",
-  "theme_color": "#F7F9FA",
-  "lang": "ja",
+  "background_color": "#f4f8f5",
+  "theme_color": "#172431",
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./icon-v59-192.png",
+      "src": "./icon-v13-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-v59-512.png",
+      "src": "./icon-v13-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-v59-maskable-512.png",
+      "src": "./icon-v13-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "プレイヤー",
+      "url": "./player.html"
+    },
+    {
+      "name": "マネージャー",
+      "url": "./admin.html"
     }
   ]
 }

@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="./manager-ui-v55.css">
 <link rel="stylesheet" href="./theme-v57.css">
 <meta name="theme-color" content="#172431">
-<link rel="stylesheet" href="./member-manager.css?v=11"></head>
+<link rel="stylesheet" href="./member-manager.css?v=11"><link rel="stylesheet" href="./rollout.css?v=13"><script src="./rollout.js?v=13"></script><link rel="manifest" href="./manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="スキマル保全士"><link rel="apple-touch-icon" href="./apple-touch-icon-v13.png"></head>
 <body class="manager-body quest-v57">
 <main class="admin-main">
 <header class="hd manager-header">
@@ -36,7 +36,7 @@
   </div>
   <div class="acts manager-actions">
     <button class="btn-g" id="csv-learners">提出一覧CSV</button>
-    <button class="btn-g" id="clear">提出データを削除</button>
+    
   </div>
   <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><small>拠点情報のない従来データは四日市として表示します。</small></div><div id="ad-rep" class="scroll manager-report"></div>
 
@@ -63,7 +63,7 @@
     <button class="btn" id="login-btn">開発者としてログイン</button>
     </div>
     <div class="manager-login-message" id="login-message"></div>
-    <small>管理者は設定変更・メッセージ送信・削除が可能です。</small>
+    <small>管理者は閲覧用です。設定変更・登録者データの削除は開発者が行います。</small>
   </div>
 </div>
 
@@ -84,6 +84,6 @@
 <script src="./coach-manager.js"></script>
 <script src="./manager-viewer-admin.js"></script>
 <script src="./manager-organizer.js"></script>
-<script src="./ui-v57.js"></script>
+<script src="./developer-players.js?v=13"></script><script src="./ui-v57.js"></script>
 </body>
 </html>
