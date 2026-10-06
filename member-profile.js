@@ -5,12 +5,62 @@
   const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
   let profile=read(KEY),busy=false;
   const REG="skimaru-registration-v13";
-  const valid=()=>{const p=read(KEY),r=read(REG);return !!p.name?.trim()&&SITES.includes(p.site)&&r.confirmed===true&&r.playerNo===p.playerNo&&r.name===p.name&&r.site===p.site;};
   const secret=()=>crypto.randomUUID().replace(/-/g,"")+crypto.randomUUID().replace(/-/g,"");
+  // Adopt locally saved players before the academic app reads its state.
+  // This only carries existing progress forward; cloud writes still require a verified token.
+  function adoptExisting(){
+    const current=read(KEY),r=read(REG);
+    let p=current;
+    if(!String(p.name||'').trim()){
+      const fallback=[read('skimaruDataAutoBackup'),read('quizAppData')].find(x=>String(x.name||'').trim());
+      if(fallback){const raw=localStorage.getItem(KEY);const saved=raw&&current&&typeof current==='object'&&!Array.isArray(current);p=saved?{...fallback,...current,name:fallback.name,playerNo:current.playerNo||fallback.playerNo,site:current.site||fallback.site}:fallback;}
+      else if(String(r.name||'').trim())p={...current,name:r.name,playerNo:current.playerNo||r.playerNo,site:current.site||r.site};
+    }
+    if(!String(p.name||'').trim())return false;
+    const playerNo=p.playerNo||r.playerNo||'P-'+crypto.randomUUID().replace(/-/g,'').slice(0,12).toUpperCase();
+    const site=SITES.includes(p.site)?p.site:SITES.includes(r.site)?r.site:'四日市';
+    const name=String(p.name).trim().slice(0,20);
+    const same=r.playerNo===playerNo;
+    write(KEY,{...p,playerNo,name,site});
+    write(REG,{...(same?r:{}),playerNo,name,site,token:same&&r.token?r.token:secret(),confirmed:same&&r.confirmed===true,legacy:true,recoveryShown:true});
+    return true;
+  }
+  adoptExisting();
+  const valid=()=>{const p=read(KEY),r=read(REG);return !!p.name?.trim()&&SITES.includes(p.site)&&(r.confirmed===true||r.legacy===true)&&r.playerNo===p.playerNo&&r.name===p.name&&r.site===p.site;};
+  let migrating=null;
+  async function migrateExisting(){
+    const p=read(KEY),r=read(REG);if(!r.legacy||r.confirmed)return true;
+    if(!navigator.onLine)return false;
+    if(migrating)return migrating;
+    migrating=(async()=>{try{
+      const j=await rpc('skimaru_register_player',{p_player_no:p.playerNo,p_name:p.name,p_site:p.site,p_token:r.token});
+      if(j.state!=='active')return false;
+      // Preserve changes and all learning keys while the network request was pending.
+      const latest=read(REG);if(latest.playerNo!==p.playerNo||latest.token!==r.token)return false;
+      write(REG,{...latest,confirmed:true,registeredAt:latest.registeredAt||new Date().toISOString()});return true;
+    }catch(e){if(e.message.includes('registration_revoked')){clearRemovedPlayer();return false;}if(e.message.includes('registration_token_mismatch')){write(REG,{...read(REG),needsRecovery:true});}return false;}finally{migrating=null;}})();return migrating;
+  }
   async function rpc(name,body){const c=window.SKIMARU_SUPABASE||{};if(!c.url||!c.publishableKey)throw Error("接続設定がありません。展開担当者へ連絡してください。");const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);try{const r=await nativeFetch(`${c.url}/rest/v1/rpc/${name}`,{method:"POST",headers:{apikey:c.publishableKey,"Content-Type":"application/json"},body:JSON.stringify(body),signal:controller.signal,cache:"no-store"});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.message||"通信に失敗しました");return j;}finally{clearTimeout(timer);}}
   function clearRemovedPlayer(){for(const k of Object.keys(localStorage)){if([KEY,"skimaruDataAutoBackup",REG,LEDGER,QUEUE,"skimaru-manager-inbox-v1","skimaru-study-time-v12","skimaruExamHistory_v1","skimaru-cloud-backup-v15"].includes(k)||/^skimaru(Early_|Practical|Coach)/.test(k)||k==="skimaru-coach-v1")localStorage.removeItem(k);}sessionStorage.setItem("skimaru-registration-notice","開発者が登録と成績を削除しました。利用を再開する場合は、新しく拠点と名前を登録してください。");location.reload();}
   let checking=null;
-  async function checkRegistration(force=false){if(!valid())return false;if(!navigator.onLine)return true;if(checking)return checking;const p=read(KEY),r=read(REG);checking=(async()=>{try{const j=await rpc("skimaru_player_status",{p_player_no:p.playerNo,p_token:r.token});if(j.state==="revoked"){clearRemovedPlayer();return false;}if(j.state!=="active"){r.confirmed=false;write(REG,r);register();return false;}return true;}catch(e){if(force)throw e;return true;}finally{checking=null;}})();return checking;}
+  async function checkRegistration(force=false){
+    if(!valid())return false;
+    const initial=read(REG);
+    if(initial.legacy&&!initial.confirmed){const migrated=await migrateExisting();if(!migrated){if(force)throw Error(read(REG).needsRecovery?'登録情報が一致しません。復旧コードで復元してください。':'オンラインで登録情報の引き継ぎが完了してから提出してください。');return true;}}
+    if(!navigator.onLine)return !force;
+    if(checking)return checking;
+    const p=read(KEY),r=read(REG);
+    checking=(async()=>{try{
+      const j=await rpc('skimaru_player_status',{p_player_no:p.playerNo,p_token:r.token});
+      if(j.state==='revoked'){clearRemovedPlayer();return false;}
+      if(j.state!=='active'){
+        if(r.legacy){write(REG,{...r,confirmed:false,needsRecovery:j.state==='invalid'});if(j.state==='missing'&&await migrateExisting())return true;if(force)throw Error('登録情報の引き継ぎが必要です。歯車から復旧コードで復元してください。');return true;}
+        r.confirmed=false;write(REG,r);register();return false;
+      }
+      return true;
+    }catch(e){if(force)throw e;return true;}finally{checking=null;}})();return checking;
+  }
+
 
   if(!window.SKIMARU_ROLLOUT&&!document.querySelector('script[src*="rollout.js"]')){const help=document.createElement("script");help.src="./rollout.js?v=13";document.head.append(help);}
   const style=document.createElement("style");style.textContent=`
@@ -19,6 +69,7 @@
   `;document.head.append(style);
   function sync(){profile=read(KEY);window.dispatchEvent(new CustomEvent("skimaru-profile",{detail:profile}));refresh();}
   function register(edit=false){
+    if(!edit&&read(REG).legacy&&valid()){migrateExisting();return;}
     if(document.querySelector(".member-gate"))return;
     const p=read(KEY),notice=sessionStorage.getItem("skimaru-registration-notice")||"";sessionStorage.removeItem("skimaru-registration-notice");
     const gate=document.createElement("div");gate.className="member-gate";gate.setAttribute("role","dialog");gate.setAttribute("aria-modal","true");gate.setAttribute("aria-labelledby","member-title");
