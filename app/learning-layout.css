@@ -64,3 +64,34 @@
 .pt-analysis-row{padding:12px 0;border-bottom:1px solid var(--home-line)}.pt-analysis-row span{display:block;font-size:14px;margin-top:5px}
 .pt-bookmark{display:block;min-height:44px;padding:8px 12px;margin:0 0 12px auto;color:#786022;background:#fff;border:1px solid #d8c08b;border-radius:10px;font:inherit}.pt-bookmark[aria-pressed="true"]{background:#fff2cf}
 @media(max-width:360px){.learning-home-shell #sc-home .player-home-pad,.learning-home-shell .pad.years{padding-left:16px;padding-right:16px}.learning-home-shell .player-menu-head h2,.learning-home-shell .pt-hero h1{font-size:23px}.learning-home-shell .player-main-menu .mi-n{font-size:14px!important}.learning-home-shell .year-card{padding:17px 13px}.learning-home-shell .year-card b{font-size:19px}}
+
+/* v16.11: common touch targets and naturally growing question cards. */
+.unified-home-view>.hd,.unified-home-view #sc-home>.hd,.unified-home-view #pt-home>.hd{height:96px!important;min-height:96px!important;box-sizing:border-box;padding:16px!important}
+.unified-home-view #pt-home>.hd{height:97px!important;min-height:97px!important}
+.learning-home-shell .unified-home .learning-mode-switch{height:56px;box-sizing:border-box;flex-shrink:0}
+.learning-home-shell .unified-home .learning-mode-switch a,.learning-home-shell .unified-home .learning-mode-switch button{height:46px;min-height:46px;box-sizing:border-box;line-height:24px;padding:0!important;border:0}
+.learning-home-shell #sc-home .unified-home,.learning-home-shell #pt-home .unified-home,.learning-home-shell #main>.unified-home{padding:20px 18px 28px!important;gap:16px!important}
+.learning-home-shell .unified-home>*{order:0!important;flex-shrink:0}
+.learning-home-shell .unified-home>.learning-mode-swipe{display:none}
+.learning-home-shell .unified-home .player-main-menu{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.learning-home-shell .unified-home .player-main-menu .mi{height:auto!important;min-height:100px!important;padding:16px!important;min-width:0;box-sizing:border-box}
+.learning-home-shell .unified-home .player-main-menu .mi-n{white-space:normal!important;overflow-wrap:anywhere;font-size:16px!important;line-height:1.5!important}
+.learning-home-shell .unified-home .player-main-menu .mi{grid-column:auto!important;display:flex!important;justify-content:space-between!important;gap:8px!important;height:100px!important;min-height:100px!important}
+.learning-home-shell .unified-home .player-main-menu .mi-d{display:none!important}
+.learning-home-shell .unified-home .player-main-menu .mi-n{margin:0!important}
+.learning-home-shell .unified-home .g1-intro,.learning-home-shell .unified-home .player-menu-head,.learning-home-shell .unified-home .pt-hero{min-height:116px;box-sizing:border-box}
+.learning-home-shell .unified-home .pt-hero small{display:none}
+.learning-home-shell .unified-home .learning-mode-switch .active{background:#fff!important;color:var(--home-action)!important}
+.learning-home-shell .unified-home .learning-dashboard-top>div{min-height:142px;box-sizing:border-box}
+.learning-home-shell .unified-home .learning-metrics>div{min-height:76px;box-sizing:border-box}
+body.academic-quiz .q-body,#sc-quiz .q-body{display:block!important;flex:1 1 0;min-height:0;overflow-y:auto;overflow-x:hidden;padding:16px;overscroll-behavior:contain}
+body.academic-quiz .q-card,#sc-quiz .q-card{display:block!important;flex:none!important;min-height:100%;height:auto;box-sizing:border-box;padding:24px!important;overflow:visible;align-self:stretch}
+body.academic-quiz .q-txt,#sc-quiz .q-txt{margin:0!important;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;font-size:20px!important;line-height:1.85!important}
+body.large-text.academic-quiz .q-txt,body.large-text #sc-quiz .q-txt{font-size:25px!important}
+body.academic-quiz .ans,#sc-quiz .ans{flex-shrink:0;padding:12px 16px!important}
+body.academic-quiz .btn-ox,#sc-quiz .btn-ox{min-height:78px!important;box-sizing:border-box}
+body.academic-quiz .q-hd,#sc-quiz .q-hd{min-height:64px;box-sizing:border-box;flex-shrink:0}
+.learning-home-shell .year-card,.learning-home-shell .mi{overflow-wrap:anywhere}
+body.grade1-app:not(.academic-quiz) .quiz-frame{padding-bottom:100px}
+body.grade1-app:not(.academic-quiz) .quiz-frame .oneq-nav{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;z-index:30;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 16px max(12px,env(safe-area-inset-bottom));background:#f7f6f2;box-sizing:border-box;border-top:1px solid #dce2e4}
+body.grade1-app:not(.academic-quiz) .quiz-frame .oneq-nav button{min-height:52px;font-size:16px;padding:12px}

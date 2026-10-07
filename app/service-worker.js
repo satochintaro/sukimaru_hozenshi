@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-10-home-tools";
+const CACHE="skimaru-live-20261008-v16-11-unified-layout";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

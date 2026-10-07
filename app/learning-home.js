@@ -41,3 +41,26 @@
  document.addEventListener('click',e=>{const b=e.target.closest('[data-achievements]');if(b){opener=b;open();}});
  window.SKIMARU_LEARNING_HOME={html};
 })();
+
+/* One navigation layout for both grades. Reordering preserves event handlers. */
+(()=>{
+ function normalize(){
+  const host=document.querySelector('#sc-home.active .player-home-pad')||document.querySelector('#main #sc-home .player-home-pad')||document.querySelector('#pt-home.active .practical-pad')||document.querySelector('#main > .pad.years');
+  document.body?.classList.toggle('unified-home-view',!!host);
+  if(!host)return;
+  host.classList.add('unified-home');
+  const intro=host.querySelector('.g1-intro,.player-menu-head,.pt-hero'),menu=host.querySelector('.player-main-menu');
+  if(!intro||!menu)return;
+  const practical=menu.classList.contains('practical-tools-menu');
+  if(practical){const p=intro.querySelector('p');if(p&&p.textContent!=='全課題でも、課題ごとでも学習できます。')p.textContent='全課題でも、課題ごとでも学習できます。';}
+  const rank=['復習モード','重点マーク','学習分析','成績提出','科目別演習','年度別過去問'];
+  const items=[...menu.children].filter(e=>e.classList.contains('mi'));
+  items.sort((a,b)=>rank.indexOf(a.querySelector('.mi-n')?.textContent.replace(/\s/g,''))-rank.indexOf(b.querySelector('.mi-n')?.textContent.replace(/\s/g,'')));
+  items.forEach((e,i)=>{if(menu.children[i]!==e)menu.insertBefore(e,menu.children[i]||null);const label=e.querySelector('.mi-n');if(label?.querySelector('br'))label.textContent=label.textContent;const badge=e.querySelector('.mi-i');const number=String(i+1).padStart(2,'0');if(badge&&badge.textContent!==number)badge.textContent=number;});
+  const leading=[host.querySelector('.learning-mode-switch'),intro,menu,host.querySelector('.quick-card,.year-grid'),host.querySelector('#coach-dashboard,#coach-practical-summary')||host.querySelector('.learning-dashboard')].filter(Boolean);
+  leading.forEach((e,i)=>{if(host.children[i]!==e)host.insertBefore(e,host.children[i]||null);});
+ }
+ let scheduled=false;
+ new MutationObserver(()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;normalize();});}}).observe(document.documentElement,{childList:true,subtree:true});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',normalize);else normalize();
+})();
