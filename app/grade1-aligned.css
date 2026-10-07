@@ -36,3 +36,28 @@ body.grade1-app{--bg:#f7f6f2;--panel:#fff;--text:#182e3c;--muted:#4b5e6b;--line:
 .grade1-app .player-main-menu{gap:10px}.grade1-app .player-main-menu .mi{height:106px;min-height:106px;padding:12px;border:1px solid #dce2e4!important;border-radius:15px;box-shadow:none;background:#fff}.grade1-app .player-main-menu .mi-n{font-size:15px!important;line-height:1.6;color:#193d53;font-weight:700}.grade1-app .player-main-menu .mi-i{font-size:11px;background:#eef1f2;color:#4b5e6b;font-weight:650}.grade1-app .fol{background:#eef1f2;border:1px solid #dce2e4;border-radius:15px}.grade1-app .fol-t{font-size:15px;font-weight:700}.grade1-app .fol-d{font-size:12px;line-height:1.7;text-wrap:pretty}.grade1-app .pn.player-home-summary{box-shadow:none;border-radius:18px}
 @media(max-width:360px){.grade1-app .pad.years,.grade1-app #sc-home .player-home-pad{padding-left:16px;padding-right:16px}.grade1-app .g1-intro h1{font-size:23px}.grade1-app .year-card{padding:17px 13px;min-height:150px}.grade1-app .year-card b{font-size:19px}.grade1-app .quick-card h2{font-size:21px}.grade1-app .player-main-menu .mi-n{font-size:14px!important}}
 @media(max-height:650px){.academic-quiz .q-card{padding:18px}.academic-quiz .q-txt{font-size:18px}.academic-quiz .btn-ox{height:64px}.academic-quiz .ans{padding-top:8px}.academic-quiz .chip{min-height:48px}}
+
+/* Answer explanations, v16.8 */
+.grade1-app .g1-explanation{color:#253b4b;text-align:left;line-height:1.85;overflow-wrap:anywhere}
+.grade1-app .g1-explanation p{margin:8px 0 0;font-size:inherit;color:inherit;white-space:pre-line}
+.grade1-app .g1-explanation-label{display:block;color:#263f50;font-size:13px;font-weight:800;letter-spacing:.08em}
+.grade1-app .g1-explanation small{display:block;margin-top:10px;color:#526370;font-size:12px}
+.grade1-app .g1-review-title{margin:28px 0 8px;font-size:22px;color:#172b39}
+.grade1-app .g1-answer-review{display:grid;gap:10px;margin:20px 0}
+.grade1-app .g1-review-item{border:1px solid #d2dce3;border-radius:16px;background:#fff;overflow:hidden}
+.grade1-app .g1-review-item summary{display:flex;align-items:center;gap:10px;padding:16px 14px;cursor:pointer;list-style:none;color:#172b39}
+.grade1-app .g1-review-item summary::-webkit-details-marker{display:none}
+.grade1-app .g1-review-item summary:after{content:'＋';flex-shrink:0;font-size:20px}
+.grade1-app .g1-review-item[open] summary:after{content:'−'}
+.grade1-app .g1-review-number{display:grid;place-items:center;flex-shrink:0;min-width:28px;min-height:28px;border-radius:50%;background:#edf2f5;font-size:13px;font-weight:800}
+.grade1-app .g1-review-name{flex:1;min-width:0;font-size:14px;font-weight:800;overflow-wrap:anywhere}
+.grade1-app .g1-review-name small{display:block;margin-top:4px;font-size:12px;font-weight:500;line-height:1.5;color:#526370}
+.grade1-app .g1-review-status{flex-shrink:0;font-size:12px;font-weight:800}
+.grade1-app .g1-review-status.correct{color:#226b50}.grade1-app .g1-review-status.incorrect{color:#a13f34}
+.grade1-app .g1-review-body{padding:0 18px 20px;border-top:1px solid #e4eaee;font-size:16px;line-height:1.85;overflow-wrap:anywhere}
+.grade1-app .g1-review-question{margin:16px 0;color:#253b4b;white-space:pre-line}
+.grade1-app .g1-review-answer{padding:12px;border-radius:10px;background:#eef3f6;color:#172b39;margin-bottom:18px}
+.grade1-app .g1-review-source{margin-top:18px;width:100%}
+.grade1-app .g1-review-item summary:focus-visible{outline:3px solid #bd8e30;outline-offset:-3px}
+.grade1-app.large-text .g1-review-body{font-size:19px}
+@media(max-width:350px){.grade1-app .g1-review-item summary{padding:14px 10px;gap:7px}.grade1-app .g1-review-name{font-size:13px}.grade1-app .g1-review-status{font-size:11px}}
