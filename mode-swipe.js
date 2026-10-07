@@ -68,7 +68,7 @@
 
   async function loadEnhancements(){
     try{
-      const commonStyles=["./theme-v58.css","./coach.css","./app-polish.css?v=590"];
+      const commonStyles=["./theme-v58.css?v=15.3","./coach.css?v=15.3","./app-polish.css?v=590"];
       if(current==="academic"){
         commonStyles.push("./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15");
       }

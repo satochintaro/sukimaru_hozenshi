@@ -28,7 +28,7 @@ body.v58{background:var(--bg58);color:var(--text58);-webkit-font-smoothing:antia
 .v58 .mi-i{font-size:10px!important}
 .v58 #mi-past-year{grid-column:1/-1;min-height:78px!important}
 .v58 #mi-past-year .mi-n br{display:none}
-.v58 .coach-home-top{grid-template-columns:96px minmax(0,1fr)!important}
+.v58 .coach-home-top{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)!important}
 .v58 .coach-countdown,.v58 .coach-message{min-height:96px!important}
 .v58 .coach-message h3{font-size:14px!important}
 .v58 .q-card{border-radius:20px!important;box-shadow:0 12px 28px rgba(21,35,49,.08)!important}
