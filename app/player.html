@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://kuioqlwpkvdpudollhpz.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>スキマル保全士 プレイヤー</title>
+<link href="./manifest.webmanifest" rel="manifest"/>
+<meta content="#1C2B3A" name="theme-color"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="スキマル保全士" name="apple-mobile-web-app-title"/>
+<link href="./apple-touch-icon-v14.png" rel="apple-touch-icon"/>
+
+<link href="./styles.css" rel="stylesheet"/><script src="./supabase-config.js"></script><script src="./study-time.js?v=12"></script><script src="./cloud-backup-v15.js?v=16"></script><script src="./member-profile.js?v=16.6"></script><link rel="stylesheet" href="./rollout.css?v=13"><script src="./rollout.js?v=16.6"></script><link rel="icon" href="./icon-v14-192.png"><link rel="stylesheet" href="./app-look-v14.css?v=14"><link rel="preload" as="script" href="./ui-v58.js?v=590"><link rel="preload" as="script" href="./year-mode-core.js"><link rel="preload" as="script" href="./academic-remove-practical.js"><link rel="preload" as="script" href="./year-question-data.js"><link rel="preload" as="script" href="./year-mode.js"><link rel="preload" as="script" href="./academic-ui-v56.js"><link rel="preload" as="script" href="./quiz-static.js?v=590"><link rel="preload" as="script" href="./coach-shared.js"><link rel="preload" as="script" href="./learning-home.js?v=16.6"><link rel="preload" as="script" href="./coach-player.js?v=16.6"><link rel="preload" as="script" href="./game-effects.js?v=14"><link rel="stylesheet" href="./learning-home.css?v=16.6"></head>
+<body data-learning-mode="academic">
+<!-- ============ ホーム（1画面完結） ============ -->
+<section aria-hidden="false" class="active" id="sc-home">
+<div class="hd">
+<a class="hd-back role-home-link" href="./index.html" aria-label="役割選択へ戻る">‹</a>
+<div style="flex:1">
+<div class="hd-ttl">スキマル保全士</div>
+<div class="hd-sub">自主保全士2級 / 学科</div>
+</div>
+<span hidden class="hd-no" id="hd-no">No.—</span>
+<button aria-label="設定を開く" class="hd-ico" onclick="showSettings()">⚙</button>
+</div>
+<div class="hz"></div>
+<div class="pad player-home-pad">
+<nav class="learning-mode-switch" aria-label="問題モード">
+  <a class="active" href="./player.html" aria-current="page">学科</a><a href="./practical.html">実技</a>
+</nav>
+<p class="learning-mode-swipe">画面を左へスワイプすると実技へ</p>
+<div class="player-menu-head">
+  <span>2級｜学科</span>
+  <h2>今日は、何を伸ばす？</h2><p>1日5問から、着実に。</p>
+</div>
+<a class="practical-entry" href="./practical.html">
+  <span class="practical-entry-icon">実</span>
+  <span class="practical-entry-body"><small>TEST MODE</small><b>実技問題モード</b><em>20課題からランダム10課題を出題</em></span>
+  <span class="practical-entry-go">›</span>
+</a>
+<div class="quick-card" id="quick-card"><div class="quick-eyebrow">今日のチャレンジ <span>全科目から5問</span></div><h2>毎日5問、保全力を伸ばす。</h2><p>5科目から各1問。短い時間で続けられます。</p><button type="button" onclick="startQuick()">サクッと5問 <span>→</span></button><div class="quick-goal" id="quick-goal">今日のミッション　0 / 5問</div><div class="quick-track"><i id="quick-progress"></i></div></div>
+<!-- メニューを最初に表示 -->
+<div class="menu player-main-menu">
+<button class="mi" onclick="showSubjects()">
+<span class="mi-i">01</span><span class="mi-n">科目別<br/>演習</span>
+</button>
+<button class="mi t-red" onclick="showReview()">
+<span class="mi-i">02</span><span class="mi-n">復習<br/>モード</span>
+<span class="mi-bg hide" id="m-rev">0</span>
+</button>
+<button class="mi t-org" onclick="startBookmark()">
+<span class="mi-i">03</span><span class="mi-n">重点<br/>マーク</span>
+<span class="mi-bg hide" id="m-bm">0</span>
+</button>
+<button class="mi" onclick="showAnalysis()">
+<span class="mi-i">04</span><span class="mi-n">学習<br/>分析</span>
+</button>
+<button class="mi" onclick="startMock()">
+<span class="mi-i">05</span><span class="mi-n">総合<br/>模試</span>
+</button>
+<button class="mi" onclick="showStats()">
+<span class="mi-i">06</span><span class="mi-n">成績<br/>提出</span>
+</button>
+</div>
+
+<!-- 今日のフォロー -->
+<button class="fol" id="fol" onclick="startFollow()">
+<span class="fol-n" id="fol-n">0</span>
+<span class="fol-b">
+<span class="fol-t" id="fol-t">要 復 習 項 目</span>
+<span class="fol-d" id="fol-d">蓄積データが選んだ、いま復習すべき問題</span>
+</span>
+<span class="fol-go">▶</span>
+</button>
+
+<!-- 学習状況はメニューの下に表示 -->
+<div class="pn player-home-summary">
+<div class="lb">累 計 正 答 率</div>
+<div class="hero" style="margin-top:6px">
+<div class="hero-l">
+<div class="h-pct" id="h-pct">0%</div>
+<div class="h-sub"><span id="h-c">0</span> / <span id="h-t">0</span> 問 正解</div>
+</div>
+<div class="hero-r">
+<div class="h-days" id="h-d">0</div>
+<div class="h-dl">連続学習日数</div>
+</div>
+</div>
+<div class="gg" id="h-gg"></div>
+</div>
+
+<div class="sts">
+<span hidden><b id="h-name">未設定</b></span>
+<span id="h-date">—</span>
+</div>
+</div>
+</section>
+<!-- ============ 科目選択 ============ -->
+<section aria-hidden="true" id="sc-subj">
+<div class="hd">
+<button aria-label="前の画面へ戻る" class="hd-back" onclick="goHome()">‹</button>
+<div class="hd-ttl">科目から学習</div>
+</div>
+<div class="pad">
+<p class="note">学習する科目を選択してください。選択後に10問単位のセットを表示します。</p>
+<div class="scroll" id="subj-list"></div>
+</div>
+</section>
+<!-- ============ セット選択 ============ -->
+<section aria-hidden="true" id="sc-sets">
+<div class="hd">
+<button aria-label="前の画面へ戻る" class="hd-back" onclick="showSubjects()">‹</button>
+<div class="hd-ttl" id="set-ttl">科目</div>
+</div>
+<div class="pad">
+<button class="pn p-red row" onclick="startQuiz('normal', currentSubject)">
+<span class="row-i">🎲</span>
+<span class="row-b">
+<span class="row-t">ランダム10問</span>
+<span class="row-d">この科目から重複を避けて出題</span>
+</span>
+<span class="row-go">›</span>
+</button>
+<p class="note" style="margin:2px 0 0">セット選択（10問ずつ）</p>
+<div class="scroll">
+<div class="sets" id="set-list"></div>
+</div>
+</div>
+</section>
+<!-- ============ 復習モード ============ -->
+<section aria-hidden="true" id="sc-rev">
+<div class="hd">
+<button aria-label="前の画面へ戻る" class="hd-back" onclick="goHome()">‹</button>
+<div class="hd-ttl">復習モード</div>
+</div>
+<div class="pad">
+<div class="scroll">
+<button class="pn p-red row" onclick="startQuiz('review')" style="margin-bottom:8px">
+<span class="row-i">⚠</span>
+<span class="row-b"><span class="row-t">直近の誤答</span><span class="row-d" id="rv1">0 問</span></span>
+<span class="row-go">›</span>
+</button>
+<button class="pn p-org row" onclick="startAlertReview()" style="margin-bottom:8px">
+<span class="row-i">🤔</span>
+<span class="row-b"><span class="row-t">要注意問題</span><span class="row-d" id="rv2">0 問</span></span>
+<span class="row-go">›</span>
+</button>
+<button class="pn row" onclick="startWeak()" style="margin-bottom:8px">
+<span class="row-i">📉</span>
+<span class="row-b"><span class="row-t">正答率 50% 未満</span><span class="row-d" id="rv3">0 問</span></span>
+<span class="row-go">›</span>
+</button>
+<button class="pn row" onclick="startFresh()" style="margin-bottom:8px">
+<span class="row-i">🆕</span>
+<span class="row-b"><span class="row-t">未着手の問題</span><span class="row-d" id="rv4">0 問</span></span>
+<span class="row-go">›</span>
+</button>
+<button class="pn p-org row" onclick="startBookmark()">
+<span class="row-i">★</span>
+<span class="row-b"><span class="row-t">ブックマーク</span><span class="row-d" id="rv5">0 問</span></span>
+<span class="row-go">›</span>
+</button>
+</div>
+</div>
+</section>
+<!-- ============ 問題 ============ -->
+<section aria-hidden="true" id="sc-quiz">
+<div class="hd">
+<button aria-label="前の画面へ戻る" class="hd-back" onclick="quitQuiz()">‹</button>
+<div class="hd-ttl" id="q-ttl">学習</div>
+</div>
+<div aria-label="問題の進捗" aria-valuemax="10" aria-valuemin="0" aria-valuenow="1" class="q-bar" id="q-prog-wrap" role="progressbar"><i id="q-prog" style="width:0%"></i></div>
+<div class="q-hd">
+<span class="q-cat" id="q-cat">—</span>
+<button aria-label="重点マーク" aria-pressed="false" class="q-star" id="q-star" onclick="toggleBookmark()">☆</button>
+<span aria-live="polite" class="q-no" id="q-no">1 / 10</span>
+</div>
+<div class="q-warn" id="q-warn" role="alert">⚠ 警告 ── 過去に誤答した問題</div>
+<div class="q-body">
+<div class="q-card">
+<p class="q-txt" id="q-txt" tabindex="-1">問題文</p>
+<div class="stamp" id="stamp">正</div>
+</div>
+</div>
+<div class="ans" id="ans">
+<div class="conf-h" id="conf-h">▶ 自信の度合いを選択してください</div>
+<div class="conf">
+<button aria-label="確信あり" aria-pressed="false" class="chip" id="ch-s" onclick="pickConf(true)">確信あり<small>理解して答える</small></button>
+<button aria-label="なんとなく" aria-pressed="false" class="chip" id="ch-g" onclick="pickConf(false)">なんとなく<small>勘・あいまい</small></button>
+</div>
+<div class="ox lock" id="ox">
+<button class="btn-ox o" onclick="answer(true)"><span class="m">○</span><span class="k">正 / マル</span></button>
+<button class="btn-ox x" onclick="answer(false)"><span class="m">✕</span><span class="k">誤 / バツ</span></button>
+</div>
+</div>
+<div class="jd" id="jd">
+<div class="jd-s" id="jd-s">
+<div class="jd-a">
+<span class="r">正 答</span><b id="jd-ans">○</b>
+<span class="c hide" id="jd-c">▲ 自信なし</span>
+</div>
+<div class="jd-rule"></div>
+<p class="jd-e" id="jd-e"></p>
+<div class="jd-w" id="jd-w"></div>
+</div>
+<button class="btn" id="btn-next" onclick="nextQ()">次へ</button>
+</div>
+</section>
+<!-- ============ 結果 ============ -->
+<section aria-hidden="true" id="sc-res">
+<div class="hd"><div class="hd-ttl" id="res-ttl">結果</div></div>
+<div class="pad">
+<div class="scroll">
+<div class="pn">
+<div aria-live="polite" class="res">
+<div class="res-s"><span id="res-c">0</span><small> / <span id="res-t">10</span></small></div>
+<div class="res-p" id="res-p">正答率 0%</div>
+<div class="res-m" id="res-m"></div>
+</div>
+<div class="res-lv hide" id="res-lv"></div>
+</div>
+<div class="hide" id="res-wsec">
+<p class="note" style="margin:8px 0 6px">間違えた問題</p>
+<div id="res-w"></div>
+</div>
+</div>
+<div class="acts">
+<button class="btn shu hide" id="res-rt" onclick="startQuiz('review-now')">間違いをすぐ復習</button>
+<button class="btn-g" id="res-ag" onclick="again()">もう10問</button>
+<button class="btn-g" onclick="goHome()">ホームへ</button>
+</div>
+</div>
+</section>
+<!-- ============ 学習分析 ============ -->
+<section aria-hidden="true" id="sc-an">
+<div class="hd">
+<button aria-label="前の画面へ戻る" class="hd-back" onclick="goHome()">‹</button>
+<div class="hd-ttl">学習分析</div>
+</div>
+<div class="pad">
+<div class="scroll">
+<div class="g2" style="margin-bottom:9px">
+<div class="mn"><b id="a-t">0</b><span>総回答数</span></div>
+<div class="mn"><b id="a-a">–</b><span>累計正答率</span></div>
+<div class="mn"><b id="a-d">0日</b><span>連続学習</span></div>
+<div class="mn"><b id="a-m">0問</b><span>定着済み</span></div>
+</div>
+<div class="pn" style="margin-bottom:9px">
+<div class="lb">5 科 目 バ ラ ン ス</div>
+<div style="display:flex;justify-content:center;margin-top:4px">
+<svg height="240" id="radar" viewbox="0 0 280 240" width="280"></svg>
+</div>
+</div>
+<div class="pn" style="margin-bottom:9px">
+<div class="lb">直 近 7 日 の 学 習 量</div>
+<div class="b7" id="b7"></div>
+</div>
+<div class="pn">
+<div class="lb">科 目 別 内 訳</div>
+<div id="a-cats" style="margin-top:7px"></div>
+</div>
+</div>
+<div class="acts"><button class="btn-g" onclick="goHome()">ホームへ</button></div>
+</div>
+</section>
+<!-- ============ 成績・要注意 ============ -->
+<section aria-hidden="true" id="sc-stats">
+<div class="hd">
+<button aria-label="前の画面へ戻る" class="hd-back" onclick="goHome()">‹</button>
+<div class="hd-ttl" id="s-ttl">成績・送信</div>
+</div>
+<div class="pad">
+<div class="scroll">
+<p class="note">理解が固まっていない問題です。本で確実に押さえましょう。</p>
+<div id="al-list"></div>
+</div>
+<div class="acts">
+<button class="btn hide" id="al-rev" onclick="startAlertReview()">要注意問題を復習</button>
+<button class="btn-g" onclick="showSend()">成績を提出する</button>
+<button class="btn-g" onclick="goHome()">ホームへ</button>
+</div>
+</div>
+</section>
+<!-- ============ 送信 ============ -->
+<section aria-hidden="true" id="sc-send">
+<div class="hd">
+<button aria-label="前の画面へ戻る" class="hd-back" onclick="showStats()">‹</button>
+<div class="hd-ttl">成績を提出</div>
+</div>
+<div class="pad">
+<div class="scroll">
+<div class="pn" style="margin-bottom:9px">
+<div class="lb">提 出 内 容 の 確 認</div>
+<div class="submit-summary" style="margin-top:8px">
+<div class="submit-summary-row"><span>プレイヤーNo.</span><b id="sb-player-no">—</b></div>
+<div class="submit-summary-row"><span>表示名</span><b id="sb-name">—</b></div>
+
+<div class="submit-summary-row"><span>総回答数</span><b id="sb-total">0 問</b></div>
+<div class="submit-summary-row"><span>正答率</span><b id="sb-acc">–</b></div>
+<div class="submit-summary-row"><span>要注意問題</span><b id="sb-alert">0 問</b></div>
+</div>
+<div style="height:1px;background:var(--line);margin:10px 0"></div>
+<p class="note" style="margin:0">提出ボタンを押すと、Supabaseの集計データベースへ送信します。通信できない場合は端末に保留し、オンライン復帰時に再送します。</p>
+</div>
+<button class="btn" id="submit-btn" onclick="submitResult()" style="margin-bottom:9px">クラウドへ提出</button>
+<div class="hide" id="sd-done">
+<div class="pn p-grn submit-done-card">
+<div class="submit-done-icon">✓</div>
+<div>
+<div class="submit-done-title" id="sd-title">送付しました</div>
+<p class="note" id="sd-message">送付情報を確認しています。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="acts">
+<button class="btn-g" onclick="showStats()">もどる</button>
+</div>
+</div>
+</section>
+<!-- ============ 設定 ============ -->
+<section aria-hidden="true" id="sc-set">
+<div class="hd">
+<button aria-label="前の画面へ戻る" class="hd-back" onclick="goHome()">‹</button>
+<div class="hd-ttl">設定</div>
+</div>
+<div class="pad">
+<div class="scroll">
+<p class="note">■ 登録情報</p>
+<button class="pn row" onclick="editName()" style="margin-bottom:10px">
+<span class="row-i">👤</span>
+<span class="row-b"><span class="row-t" id="st-name">名前を入力</span><span class="row-d">拠点・名前の確認と変更</span></span>
+<span class="row-go">›</span>
+</button>
+<div class="pn row" style="margin-bottom:10px"><span class="row-i">#</span><span class="row-b"><span class="row-t">プレイヤーNo.</span><span class="row-d" id="st-player-no">発行中…</span></span></div>
+<p class="note">■ 出題設定</p>
+<div class="pn p-org row" style="margin-bottom:8px">
+<span class="row-i">⚠</span>
+<span class="row-b"><span class="row-t">誤答アラート表示</span><span class="row-d">前に間違えた問題に印を出す</span></span>
+<button aria-checked="false" class="sw" id="sw-warn" onclick="toggleWarn()" role="switch"></button>
+</div>
+<div class="pn row" style="margin-bottom:10px">
+<span class="row-i">🔔</span>
+<span class="row-b"><span class="row-t">自動フォロー</span><span class="row-d">忘れかけた問題を自動で再出題</span></span>
+<button aria-checked="true" class="sw on" id="sw-srs" onclick="toggleSRS()" role="switch"></button>
+</div>
+<p class="note">■ 表示・操作</p><div class="pn row" style="margin-bottom:8px"><span class="row-i">Aa</span><span class="row-b"><span class="row-t">文字を大きく</span><span class="row-d">説明文と操作文字を拡大します</span></span><button aria-checked="false" aria-label="文字を大きく" class="sw" id="sw-large" onclick="toggleLargeText()" role="switch"></button></div><div class="pn row" style="margin-bottom:10px"><span class="row-i">◐</span><span class="row-b"><span class="row-t">高コントラスト</span><span class="row-d">文字と枠線をより明確にします</span></span><button aria-checked="false" aria-label="高コントラスト" class="sw" id="sw-contrast" onclick="toggleContrast()" role="switch"></button></div><p class="note">■ データ</p>
+<button class="pn row" onclick="exportBackup()" style="margin-bottom:8px">
+<span class="row-i">↓</span>
+<span class="row-b"><span class="row-t">学習履歴をバックアップ</span><span class="row-d">成績・苦手・設定をファイル保存</span></span>
+<span class="row-go">›</span>
+</button>
+<button class="pn row" onclick="document.getElementById('backup-file').click()" style="margin-bottom:8px">
+<span class="row-i">↑</span>
+<span class="row-b"><span class="row-t">バックアップから復元</span><span class="row-d">保存した学習履歴をこの端末へ戻す</span></span>
+<span class="row-go">›</span>
+</button>
+<input accept="application/json,.json" hidden="" id="backup-file" onchange="importBackup(event)" type="file"/>
+<div class="storage-card" role="status"><strong>保存状態</strong><span id="storage-status">確認中</span></div><button class="pn row" onclick="requestPersistentStorage()" style="margin-bottom:8px"><span class="row-i">盾</span><span class="row-b"><span class="row-t">端末保存を安定化</span><span class="row-d">対応ブラウザではデータ削除のリスクを下げます</span></span><span class="row-go">›</span></button><button class="pn row hide" id="restore-auto" onclick="restoreAutoBackup()" style="margin-bottom:8px"><span class="row-i">↶</span><span class="row-b"><span class="row-t">直前の自動バックアップへ戻す</span><span class="row-d">保存直前の状態を復元します</span></span><span class="row-go">›</span></button><button class="pn p-red row" onclick="resetData()">
+<span class="row-i">🗑</span>
+<span class="row-b"><span class="row-t">学習履歴をリセット</span><span class="row-d">成績・苦手・ブックマークを全削除</span></span>
+<span class="row-go">›</span>
+</button>
+</div>
+<div class="sts">
+<span>スキマル保全士</span><span>Ver 15.1 ／ 全 <span id="st-qn">600</span> 問</span>
+</div>
+</div>
+</section>
+<div aria-live="polite" class="toast" id="toast" role="status"></div>
+<!-- ============ 集計（隠し） ============ -->
+
+
+<div aria-atomic="true" aria-live="assertive" class="sr-only" id="sr-status"></div><script src="./questions.js"></script><script src="./supabase-config.js"></script><script src="./app.js"></script><script src="./mode-swipe.js?v=16.6"></script><script src="./grade-switch.js?v=16"></script></body>
+</html>
