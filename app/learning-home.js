@@ -20,14 +20,17 @@
   ['♜','不屈の魂','累計5,000問に回答し、記録された実学習時間20時間を達成',s.careerTotal>=5000&&s.studySeconds>=72000],
   ['✵','真理掌握','累計10,000問・実学習時間30時間・累計正答率90%以上・科目別学科の95%以上に回答を達成',s.careerTotal>=10000&&s.studySeconds>=108000&&s.careerRate>=90&&s.academicPool>0&&s.academicSeen/s.academicPool>=.95]
  ].map(([icon,name,condition,unlocked])=>({icon,name,condition,unlocked}));}
- function html(s,date,record={},persist=()=>{}){
+ function html(s,date,record={},persist=()=>{},mode='academic'){
   career=rank(s);record.achievements||={};let changed=false;
   const currentRank=['未覚醒','覚醒者','探究者','超越者','到達者'].indexOf(career[0]);if(currentRank>(record.learningRank||0)){record.learningRank=currentRank;changed=true;}if((record.learningRank||0)>currentRank)career=[['未覚醒','覚醒者','探究者','超越者','到達者'][record.learningRank],'これまでの学習で到達したランクです。'];
   achievements=catalog(s).map((a,i)=>{const key='learning-v165-'+i;if(a.unlocked&&!record.achievements[key]){record.achievements[key]=true;changed=true;}return {...a,unlocked:a.unlocked||record.achievements[key]===true};});if(changed)persist();const n=achievements.filter(x=>x.unlocked).length;
   const days=window.SKIMARU_COACH.daysUntil(date),c=window.SKIMARU_COACH.coachMessage(s);
   const big=days==null?'未設定':days<0?'終了':days===0?'本日':`あと ${days}日`;
   const sub=days==null?'歯車で試験日を設定':days<0?'試験日を過ぎています':days<=7?'仕上げ期間です':'毎日少しずつ積み上げよう';
-  return `<section class="learning-dashboard" aria-label="学習の概要"><div class="learning-dashboard-top"><div class="learning-exam"><span>EXAM</span><b>${big}</b><small>${sub}</small></div><div class="learning-coach"><span>今日のコーチ</span><h3>${esc(c.title)}</h3><p>${esc(c.action)}</p></div></div><div class="learning-metrics"><div><span>過去問ベスト</span><b>${s.bestPast==null?'—':s.bestPast+'%'}</b></div><div><span>実技正答率</span><b>${s.practicalRate==null?'—':s.practicalRate+'%'}</b></div><div><span>学科回答</span><b>${s.academicTotal}問</b></div></div><button class="learning-achievements" type="button" data-achievements><span>◇ ${esc(career[0])}</span><small>${n} / ${achievements.length} 解放</small><span aria-hidden="true">→</span></button></section>`;
+  const practical=mode==='practical', rate=practical?s.practicalRate:s.academicRate??(s.academicTotal?Math.round((s.academicCorrect||0)/s.academicTotal*100):null);
+  const history=(practical?s.practicalYearHistory:s.yearHistory)||[],best=practical?window.SKIMARU_COACH.bestPastScore(history):s.bestPast;
+  const metrics=`<div class="learning-metrics"><div><span>${practical?'実技':'学科'}過去問ベスト</span><b>${best==null?'—':best+'%'}</b></div><div><span>${practical?'実技':'学科'}正答率</span><b>${rate==null?'—':rate+'%'}</b></div><div><span>${practical?'実技':'学科'}回答数</span><b>${practical?s.practicalTotal:s.academicTotal}問</b></div></div>`;
+  return `<section class="learning-dashboard" aria-label="学習の概要"><div class="learning-dashboard-top"><div class="learning-exam"><span>EXAM</span><b>${big}</b><small>${sub}</small></div><div class="learning-coach"><span>今日のコーチ</span><h3>${esc(c.title)}</h3><p>${esc(c.action)}</p></div></div>${metrics}<button class="learning-achievements" type="button" data-achievements><span>◇ ${esc(career[0])}</span><small>${n} / ${achievements.length} 解放</small><span aria-hidden="true">→</span></button></section>`;
  }
  function open(){
   document.getElementById('learning-achievement-dialog')?.remove();

@@ -51,13 +51,16 @@
     const ac=C.aggregateCats(academicCats(),"academic");
     const pc=C.aggregateCats(d.practicalCats||{},"practical");
     const themes=C.mergeThemes(ac,pc);
-    const pRate=practical.totalBlanks?Math.round((Number(practical.correctBlanks)||0)/(Number(practical.totalBlanks)||1)*100):null;
+    const measured=window.SKIMARU_TIME?.snapshot(),legacyTotal=Number(practical.totalBlanks)||0,useMeasured=(measured?.practical.total||0)>=legacyTotal,pTotal=useMeasured?(measured?.practical.total||0):legacyTotal,pCorrect=useMeasured?(measured?.practical.correct||0):(Number(practical.correctBlanks)||0);
+    const pRate=pTotal?Math.round(pCorrect/pTotal*100):null;
+    let examHistory=[];try{examHistory=JSON.parse(localStorage.getItem('skimaruExamHistory_v1')||'[]');}catch{}
+    const practicalYearHistory=Array.isArray(examHistory)?examHistory.filter(h=>h.kind==='jitugi'&&h.completedAt&&h.scope!=='task'&&h.total>=70).map(h=>({...h,at:h.completedAt})):[];
     const bestPast=C.bestPastScore(d.pastYearHistory);
     const improvement=C.latestPastImprovement(d.pastYearHistory);
-    const measured=window.SKIMARU_TIME?.snapshot(),careerTotal=measured?(measured.academic.total+measured.practical.total):(Number(profile.total)||0)+(Number(practical.totalBlanks)||0),careerCorrect=measured?(measured.academic.correct+measured.practical.correct):(Number(profile.correct)||0)+(Number(practical.correctBlanks)||0);
+    const careerTotal=measured?(measured.academic.total+measured.practical.total):(Number(profile.total)||0)+(Number(practical.totalBlanks)||0),careerCorrect=measured?(measured.academic.correct+measured.practical.correct):(Number(profile.correct)||0)+(Number(practical.correctBlanks)||0);
     const academicSeen=typeof QUESTIONS!=="undefined"?QUESTIONS.filter(q=>{const st=profile.stats?.[q.id];return st&&((Number(st.c)||0)+(Number(st.w)||0)>0)}).length:0;
     return {careerTotal,careerRate:careerTotal?Math.round(careerCorrect/careerTotal*100):0,studySeconds:measured?(measured.academic.seconds+measured.practical.seconds):0,academicSeen,academicPool:typeof QUESTIONS!=="undefined"?QUESTIONS.length:1000,themes,academicTotal:Number(profile.total)||0,academicCorrect:Number(profile.correct)||0,
-      practicalTotal:Number(practical.totalBlanks)||0,practicalRate:pRate,streak:Number(profile.streak)||0,
+      practicalYearHistory,practicalTotal:pTotal,practicalRate:pRate,streak:Number(profile.streak)||0,
       bestPast,improvement,yearHistory:d.pastYearHistory};
   }
 
@@ -94,7 +97,7 @@
   function coachPanelHtml(){
     const earned=typeof U!=="undefined"?U:academicProfile(),summary=combinedSummary(),msg=C.coachMessage(summary),badges=C.badges(summary);
     const cd=countdownText(remoteData().examDate);
-    if(window.SKIMARU_LEARNING_HOME)return `<div id="coach-dashboard">${window.SKIMARU_LEARNING_HOME.html(summary,remoteData().examDate,earned,()=>{if(typeof U!=="undefined"&&earned===U&&typeof window.save==="function")window.save();else save(ACADEMIC_KEY,earned);})}</div>`;
+    if(window.SKIMARU_LEARNING_HOME)return `<div id="coach-dashboard">${window.SKIMARU_LEARNING_HOME.html(summary,remoteData().examDate,earned,()=>{if(typeof U!=="undefined"&&earned===U&&typeof window.save==="function")window.save();else save(ACADEMIC_KEY,earned);},current)}</div>`;
     const best=summary.bestPast==null?"—":summary.bestPast+"点";
     const pRate=summary.practicalRate==null?"—":summary.practicalRate+"%";
     const latestMessage=(remoteData().messages||[])[0];
@@ -130,7 +133,7 @@
       const home=document.querySelector("#pt-home .practical-pad");if(!home)return;
       let compact=document.getElementById("coach-practical-summary");
       const earned=typeof U!=="undefined"?U:academicProfile(),s=combinedSummary(),m=C.coachMessage(s),cd=countdownText(remoteData().examDate);
-      const html=window.SKIMARU_LEARNING_HOME?`<div id="coach-practical-summary">${window.SKIMARU_LEARNING_HOME.html(s,remoteData().examDate,earned,()=>{if(typeof U!=="undefined"&&earned===U&&typeof window.save==="function")window.save();else save(ACADEMIC_KEY,earned);})}</div>`:`<div class="coach-practical-summary" id="coach-practical-summary"><div><span>試験</span><b>${cd.big}</b></div><p><strong>${esc(m.title)}</strong><br>${esc(m.action)}</p></div>`;
+      const html=window.SKIMARU_LEARNING_HOME?`<div id="coach-practical-summary">${window.SKIMARU_LEARNING_HOME.html(s,remoteData().examDate,earned,()=>{if(typeof U!=="undefined"&&earned===U&&typeof window.save==="function")window.save();else save(ACADEMIC_KEY,earned);},current)}</div>`:`<div class="coach-practical-summary" id="coach-practical-summary"><div><span>試験</span><b>${cd.big}</b></div><p><strong>${esc(m.title)}</strong><br>${esc(m.action)}</p></div>`;
       if(compact){const box=document.createElement("div");box.innerHTML=html;compact.replaceWith(box.firstElementChild);}
       else{const hero=home.querySelector(".pt-hero");if(hero)hero.insertAdjacentHTML("beforebegin",html);}
     }

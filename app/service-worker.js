@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261007-v16-8-explanations";
+const CACHE="skimaru-live-20261008-v16-9-tasks-figures";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

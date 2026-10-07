@@ -38,6 +38,9 @@ body.grade1-app{--bg:#f7f6f2;--panel:#fff;--text:#182e3c;--muted:#4b5e6b;--line:
 @media(max-height:650px){.academic-quiz .q-card{padding:18px}.academic-quiz .q-txt{font-size:18px}.academic-quiz .btn-ox{height:64px}.academic-quiz .ans{padding-top:8px}.academic-quiz .chip{min-height:48px}}
 
 /* Answer explanations, v16.8 */
+ .grade1-app .academic-inline-figure{display:block;width:100%;padding:0;margin:16px 0 4px;border:1px solid #d6e0e6;border-radius:12px;overflow:hidden;background:#fff;color:#465d6c;cursor:zoom-in}
+ .grade1-app .academic-inline-figure img{display:block;width:100%;height:auto;object-fit:contain}
+ .grade1-app .academic-inline-figure span{display:block;font-size:12px;padding:8px}
 .grade1-app .g1-explanation{color:#253b4b;text-align:left;line-height:1.85;overflow-wrap:anywhere}
 .grade1-app .g1-explanation p{margin:8px 0 0;font-size:inherit;color:inherit;white-space:pre-line}
 .grade1-app .g1-explanation-label{display:block;color:#263f50;font-size:13px;font-weight:800;letter-spacing:.08em}
