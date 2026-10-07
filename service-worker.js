@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261007-v16-4-grade1-premium";
+const CACHE="skimaru-live-20261007-v16-5-shared-home";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
@@ -25,17 +25,20 @@ self.addEventListener("fetch",event=>{
     return;
   }
 
-  // Static assets may be cached, but refresh them from network when possible.
+  // Reuse downloaded assets immediately on repeat visits, refreshing in background.
+  // Changed entry points use versioned URLs; a release also gets a fresh cache.
   if(/\.(?:js|css|webmanifest)$/.test(url.pathname)){
-    event.respondWith(
-      fetch(event.request,{cache:"no-store"}).then(async response=>{
-        if(response&&response.ok){
-          const cache=await caches.open(CACHE);
-          cache.put(event.request,response.clone());
-        }
-        return response;
-      }).catch(()=>caches.match(event.request))
-    );
+    const update=caches.open(CACHE).then(async cache=>{
+      const response=await fetch(event.request);
+      if(response.ok)await cache.put(event.request,response.clone());
+      return response;
+    });
+    event.waitUntil(update.then(()=>{}).catch(()=>{}));
+    event.respondWith(caches.open(CACHE).then(async cache=>{
+      const cached=await cache.match(event.request);
+      if(cached)return cached;
+      return update.catch(()=>new Response('Unavailable offline',{status:503}));
+    }));
     return;
   }
 

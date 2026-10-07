@@ -68,39 +68,25 @@
 
   async function loadEnhancements(){
     try{
-      const commonStyles=["./theme-v58.css?v=15.3","./coach.css?v=15.3","./app-polish.css?v=590"];
+      const commonStyles=["./theme-v58.css?v=15.3","./coach.css?v=15.3","./app-polish.css?v=590","./learning-home.css?v=16.5"];
       if(current==="academic"){
         commonStyles.push("./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15");
       }
       await Promise.all(commonStyles.map(loadStyle));
 
-      await loadScript("./ui-v58.js?v=590");
-      await loadScript("./year-mode-core.js");
-
-      if(current==="academic"){
-        await loadScript("./academic-remove-practical.js");
-        await loadScript("./year-question-data.js");
-        await loadScript("./year-mode.js");
-        await loadScript("./academic-ui-v56.js");
-        await loadScript("./quiz-static.js?v=590");
-        await loadScript("./coach-shared.js");
-        await loadScript("./coach-player.js");
-        await loadScript("./game-effects.js?v=14");
-        if(typeof APP!=="undefined"&&APP)APP.version="14.0";
-      }else{
-        await loadScript("./practical-year-data.js");
-        await loadScript("./practical-year-data-v58.js");
-        await loadScript("./practical-year-mode.js");
-        await loadScript("./practical-v58.js");
-        await loadScript("./coach-shared.js");
-        await loadScript("./coach-player.js");
-      }
+      const scripts=["./ui-v58.js?v=590","./year-mode-core.js"];
+      if(current==="academic")scripts.push("./academic-remove-practical.js","./year-question-data.js","./year-mode.js","./academic-ui-v56.js","./quiz-static.js?v=590","./coach-shared.js","./learning-home.js?v=16.5","./coach-player.js?v=16.5","./game-effects.js?v=14");
+      else scripts.push("./practical-year-data.js","./practical-year-data-v58.js","./practical-year-mode.js","./practical-v58.js","./coach-shared.js","./learning-home.js?v=16.5","./coach-player.js?v=16.5");
+      // async=false preserves insertion/execution order; requests are concurrent.
+      await Promise.all(scripts.map(loadScript));
+      if(typeof APP!=="undefined"&&APP)APP.version="14.0";
 
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     }catch(error){
       console.error("画面初期化エラー",error);
     }finally{
       const look=document.querySelector('link[href*="app-look-v14.css"]');if(look)document.head.append(look);
+      const dashboardStyle=document.querySelector('link[href*="learning-home.css"]');if(dashboardStyle)document.head.append(dashboardStyle);
       if(typeof APP!=="undefined")APP.version="14.0";
       const sub=document.querySelector('#sc-home .hd-sub');if(sub)sub.textContent='自主保全士2級 / 学科';
       const ver=document.querySelector('#sc-set .sts span:last-child');if(ver)ver.innerHTML='Ver 14.0 ／ 全 <span id="st-qn">'+(window.QUESTIONS?.length||1000)+'</span> 問';
