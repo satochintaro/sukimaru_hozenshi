@@ -2,3 +2,19 @@
 /* Questions contain multiple stacked blocks, including diagrams. */
 .q-card{display:block;min-width:0;width:100%}.q-body{display:block}.oneq-context{display:block;width:100%}.oneq-prompt{overflow-wrap:anywhere}.hd-t{min-width:0}.hd-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hd-ttl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.oneq-context{white-space:normal}
+
+/* v16.2: readable Japanese first, gold only as a decorative accent. */
+body.grade1-app{--bg:#f5f6f7;--panel:#fff;--text:#182e3c;--muted:#475867;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,"Noto Sans JP",sans-serif;letter-spacing:normal}
+.hd-sub{font-size:12px;color:#475867}.hd-ttl{font-size:20px}.note{font-size:14px;line-height:1.75;color:#475867}
+.advanced-badge{font-size:11px;color:#715419}.learning-mode-switch button{font-size:16px;color:#405563}.learning-mode-switch button.active{color:#173e55;font-weight:800}
+.player-menu-head span{letter-spacing:.04em;color:#4b5b66}.player-menu-head h2{font-size:24px}.learning-mode-swipe{font-size:12px;color:#475867}
+.player-main-menu .mi-n{font-size:16px!important;font-weight:750;line-height:1.55;color:#182e3c}.player-main-menu .mi{padding:14px;height:122px}.player-main-menu .mi-i{font-size:13px;color:#23465b}
+.player-main-menu .mi-n{display:block;white-space:nowrap}.player-main-menu .mi-n br{display:initial}
+.quick-card h2{font-size:30px;line-height:1.5}.quick-card p,.quick-goal{font-size:14px;color:#fff}.quick-eyebrow{font-size:12px;color:#e8eef2}.quick-eyebrow span{color:#f5deab}.quick-card button{font-size:18px}
+.fol-t{font-size:16px;color:#173e55;letter-spacing:normal}.fol-d{font-size:13px;color:#405563;line-height:1.65}.lb{font-size:13px;letter-spacing:normal;color:#405563}.h-sub,.h-dl{font-size:13px;color:#475867}
+.q-cat,.q-no{font-size:12px;color:#405563}.q-txt{font-size:21px;line-height:1.85;letter-spacing:normal;font-weight:650}.source-text-button{font-size:12px;color:#35566d;line-height:1.6;margin-top:12px;min-height:44px}
+.conf-h{font-size:14px;color:#405563}.conf .chip{font-size:16px}.chip small{font-size:12px;color:#405563}.btn-ox .k{font-size:12px}.ox.lock{opacity:1}.ox.lock .btn-ox{background:#f0f2f3;color:#667580;border-color:#c6cfd4;box-shadow:none}
+.oneq-head{font-size:15px}.oneq-head span{font-size:12px;color:#475867}.oneq-prompt{font-size:20px;line-height:1.85;font-weight:650;white-space:normal}.oneq-context{font-size:14px;line-height:1.75;color:#405563;max-height:none;overflow:visible}
+.oneq-figure-label{font-size:14px;line-height:1.6;font-weight:650;color:#29475b}.oneq-figure-label span+span{font-size:12px}.oneq-word{font-size:17px;line-height:1.75}.options button{padding:14px;min-height:58px}.v9-letter{font-size:18px}.oneq-source,.figure-hint{font-size:13px;line-height:1.6;color:#35566d}.figure-hint{margin:7px 0 14px}
+.quiz-footer button{font-size:13px;min-height:44px}.quiz-note{font-size:14px}.year-card span,.year-card em,.pt-hero p,.pt-hero small{font-size:14px;color:#405563;line-height:1.7}.row-d{font-size:14px;color:#475867}.exam-countdown small,.sts{font-size:12px;color:#475867}
+@media(max-width:360px){.player-main-menu .mi{padding:12px;height:116px}.player-main-menu .mi-n{font-size:15px!important}.q-card{padding:18px}.oneq-word{font-size:16px}.q-txt{font-size:20px}}
