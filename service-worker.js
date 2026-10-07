@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261007-v16-5-shared-home";
+const CACHE="skimaru-live-20261007-v16-6-install-skills";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

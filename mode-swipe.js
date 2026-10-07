@@ -68,15 +68,15 @@
 
   async function loadEnhancements(){
     try{
-      const commonStyles=["./theme-v58.css?v=15.3","./coach.css?v=15.3","./app-polish.css?v=590","./learning-home.css?v=16.5"];
+      const commonStyles=["./theme-v58.css?v=15.3","./coach.css?v=15.3","./app-polish.css?v=590","./learning-home.css?v=16.6"];
       if(current==="academic"){
         commonStyles.push("./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15");
       }
       await Promise.all(commonStyles.map(loadStyle));
 
       const scripts=["./ui-v58.js?v=590","./year-mode-core.js"];
-      if(current==="academic")scripts.push("./academic-remove-practical.js","./year-question-data.js","./year-mode.js","./academic-ui-v56.js","./quiz-static.js?v=590","./coach-shared.js","./learning-home.js?v=16.5","./coach-player.js?v=16.5","./game-effects.js?v=14");
-      else scripts.push("./practical-year-data.js","./practical-year-data-v58.js","./practical-year-mode.js","./practical-v58.js","./coach-shared.js","./learning-home.js?v=16.5","./coach-player.js?v=16.5");
+      if(current==="academic")scripts.push("./academic-remove-practical.js","./year-question-data.js","./year-mode.js","./academic-ui-v56.js","./quiz-static.js?v=590","./coach-shared.js","./learning-home.js?v=16.6","./coach-player.js?v=16.6","./game-effects.js?v=14");
+      else scripts.push("./practical-year-data.js","./practical-year-data-v58.js","./practical-year-mode.js","./practical-v58.js","./coach-shared.js","./learning-home.js?v=16.6","./coach-player.js?v=16.6");
       // async=false preserves insertion/execution order; requests are concurrent.
       await Promise.all(scripts.map(loadScript));
       if(typeof APP!=="undefined"&&APP)APP.version="14.0";

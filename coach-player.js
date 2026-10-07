@@ -54,7 +54,9 @@
     const pRate=practical.totalBlanks?Math.round((Number(practical.correctBlanks)||0)/(Number(practical.totalBlanks)||1)*100):null;
     const bestPast=C.bestPastScore(d.pastYearHistory);
     const improvement=C.latestPastImprovement(d.pastYearHistory);
-    return {themes,academicTotal:Number(profile.total)||0,academicCorrect:Number(profile.correct)||0,
+    const measured=window.SKIMARU_TIME?.snapshot(),careerTotal=measured?(measured.academic.total+measured.practical.total):(Number(profile.total)||0)+(Number(practical.totalBlanks)||0),careerCorrect=measured?(measured.academic.correct+measured.practical.correct):(Number(profile.correct)||0)+(Number(practical.correctBlanks)||0);
+    const academicSeen=typeof QUESTIONS!=="undefined"?QUESTIONS.filter(q=>{const st=profile.stats?.[q.id];return st&&((Number(st.c)||0)+(Number(st.w)||0)>0)}).length:0;
+    return {careerTotal,careerRate:careerTotal?Math.round(careerCorrect/careerTotal*100):0,studySeconds:measured?(measured.academic.seconds+measured.practical.seconds):0,academicSeen,academicPool:typeof QUESTIONS!=="undefined"?QUESTIONS.length:1000,themes,academicTotal:Number(profile.total)||0,academicCorrect:Number(profile.correct)||0,
       practicalTotal:Number(practical.totalBlanks)||0,practicalRate:pRate,streak:Number(profile.streak)||0,
       bestPast,improvement,yearHistory:d.pastYearHistory};
   }

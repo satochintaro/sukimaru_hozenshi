@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="./viewer-manager.css">
 <link rel="stylesheet" href="./manager-ui-v55.css">
 <link rel="stylesheet" href="./theme-v57.css">
-<link rel="stylesheet" href="./member-manager.css?v=11"><link rel="stylesheet" href="./rollout.css?v=13"><script src="./rollout.js?v=14"></script><link rel="manifest" href="./manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="スキマル保全士"><link rel="apple-touch-icon" href="./apple-touch-icon-v14.png"><link rel="icon" href="./icon-v14-192.png"><link rel="stylesheet" href="./app-look-v14.css?v=14"><link rel="stylesheet" href="./site-comparison.css?v=15.5"></head>
+<link rel="stylesheet" href="./member-manager.css?v=11"><link rel="stylesheet" href="./rollout.css?v=13"><script src="./rollout.js?v=16.6"></script><link rel="manifest" href="./manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="スキマル保全士"><link rel="apple-touch-icon" href="./apple-touch-icon-v14.png"><link rel="icon" href="./icon-v14-192.png"><link rel="stylesheet" href="./app-look-v14.css?v=14"><link rel="stylesheet" href="./site-comparison.css?v=15.5"></head>
 <body class="manager-body viewer-page quest-v57">
 <main class="admin-main">
 <header class="hd manager-header">
@@ -51,9 +51,9 @@
     <div class="manager-login-icon">👁️</div>
     <h1 id="viewer-login-title">管理者</h1>
     <p>開発者から発行された管理者IDとパスワードを入力してください。担当拠点の成績を閲覧できます。</p>
-    <label for="viewer-account">管理者ID</label><input id="viewer-account" autocomplete="username" maxlength="40" placeholder="管理者ID"><label for="viewer-password">管理者パスワード</label>
-    <input id="viewer-password" type="password" autocomplete="current-password" placeholder="管理者パスワード">
-    <button class="btn" id="viewer-login-btn">管理者画面を開く</button>
+    <form id="viewer-login-form"><label for="viewer-account">管理者ID</label><input id="viewer-account" name="username" autocomplete="username" maxlength="40" placeholder="管理者ID"><label for="viewer-password">管理者パスワード</label>
+    <input id="viewer-password" name="password" type="password" autocomplete="current-password" placeholder="管理者パスワード">
+    <label style="display:flex;gap:8px;align-items:center;font-size:12px"><input id="viewer-remember" type="checkbox" checked style="width:auto">この端末でログインを保持（自分の端末のみ）</label><button type="submit" class="btn" id="viewer-login-btn">管理者画面を開く</button></form><p style="font-size:11px;line-height:1.7">パスワードはSafari・Chromeの保存機能で保持できます。アプリには保存しません。認証の有効期限が切れた場合は再ログインが必要です。共用端末では保持をオフにしてください。</p>
     <div class="manager-login-message" id="viewer-login-message"></div>
     <small>閲覧モードでは成績・学科・実技・総合分析のみ確認できます。</small>
   </div>
@@ -62,7 +62,7 @@
 <div class="toast" id="viewer-toast" role="status" aria-live="polite"></div>
 <script src="./supabase-config.js"></script>
 <script src="./coach-shared.js"></script>
-<script src="./manager-metrics.js?v=12"></script><script src="./site-comparison.js?v=16"></script><script src="./viewer-manager.js?v=16"></script>
+<script src="./manager-metrics.js?v=12"></script><script src="./site-comparison.js?v=16"></script><script src="./viewer-manager.js?v=16.6"></script>
 <script src="./ui-v57.js"></script>
 </body>
 </html>

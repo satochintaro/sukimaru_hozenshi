@@ -68,7 +68,20 @@
     .member-card{background:#fff;color:#172431;padding:26px;border-radius:20px;width:min(420px,100%);max-height:100%;overflow:auto;box-sizing:border-box}.member-card h2{margin:0 0 10px}.member-card p{font-size:14px;line-height:1.6}.member-card label{display:block;margin:18px 0 8px;font-weight:700}.member-card select,.member-card input{width:100%;box-sizing:border-box;font-size:16px;padding:13px;border:1px solid #98aaa2;border-radius:9px;background:white;color:#172431}.member-card button,.member-bar button{border:0;border-radius:9px;background:#176844;color:white;padding:12px 16px;font-weight:700;cursor:pointer}.member-card button{width:100%;margin-top:22px}.member-card .member-guide,.member-card .member-cancel{background:#edf3ef;color:#176844;margin-top:8px}.member-card button:disabled{opacity:.65}.member-error{color:#a32b20;font-size:14px}.member-bar{background:#f5faf7;border:1px solid #a6c3b5;border-radius:12px;padding:12px;margin:12px auto;width:min(880px,calc(100% - 24px));box-sizing:border-box;color:#172431;font-size:14px;line-height:1.5}.member-bar header{display:flex;justify-content:space-between;align-items:center;gap:10px}.member-bar header button{background:#e1ece5;color:#174831;padding:6px 10px}.member-alert{margin-top:10px;padding:12px;background:#fff1d6;border-radius:9px}.member-alert button{margin-top:8px}.member-alert[hidden],.member-bar[hidden],.hd-no[hidden]{display:none!important}
   `;document.head.append(style);
   function sync(){profile=read(KEY);window.dispatchEvent(new CustomEvent("skimaru-profile",{detail:profile}));refresh();}
+  const standalone=()=>navigator.standalone===true||['standalone','fullscreen','minimal-ui'].some(x=>matchMedia('(display-mode: '+x+')').matches);
+  function installGate(){
+    if(document.querySelector('.member-gate'))return;
+    const gate=document.createElement('div');gate.className='member-gate install-gate';gate.setAttribute('role','dialog');gate.setAttribute('aria-modal','true');gate.setAttribute('aria-labelledby','install-gate-title');
+    gate.innerHTML='<div class="member-card"><h2 id="install-gate-title">まず、ホーム画面に追加</h2><p>新しく始める方は、ホーム画面のアイコンから登録・学習してください。登録済みの方は今までどおり利用できます。</p><ol><li>下のボタンで追加方法を確認</li><li>ホーム画面に追加</li><li>追加した「スキマル保全士」のアイコンから開く</li></ol><button type="button" class="install-gate-help">ホーム画面に追加する</button><button type="button" class="install-gate-check">起動方法を確認</button><p class="member-error" role="status"></p></div>';
+    const frozen=[...document.body.children].filter(e=>!e.inert&&e.tagName!=='SCRIPT'&&e.tagName!=='STYLE');frozen.forEach(e=>e.inert=true);document.body.append(gate);
+    const proceed=()=>{if(!standalone()&&!valid()){gate.querySelector('.member-error').textContent='このブラウザでは開始できません。追加したホーム画面のアイコンから開いてください。';return;}frozen.forEach(e=>e.inert=false);gate.remove();if(!valid())register();};
+    gate.querySelector('.install-gate-help').onclick=()=>window.SKIMARU_ROLLOUT?.install();gate.querySelector('.install-gate-check').onclick=proceed;gate.querySelector('button').focus();
+    matchMedia('(display-mode: standalone)').addEventListener('change',e=>{if(e.matches&&gate.isConnected)proceed();},{once:true});
+  }
+  document.addEventListener('click',e=>{if(document.querySelector('.install-gate')&&!e.target.closest('.member-gate,.rollout-overlay')){e.preventDefault();e.stopImmediatePropagation();}},true);
   function register(edit=false){
+    if(!edit&&!valid()&&!standalone()){installGate();return;}
+
     if(!edit&&read(REG).legacy&&valid()){migrateExisting();return;}
     if(document.querySelector(".member-gate"))return;
     const p=read(KEY),notice=sessionStorage.getItem("skimaru-registration-notice")||"";sessionStorage.removeItem("skimaru-registration-notice");
