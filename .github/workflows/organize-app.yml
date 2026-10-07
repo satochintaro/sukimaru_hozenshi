@@ -1,0 +1,35 @@
+name: Prepare app folder organization
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: prepare-app-organization
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - name: Prepare safely on a separate branch
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          original=$(git rev-parse HEAD)
+          backup="backup-before-organization-${RUN_ID}"
+          prepared="organize-app-v16-7-${RUN_ID}"
+          git branch "$backup" "$original"
+          git switch -c "$prepared"
+          python .github/scripts/organize_repository.py > /tmp/organization-report.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Organize app files and preserve existing entry URLs"
+          git push --atomic origin "$backup" "$prepared"
+          echo "Created $backup and $prepared. main has NOT been changed." >> "$GITHUB_STEP_SUMMARY"
+          echo "Review the organize branch, then use Compare & pull request to merge it." >> "$GITHUB_STEP_SUMMARY"
