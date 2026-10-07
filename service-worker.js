@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-9-tasks-figures";
+const CACHE="skimaru-live-20261008-v16-10-home-tools";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
