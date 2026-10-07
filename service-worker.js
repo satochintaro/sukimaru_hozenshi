@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261007-v15-4-password-view";
+const CACHE="skimaru-live-20261007-v15-5-site-comparison";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

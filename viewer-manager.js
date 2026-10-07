@@ -10,7 +10,8 @@
   let viewerSession=readSession(),rows=[],mode="combined",groups=[],toastTimer=null;
 
   function setSite(){const select=document.getElementById("site-filter");if(select&&viewerSession?.site){select.replaceChildren(new Option(viewerSession.site,viewerSession.site));select.value=viewerSession.site;select.disabled=true;}}
-  async function comparison(){const data=await rpc("skimaru_manager_comparison",{p_token:viewerSession.token});let root=document.getElementById("site-comparison");if(!root){root=document.createElement("div");root.id="site-comparison";root.className="pn";root.style.cssText="padding:16px;margin:16px 0;overflow:auto";document.getElementById("viewer-report").before(root);}root.replaceChildren();const heading=document.createElement("h3");heading.textContent="拠点間比較（個人名なし・各人の最新提出）";root.append(heading);const table=document.createElement("table");table.style.cssText="width:100%;min-width:540px;border-collapse:collapse";const header=table.insertRow();["拠点","区分","人数","平均正解率","回答数","記録学習時間"].forEach(t=>{const c=document.createElement("th");c.style.cssText="text-align:left;padding:8px;border-bottom:1px solid #d4e1d8";c.textContent=t;header.append(c);});for(const x of data){const r=table.insertRow();[x.site,x.type==="practical"?"実技":"学科",x.learners,`${x.accuracy??"—"}%`,x.answers,`${Math.round((x.seconds||0)/60)}分`].forEach(t=>{const cell=r.insertCell();cell.textContent=t;cell.style.padding="8px";});}root.append(table);}
+  async function comparison(){const token=viewerSession?.token;if(token)await window.SKIMARU_COMPARISON?.load(rpc,token,()=>viewerSession?.token===token);}
+
   function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function parse(v,f){if(v==null)return f;if(typeof v==="string"){try{return JSON.parse(v);}catch(e){return f;}}return v;}
   function readSession(){try{return JSON.parse(sessionStorage.getItem(KEY)||"null");}catch(e){return null;}}
@@ -63,22 +64,26 @@
   }
 
   async function logout(){
-    const token=viewerSession?.token;closeDetail();saveSession(null);rows=[];groups=[];document.getElementById("site-comparison")?.remove();render();showLogin("退出しました。");
+    const token=viewerSession?.token;closeDetail();saveSession(null);rows=[];groups=[];window.SKIMARU_COMPARISON?.clear();render();showLogin("退出しました。");
     if(token){try{await rpc("skimaru_manager_logout",{p_token:token});}catch(e){}}
   }
 
   async function load(){
     if(!viewerSession?.token){showLogin();return;}
+    const token=viewerSession.token;
     setConnection(false,"読み込み中…");
     try{
-      const j=await rpc("skimaru_manager_rows",{p_token:viewerSession.token});
+      const j=await rpc("skimaru_manager_rows",{p_token:token});
+      if(viewerSession?.token!==token)return;
       if(!Array.isArray(j))throw new Error();
       rows=j.map(normalize);setSite();await comparison();
+      if(viewerSession?.token!==token)return;
       buildGroups();
       setConnection(true,mode==="combined"?"総合分析":mode==="academic"?"学科分析":"実技分析");
       render();
     }catch(e){
-      closeDetail();document.getElementById("site-comparison")?.remove();saveSession(null);rows=[];groups=[];setConnection(false,"認証切れ");render();showLogin("閲覧セッションの有効期限が切れました。");
+      if(viewerSession?.token!==token)return;
+      closeDetail();window.SKIMARU_COMPARISON?.clear();saveSession(null);rows=[];groups=[];setConnection(false,"認証切れ");render();showLogin("閲覧セッションの有効期限が切れました。");
     }
   }
 
