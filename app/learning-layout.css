@@ -68,6 +68,22 @@
 /* v16.11: common touch targets and naturally growing question cards. */
 .unified-home-view>.hd,.unified-home-view #sc-home>.hd,.unified-home-view #pt-home>.hd{height:96px!important;min-height:96px!important;box-sizing:border-box;padding:16px!important}
 .unified-home-view #pt-home>.hd{height:97px!important;min-height:97px!important}
+.unified-home-view.grade1-app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.unified-home-view.grade1-app #main{flex:1;min-height:0;overflow:hidden}
+.unified-home-view.grade1-app #main>#sc-home{display:flex;flex-direction:column;height:100%;min-height:0}
+.unified-home-view.grade1-app #main .unified-home{height:100%;min-height:0;overflow-y:auto;box-sizing:border-box;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.unified-home-view #pt-home{display:flex!important;flex-direction:column;height:100dvh!important;min-height:0!important;overflow:hidden!important}
+.unified-home-view #pt-home .unified-home{flex:1 1 0!important;min-height:0!important;height:auto!important;overflow-y:auto!important;box-sizing:border-box;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.learning-home-shell .unified-home>.g1-intro,.learning-home-shell .unified-home>.player-menu-head,.learning-home-shell .unified-home>.pt-hero,.learning-home-shell .unified-home>.year-grid,.learning-home-shell .unified-home>.quick-card:not(.shared-quick){display:none!important}
+.learning-home-shell .unified-home .shared-quick{display:flex!important;flex-direction:column;gap:10px!important;min-height:210px!important;padding:20px!important;border:1px solid var(--home-line)!important;border-top:2px solid var(--home-accent)!important;border-radius:18px!important;background:#fff!important;color:var(--home-ink)!important;box-shadow:none!important;box-sizing:border-box}
+.learning-home-shell .unified-home .shared-quick h2{font-size:23px!important;line-height:1.5!important;margin:0!important;color:var(--home-ink)!important}
+.learning-home-shell .unified-home .shared-quick p{font-size:14px!important;line-height:1.8!important;margin:0!important;color:var(--home-muted)!important}
+.learning-home-shell .unified-home .shared-quick .quick-eyebrow{font-size:12px!important;line-height:1.5!important;color:var(--home-muted)!important;display:flex;justify-content:space-between;flex-wrap:wrap}
+.learning-home-shell .unified-home .shared-quick button{margin-top:auto;min-height:52px!important;padding:14px 18px!important;border-radius:12px!important;background:var(--home-action)!important;color:#fff!important;font-size:17px!important;line-height:24px!important;box-sizing:border-box;box-shadow:none!important}
+.learning-home-shell .unified-home .shared-quick[hidden]{display:none!important}
+.learning-home-shell .unified-home>.fol,.learning-home-shell .unified-home>.player-home-summary{display:none!important}
+.unified-home-view #pt-home .hd-ttl{font-size:20px!important;line-height:1.55!important;letter-spacing:normal!important}
+.unified-home-view #pt-home .unified-home .learning-mode-switch a.active{background:#fff!important;color:var(--home-action)!important}
 .learning-home-shell .unified-home .learning-mode-switch{height:56px;box-sizing:border-box;flex-shrink:0}
 .learning-home-shell .unified-home .learning-mode-switch a,.learning-home-shell .unified-home .learning-mode-switch button{height:46px;min-height:46px;box-sizing:border-box;line-height:24px;padding:0!important;border:0}
 .learning-home-shell #sc-home .unified-home,.learning-home-shell #pt-home .unified-home,.learning-home-shell #main>.unified-home{padding:20px 18px 28px!important;gap:16px!important}

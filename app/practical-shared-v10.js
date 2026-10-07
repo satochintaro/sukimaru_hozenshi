@@ -6,7 +6,7 @@
   const requested = params.get('task');
   const selectedTask = info.tasks.find((t,i)=>requested===String(i+1));
   if(requested&&!selectedTask){location.replace(location.pathname);return;}
-  const review=['wrong','marked'].includes(params.get('review'))?params.get('review'):null;
+  const review=['wrong','marked','random'].includes(params.get('review'))?params.get('review'):null;
   const reviewRun=review?review+':'+(params.get('run')||'latest'):null;
   const $ = id => document.getElementById(id);
   let state;
@@ -17,7 +17,7 @@
     showTaskMenu();return;
   }
   if(selectedTask){fullState.taskSessions ||= {};state=fullState.taskSessions[requested] ||= {answers:{},branch:'A',finished:false};}
-  if(review){fullState.reviewSessions ||= {};state=fullState.reviewSessions[reviewRun] ||= {answers:{},branch:'A',finished:false,questionNumbers:window.SKIMARU_PRACTICAL_PROGRESS.numbers(info,review)};}
+  if(review){fullState.reviewSessions ||= {};let nums;if(review==='random'){nums=info.questions.map(q=>q.number);for(let i=nums.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}nums=nums.slice(0,5);}else nums=window.SKIMARU_PRACTICAL_PROGRESS.numbers(info,review);state=fullState.reviewSessions[reviewRun] ||= {answers:{},branch:'A',finished:false,questionNumbers:nums};}
   const questions=info.questions.filter(q=>review?state.questionNumbers.includes(q.number):!selectedTask||(q.number>=selectedTask.start&&q.number<=selectedTask.end));
   if(!questions.length){document.querySelector('.wrap').innerHTML='<p>対象の問題はありません。</p><a href="./practical.html">実技トップへ戻る</a>';return;}
   const tasks=info.tasks.filter(t=>questions.some(q=>q.number>=t.start&&q.number<=t.end));
@@ -147,7 +147,7 @@
     const good = questions.filter(q => picked(q.number) === info.jitugi[q.number]).length;
     const id = state.attemptId || (state.attemptId = `${YEAR}-jitugi-${selectedTask?requested:'all'}-${crypto.randomUUID()}`);
     if (!history.some(r => r.id === id)) {
-      history.push({elapsedSeconds:window.SKIMARU_TIME?.seconds(KEY,state.measurementId),timeMeasured:!!state.measurementId,id,year:YEAR,kind:'jitugi',scope:review?'review':selectedTask?'task':'year',taskNumber:selectedTask?info.tasks.indexOf(selectedTask)+1:null,title:review?`${YEAR}年度 ${review==='wrong'?'復習':'重点学習'}`:selectedTask?selectedTask.title:`${YEAR}年度 全課題`,total:TOTAL,correct:good,rate:Math.round(good/TOTAL*100),completedAt:state.completedAt,branch:'A',answers:info.modern ? Object.fromEntries(Object.entries(state.answers).map(([n,a])=>[n,a.picked])) : {...state.answers}});
+      history.push({elapsedSeconds:window.SKIMARU_TIME?.seconds(KEY,state.measurementId),timeMeasured:!!state.measurementId,id,year:YEAR,kind:'jitugi',scope:review?'review':selectedTask?'task':'year',taskNumber:selectedTask?info.tasks.indexOf(selectedTask)+1:null,title:review?`${YEAR}年度 ${review==='random'?'ランダム5問':review==='wrong'?'復習':'重点学習'}`:selectedTask?selectedTask.title:`${YEAR}年度 全課題`,total:TOTAL,correct:good,rate:Math.round(good/TOTAL*100),completedAt:state.completedAt,branch:'A',answers:info.modern ? Object.fromEntries(Object.entries(state.answers).map(([n,a])=>[n,a.picked])) : {...state.answers}});
       localStorage.setItem('skimaruExamHistory_v1',JSON.stringify(history)); save();
     }
   }
@@ -211,7 +211,7 @@
   };
   const originalViewer=window.SKIMARU_IMAGE_VIEWER.create({year:YEAR,imagePath});
   const openOriginal=(page,trigger)=>originalViewer.open(page,trigger);
-  const back=document.createElement('a');back.className='pt-task-back';back.href=review?'./practical.html#'+(review==='wrong'?'review':'bookmark'):location.pathname;back.textContent=review?'‹ 実技トップへ戻る':'‹ 課題選択へ戻る';document.querySelector('.wrap').prepend(back);
+  const back=document.createElement('a');back.className='pt-task-back';back.href=review?(review==='random'?'./practical.html':'./practical.html#'+(review==='wrong'?'review':'bookmark')):location.pathname;back.textContent=review?'‹ 実技トップへ戻る':'‹ 課題選択へ戻る';document.querySelector('.wrap').prepend(back);
   $('reset').textContent=review?'この演習を解き直す':selectedTask?'この課題を解き直す':'全課題を解き直す';
   save();render();
   if(state.finished && answered()===TOTAL){recordHistory();syncLegacy();showResults();}
