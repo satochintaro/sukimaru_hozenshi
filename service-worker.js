@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261007-v15-1-legacy-security";
+const CACHE="skimaru-live-20261007-v15-2-image-viewer";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

@@ -142,71 +142,8 @@
     state={answers:{},branch:'A',finished:false};startClock(); save(); current=1;
     $('results').classList.add('hidden'); $('exam').classList.remove('hidden'); render();
   };
-  // A dedicated viewer uses the complete page image. The inline window never alters image bytes.
-  const viewer = $('originalViewer'), stage = $('originalStage'), image = $('originalImage');
-  let previousFocus, scale=1, tx=0, ty=0, gesture=null, moved=false, multi=false, lastTap=0;
-  const pointers = new Map();
-  function transform() { image.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`; stage.dataset.scale=String(scale); }
-  function distance() { const p=[...pointers.values()]; return Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y); }
-  function midpoint() { const p=[...pointers.values()]; return {x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2}; }
-  function rebase() {
-    const p=[...pointers.values()];
-    gesture = p.length >= 2 ? {distance:distance(),mid:midpoint(),scale,tx,ty} : p.length ? {x:p[0].x,y:p[0].y,tx,ty} : null;
-  }
-  function openOriginal(page,trigger) {
-    previousFocus=trigger; image.src=imagePath(page); image.alt=`2023年度 実技 原本PDF ${page}ページ`;
-    $('originalPageLabel').textContent=`原本PDF ${page}ページ`;
-    scale=1;tx=0;ty=0;lastTap=0;pointers.clear();transform();
-    viewer.hidden=false; document.body.style.overflow='hidden'; $('viewerClose').focus();
-  }
-  function closeOriginal() {
-    viewer.hidden=true; document.body.style.overflow=''; pointers.clear();gesture=null;lastTap=0;
-    previousFocus?.focus({preventScroll:true});
-  }
-  $('viewerClose').onclick=closeOriginal;
-  stage.addEventListener('pointerdown',e => {
-    if(e.button!==0) return;
-    if(!pointers.size){moved=false;multi=false;}
-    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY}); try { stage.setPointerCapture(e.pointerId); } catch {}
-    if(pointers.size>1){multi=true;lastTap=0;} rebase();
-  });
-  stage.addEventListener('pointermove',e => {
-    if(!pointers.has(e.pointerId)||!gesture)return;
-    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(pointers.size>=2 && gesture.distance){
-      const mid=midpoint(),rect=image.getBoundingClientRect();
-      const next=Math.min(6,Math.max(1,gesture.scale*distance()/Math.max(1,gesture.distance)));
-      const ratio=next/gesture.scale;
-      const originX=rect.left-tx, originY=rect.top-ty;
-      tx=mid.x-originX-(gesture.mid.x-originX-gesture.tx)*ratio;
-      ty=mid.y-originY-(gesture.mid.y-originY-gesture.ty)*ratio;scale=next;moved=true;
-    } else if(pointers.size===1){
-      const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
-      if(Math.abs(dx)+Math.abs(dy)>8)moved=true;
-      tx=gesture.tx+dx;ty=gesture.ty+dy;
-    }
-    transform();
-  });
-  function pointerEnd(e){
-    if(!pointers.has(e.pointerId))return;
-    pointers.delete(e.pointerId);
-    if(!pointers.size && !moved && !multi && e.type!=='pointercancel'){
-      const now=Date.now(); if(lastTap && now-lastTap<330){closeOriginal();return;} lastTap=now;
-    }
-    rebase();
-  }
-  stage.addEventListener('pointerup',pointerEnd);stage.addEventListener('pointercancel',pointerEnd);
-  stage.addEventListener('dblclick',e=>{e.preventDefault();closeOriginal();});
-  stage.addEventListener('wheel',e=>{
-    e.preventDefault();const old=scale;scale=Math.min(6,Math.max(1,scale*Math.exp(-e.deltaY*.002)));
-    const r=image.getBoundingClientRect(),ratio=scale/old;
-    tx-=(e.clientX-r.left)*(ratio-1);ty-=(e.clientY-r.top)*(ratio-1);transform();
-  },{passive:false});
-  document.addEventListener('keydown',e=>{
-    if(viewer.hidden)return;
-    if(e.key==='Escape'){e.preventDefault();closeOriginal();}
-    if(e.key==='Tab'){e.preventDefault();$('viewerClose').focus();}
-  });
+  const originalViewer=window.SKIMARU_IMAGE_VIEWER.create({year:2023,imagePath});
+  const openOriginal=(page,trigger)=>originalViewer.open(page,trigger);
   save();render();
   if(state.finished && answered()===78){recordHistory();showResults();}
 })();
