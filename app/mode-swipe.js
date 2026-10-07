@@ -75,11 +75,11 @@
       await Promise.all(commonStyles.map(loadStyle));
 
       const scripts=["./ui-v58.js?v=590","./year-mode-core.js"];
-      if(current==="academic")scripts.push("./academic-remove-practical.js","./year-question-data.js","./year-mode.js","./academic-ui-v56.js","./quiz-static.js?v=590","./coach-shared.js","./learning-home.js?v=16.9","./coach-player.js?v=16.9","./game-effects.js?v=14");
-      else scripts.push("./practical-year-data.js","./practical-year-data-v58.js","./practical-year-mode.js","./practical-v58.js","./coach-shared.js","./learning-home.js?v=16.9","./coach-player.js?v=16.9");
+      if(current==="academic")scripts.push("./academic-remove-practical.js","./year-question-data.js","./year-mode.js","./academic-ui-v56.js","./quiz-static.js?v=590","./coach-shared.js","./learning-home.js?v=16.10","./coach-player.js?v=16.10","./game-effects.js?v=14");
+      else scripts.push("./practical-year-data.js","./practical-year-data-v58.js","./practical-year-mode.js","./practical-v58.js","./coach-shared.js","./learning-home.js?v=16.10","./coach-player.js?v=16.10");
       // async=false preserves insertion/execution order; requests are concurrent.
       await Promise.all(scripts.map(loadScript));
-      if(typeof APP!=="undefined"&&APP)APP.version="14.0";
+      if(typeof APP!=="undefined"&&APP)APP.version="16.10";
 
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     }catch(error){
@@ -87,9 +87,10 @@
     }finally{
       const look=document.querySelector('link[href*="app-look-v14.css"]');if(look)document.head.append(look);
       const dashboardStyle=document.querySelector('link[href*="learning-home.css"]');if(dashboardStyle)document.head.append(dashboardStyle);
-      if(typeof APP!=="undefined")APP.version="14.0";
+      const sharedHomeStyle=document.querySelector('link[href*="learning-layout.css"]');if(sharedHomeStyle)document.head.append(sharedHomeStyle);
+      if(typeof APP!=="undefined")APP.version="16.10";
       const sub=document.querySelector('#sc-home .hd-sub');if(sub)sub.textContent='自主保全士2級 / 学科';
-      const ver=document.querySelector('#sc-set .sts span:last-child');if(ver)ver.innerHTML='Ver 14.0 ／ 全 <span id="st-qn">'+(window.QUESTIONS?.length||1000)+'</span> 問';
+      const ver=document.querySelector('#sc-set .sts span:last-child');if(ver)ver.innerHTML='Ver 16.10 ／ 全 <span id="st-qn">'+(window.QUESTIONS?.length||1000)+'</span> 問';
 
       clearTimeout(safetyTimer);
       document.body.classList.remove("skimaru-booting");

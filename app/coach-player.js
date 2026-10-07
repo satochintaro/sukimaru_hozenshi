@@ -54,7 +54,7 @@
     const measured=window.SKIMARU_TIME?.snapshot(),legacyTotal=Number(practical.totalBlanks)||0,useMeasured=(measured?.practical.total||0)>=legacyTotal,pTotal=useMeasured?(measured?.practical.total||0):legacyTotal,pCorrect=useMeasured?(measured?.practical.correct||0):(Number(practical.correctBlanks)||0);
     const pRate=pTotal?Math.round(pCorrect/pTotal*100):null;
     let examHistory=[];try{examHistory=JSON.parse(localStorage.getItem('skimaruExamHistory_v1')||'[]');}catch{}
-    const practicalYearHistory=Array.isArray(examHistory)?examHistory.filter(h=>h.kind==='jitugi'&&h.completedAt&&h.scope!=='task'&&h.total>=70).map(h=>({...h,at:h.completedAt})):[];
+    const practicalYearHistory=Array.isArray(examHistory)?examHistory.filter(h=>h.kind==='jitugi'&&h.completedAt&&(!h.scope||h.scope==='year')&&h.total>=70).map(h=>({...h,at:h.completedAt})):[];
     const bestPast=C.bestPastScore(d.pastYearHistory);
     const improvement=C.latestPastImprovement(d.pastYearHistory);
     const careerTotal=measured?(measured.academic.total+measured.practical.total):(Number(profile.total)||0)+(Number(practical.totalBlanks)||0),careerCorrect=measured?(measured.academic.correct+measured.practical.correct):(Number(profile.correct)||0)+(Number(practical.correctBlanks)||0);

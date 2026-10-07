@@ -95,6 +95,7 @@
     return out;
   };
 
-  installHomeCard();
+  // Keep the shared five-question home card; no extra random-ten card.
+  document.querySelector(".practical-entry")?.classList.add("academic-hide-practical-entry");
   window.startPastRandom10=startPastRandom10;
 })();

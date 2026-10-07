@@ -104,9 +104,9 @@
   if(menu && !document.getElementById("mi-past-year")){
     const button=document.createElement("button");
     button.className="mi t-org";button.id="mi-past-year";button.type="button";
-    button.innerHTML='<span class="mi-i">07</span><span class="mi-n">年度別<br>過去問</span>';
+    button.innerHTML='<span class="mi-i">05</span><span class="mi-n">年度別<br>過去問</span>';
     button.addEventListener("click",showPastYears);
-    menu.appendChild(button);
+    menu.insertBefore(button,menu.querySelector('[onclick="showStats()"]'));
   }
 
   // 設定画面の問題数表示は実データに合わせる。
