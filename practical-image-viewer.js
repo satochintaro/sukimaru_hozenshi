@@ -60,7 +60,7 @@ window.SKIMARU_IMAGE_VIEWER={create({year,imagePath}){
   button.addEventListener('touchmove',e=>{const t=[...e.touches].find(t=>t.identifier===start?.id);if(t&&Math.hypot(t.clientX-start.x,t.clientY-start.y)>12)start.moved=true;},{passive:true});
   button.addEventListener('touchcancel',()=>start=null,{passive:true});
   button.addEventListener('touchend',e=>{const t=[...e.changedTouches].find(t=>t.identifier===start?.id);const tapped=t&&start&&!start.moved&&Math.hypot(t.clientX-start.x,t.clientY-start.y)<=12;start=null;if(!tapped)return;e.preventDefault();e.stopPropagation();lastTouch=performance.now();action();},{passive:false});
-  button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(e.detail!==0&&performance.now()-lastTouch<500)return;action();});
+  button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(lastTouch>0&&e.detail!==0&&performance.now()-lastTouch<500)return;action();});
  }
  control(close,closeOriginal);control(reset,()=>{cancelPointers();fit();});
  document.addEventListener('keydown',e=>{if(!open)return;if(e.key==='Escape'){e.preventDefault();closeOriginal();}if(e.key==='Tab'){e.preventDefault();focus(document.activeElement===close?reset:close);}});

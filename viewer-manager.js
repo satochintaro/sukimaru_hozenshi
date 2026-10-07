@@ -10,7 +10,7 @@
   let viewerSession=readSession(),rows=[],mode="combined",groups=[],toastTimer=null;
 
   function setSite(){const select=document.getElementById("site-filter");if(select&&viewerSession?.site){select.replaceChildren(new Option(viewerSession.site,viewerSession.site));select.value=viewerSession.site;select.disabled=true;}}
-  async function comparison(){const token=viewerSession?.token;if(token)await window.SKIMARU_COMPARISON?.load(rpc,token,()=>viewerSession?.token===token);}
+  async function comparison(){const token=viewerSession?.token,grade=Number(document.getElementById("manager-grade")?.value||2);if(token)await window.SKIMARU_COMPARISON?.load(rpc,token,()=>viewerSession?.token===token&&Number(document.getElementById("manager-grade")?.value||2)===grade,grade);}
 
   function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function parse(v,f){if(v==null)return f;if(typeof v==="string"){try{return JSON.parse(v);}catch(e){return f;}}return v;}
@@ -73,7 +73,7 @@
     const token=viewerSession.token;
     setConnection(false,"読み込み中…");
     try{
-      const j=await rpc("skimaru_manager_rows",{p_token:token});
+      const j=await rpc("skimaru_manager_rows_all",{p_token:token});
       if(viewerSession?.token!==token)return;
       if(!Array.isArray(j))throw new Error();
       rows=j.map(normalize);setSite();await comparison();
@@ -103,8 +103,8 @@
     };
   }
 
-  function matchesSite(r){const site=document.getElementById("site-filter")?.value||"";return !site||r.site===site;}
-  ["site-filter"].forEach(id=>document.getElementById(id)?.addEventListener("change",()=>{closeDetail();buildGroups();render();setConnection(true,"拠点で絞り込み中");}));
+  function matchesSite(r){const site=document.getElementById("site-filter")?.value||"";return Number(r.raw?.grade||2)===Number(document.getElementById("manager-grade")?.value||2)&&(!site||r.site===site);}
+  ["site-filter","manager-grade"].forEach(id=>document.getElementById(id)?.addEventListener("change",()=>{closeDetail();buildGroups();render();comparison();setConnection(true,"級・拠点で絞り込み中");}));
   function buildGroups(){
     const map=new Map();
     rows.filter(matchesSite).forEach(r=>{

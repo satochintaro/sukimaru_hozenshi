@@ -24,7 +24,7 @@ function saveHiddenPlayers(){try{localStorage.setItem(HIDDEN_PLAYERS_KEY,JSON.st
 function rowPlayerKey(row){return row.playerNo||`LEGACY:${row.site==="四日市"?"":row.site+": "}${row.name}`;}
 function activeSubjects(){return analysisMode==="practical"?PRACTICAL_SUBJ:SUBJ;}
 function modeLabel(){return analysisMode==="practical"?"実技":"学科";}
-function matchesSite(r){const site=document.getElementById("site-filter")?.value||"";return !site||r.site===site;}
+function matchesSite(r){const site=document.getElementById("site-filter")?.value||"";return Number(r.raw?.grade||2)===Number(document.getElementById("manager-grade")?.value||2)&&(!site||r.site===site);}
 function visibleRows(){return rows.filter(row=>row.examType===analysisMode&&matchesSite(row)&&!hiddenPlayers.has(rowPlayerKey(row)));}
 function authHeaders(token){return {apikey:CLOUD.publishableKey,Authorization:`Bearer ${token}`,"Content-Type":"application/json"};}
 function parse(v,f){if(v==null)return f;if(typeof v==="string"){try{return JSON.parse(v);}catch(e){return f;}}return v;}
@@ -113,4 +113,4 @@ function downloadCsv(){const targetRows=visibleRows();if(!targetRows.length){not
 document.querySelectorAll("[data-analysis-mode]").forEach(button=>button.addEventListener("click",()=>setAnalysisMode(button.dataset.analysisMode)));document.getElementById("login-btn").addEventListener("click",login);document.getElementById("manager-password").addEventListener("keydown",e=>{if(e.key==="Enter")login();});document.getElementById("logout").addEventListener("click",logout);document.getElementById("refresh").addEventListener("click",()=>loadRows());document.getElementById("csv-learners").addEventListener("click",downloadCsv);document.getElementById("player-detail-close").addEventListener("click",closeDetail);document.getElementById("player-detail").addEventListener("click",e=>{if(e.target.id==="player-detail")closeDetail();});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDetail();});
 checkAuth();setInterval(()=>{if(authenticated)loadRows(true);},15000);
 
-["site-filter"].forEach(id=>document.getElementById(id)?.addEventListener("change",()=>{closeDetail();buildGroups();setConnection();render();}));
+["site-filter","manager-grade"].forEach(id=>document.getElementById(id)?.addEventListener("change",()=>{closeDetail();buildGroups();setConnection();render();}));
