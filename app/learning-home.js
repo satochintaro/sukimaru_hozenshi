@@ -26,7 +26,7 @@
   achievements=catalog(s).map((a,i)=>{const key='learning-v165-'+i;if(a.unlocked&&!record.achievements[key]){record.achievements[key]=true;changed=true;}return {...a,unlocked:a.unlocked||record.achievements[key]===true};});if(changed)persist();const n=achievements.filter(x=>x.unlocked).length;
   const days=window.SKIMARU_COACH.daysUntil(date),c=window.SKIMARU_COACH.coachMessage(s);
   const big=days==null?'未設定':days<0?'終了':days===0?'本日':`あと ${days}日`;
-  const sub=days==null?'歯車で試験日を設定':days<0?'試験日を過ぎています':days<=7?'仕上げ期間です':'毎日少しずつ積み上げよう';
+  const sub=days==null?'':days<0?'試験日を過ぎています':days<=7?'仕上げ期間です':'毎日少しずつ積み上げよう';
   const practical=mode==='practical', rate=practical?s.practicalRate:s.academicRate??(s.academicTotal?Math.round((s.academicCorrect||0)/s.academicTotal*100):null);
   const history=(practical?s.practicalYearHistory:s.yearHistory)||[],best=practical?window.SKIMARU_COACH.bestPastScore(history):s.bestPast;
   const metrics=`<div class="learning-metrics"><div><span>${practical?'実技':'学科'}過去問ベスト</span><b>${best==null?'—':best+'%'}</b></div><div><span>${practical?'実技':'学科'}正答率</span><b>${rate==null?'—':rate+'%'}</b></div><div><span>${practical?'実技':'学科'}回答数</span><b>${practical?s.practicalTotal:s.academicTotal}問</b></div></div>`;
