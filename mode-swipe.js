@@ -8,7 +8,7 @@
   const bootStyle=document.createElement("style");
   bootStyle.id="skimaru-boot-style";
   bootStyle.textContent=`
-    body.skimaru-booting::after{
+    body.skimaru-enhancing::after{
       content:"";position:fixed;right:12px;bottom:max(12px,env(safe-area-inset-bottom));z-index:999991;pointer-events:none;
       width:20px;height:20px;border-radius:50%;
       background:conic-gradient(from 10deg,#258a61 0 28%,#e8ad20 28% 47%,rgba(37,138,97,.13) 47% 100%);
@@ -18,10 +18,10 @@
     }
     @keyframes skimaruBootSpin{to{transform:rotate(360deg)}}`;
   document.head.appendChild(bootStyle);
-  document.body.classList.add("skimaru-booting");
+  document.body.classList.add("skimaru-enhancing");
 
   const safetyTimer=setTimeout(()=>{
-    document.body.classList.remove("skimaru-booting");
+    document.body.classList.remove("skimaru-enhancing");
     document.getElementById("skimaru-boot-style")?.remove();
   },7000);
 
@@ -47,9 +47,10 @@
     }
     return new Promise(resolve=>{
       const l=document.createElement("link");
-      l.rel="stylesheet";l.href=src;
-      const timer=setTimeout(()=>{l.remove();resolve();},1200);
-      l.onload=l.onerror=()=>{clearTimeout(timer);resolve();};
+      l.rel="stylesheet";l.href=src;l.media="print";
+      const timer=setTimeout(resolve,1200);
+      l.onload=()=>{l.media="all";clearTimeout(timer);resolve();};
+      l.onerror=()=>{clearTimeout(timer);resolve();};
       document.head.appendChild(l);
     });
   }
@@ -91,7 +92,7 @@
       const ver=document.querySelector('#sc-set .sts span:last-child');if(ver)ver.innerHTML='Ver 16.10 ／ 全 <span id="st-qn">'+(window.QUESTIONS?.length||1000)+'</span> 問';
 
       clearTimeout(safetyTimer);
-      document.body.classList.remove("skimaru-booting");
+      document.body.classList.remove("skimaru-enhancing");
       document.getElementById("skimaru-boot-style")?.remove();
     }
   }

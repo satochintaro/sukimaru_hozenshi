@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-17-player-startup";
+const CACHE="skimaru-live-20261008-v16-18-layout-repair";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
@@ -28,17 +28,17 @@ self.addEventListener("fetch",event=>{
   // Reuse downloaded assets immediately on repeat visits, refreshing in background.
   // Changed entry points use versioned URLs; a release also gets a fresh cache.
   if(/\.(?:js|css|webmanifest)$/.test(url.pathname)){
-    const update=caches.open(CACHE).then(async cache=>{
-      const response=await fetch(event.request);
-      if(response.ok)await cache.put(event.request,response.clone());
+    // Storage failures must never turn a successful asset download into a 503.
+    const update=fetch(event.request).then(async response=>{
+      if(response.ok){try{const cache=await caches.open(CACHE);await cache.put(event.request,response.clone());}catch{}}
       return response;
     });
     event.waitUntil(update.then(()=>{}).catch(()=>{}));
     event.respondWith(caches.open(CACHE).then(async cache=>{
       const cached=await cache.match(event.request);
-      if(cached)return cached;
+      if(cached&&cached.ok)return cached;
       return update.catch(()=>new Response('Unavailable offline',{status:503}));
-    }));
+    }).catch(()=>update.catch(()=>new Response('Unavailable offline',{status:503}))));
     return;
   }
 
@@ -48,7 +48,7 @@ self.addEventListener("fetch",event=>{
         const hit=await cache.match(event.request);
         if(hit)return hit;
         const response=await fetch(event.request);
-        if(response&&response.ok)cache.put(event.request,response.clone());
+        if(response&&response.ok)cache.put(event.request,response.clone()).catch(()=>{});
         return response;
       })
     );

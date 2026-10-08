@@ -1,0 +1,57 @@
+
+/* Ver 5.9.2 回答後表示：元のレイアウト、動きだけ完全停止 */
+#sc-quiz,
+#sc-quiz *,
+#sc-quiz *::before,
+#sc-quiz *::after{
+  scroll-behavior:auto!important;
+}
+
+#sc-quiz .btn-ox,
+#sc-quiz .chip,
+#sc-quiz .stamp,
+#sc-quiz .jd,
+#sc-quiz .jd-s,
+#sc-quiz .ans{
+  transition:none!important;
+  animation:none!important;
+}
+
+#sc-quiz .btn-ox:active,
+#sc-quiz .chip:active{
+  transform:none!important;
+}
+
+/* 正解/不正解の巨大スタンプは表示しない */
+#sc-quiz .stamp{
+  display:none!important;
+}
+
+/* 自信選択時の案内だけは高さを維持し、回答前のガクつきを抑える */
+#sc-quiz #conf-h.hide{
+  display:block!important;
+  visibility:hidden!important;
+}
+
+/* 回答後は従来通り ans が消え、解説が表示される */
+#sc-quiz #ans.hide{
+  display:none!important;
+}
+#sc-quiz #jd.show{
+  display:flex!important;
+  animation:none!important;
+}
+
+/* 古い演出ファイルがキャッシュに残っても無効化 */
+.battle-fx-root,
+.game-result-pop,
+.game-spark{
+  display:none!important;
+}
+body.battle-screen-shake #sc-quiz,
+body.battle-fail-shake #sc-quiz,
+body.battle-hitstop #sc-quiz{
+  animation:none!important;
+  transform:none!important;
+  filter:none!important;
+}

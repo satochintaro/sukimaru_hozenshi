@@ -1,0 +1,50 @@
+
+/* 実技：原本を読みやすくする試作UI */
+.practical-focus-hint{
+  margin:8px 0 10px;padding:9px 11px;border-radius:10px;
+  background:#eaf3ff;color:#174b80;font-size:13px;font-weight:700
+}
+.source img,.original-inline-image{cursor:zoom-in}
+.practical-focus-viewer{
+  position:fixed;inset:0;z-index:99999;background:rgba(7,18,32,.96);
+  display:none;flex-direction:column
+}
+.practical-focus-viewer.open{display:flex}
+.practical-focus-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 10px;color:#fff
+}
+.practical-focus-toolbar b{font-size:15px}
+.practical-focus-close{
+  border:0;border-radius:10px;background:#fff;color:#17324f;
+  min-width:64px;min-height:42px;font-weight:800
+}
+.practical-focus-stage{
+  flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:8px 8px calc(20px + env(safe-area-inset-bottom));
+  touch-action:pan-x pan-y pinch-zoom
+}
+.practical-focus-stage img{
+  display:block;width:140%;max-width:none;height:auto;margin:0 auto;background:#fff
+}
+.practical-focus-zoomnote{font-size:12px;opacity:.82}
+@media(max-width:600px){
+  .source,.source-card{padding:10px!important}
+  .source img,.original-inline-image{width:100%!important;max-width:none!important}
+  .practical-focus-stage img{width:165%}
+}
+
+/* iPhone/PWA: 左上の戻る操作を確実にタップできる領域へ */
+.early-top{
+  padding-top:calc(10px + env(safe-area-inset-top))!important;
+  position:relative;z-index:20
+}
+.early-back{
+  display:inline-flex!important;align-items:center;gap:5px;
+  min-height:44px;padding:7px 10px 7px 2px;
+  position:relative;z-index:21;
+  text-decoration:none!important;
+  -webkit-tap-highlight-color:rgba(255,255,255,.16);
+  touch-action:manipulation
+}
+.early-back span{pointer-events:none}
+.early-top h1{margin-top:2px!important}

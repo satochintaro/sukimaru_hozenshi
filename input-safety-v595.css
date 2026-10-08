@@ -1,0 +1,23 @@
+
+/* Ver 5.9.5 input safety */
+body.skimaru-booting::before,
+body.skimaru-booting::after,
+body.page-transitioning::before,
+body.page-transitioning::after{
+  pointer-events:none!important;
+}
+
+/* Never let a transparent overlay steal taps. */
+#skimaru-boot-style{
+  pointer-events:none!important;
+}
+
+/* Quiz controls stay tappable when visible. */
+#sc-quiz .ans:not(.hide),
+#sc-quiz .conf,
+#sc-quiz .chip,
+#sc-quiz .ox,
+#sc-quiz .btn-ox,
+#sc-quiz #btn-next{
+  pointer-events:auto;
+}

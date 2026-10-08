@@ -1,0 +1,259 @@
+
+/* =========================================================
+   Ver 5.9.4 Quiz Balance
+   状態によって問題エリアの高さが大きく変わらないよう固定。
+   ========================================================= */
+
+/* 旧ゲーム演出・再挑戦バッジは完全非表示 */
+#sc-quiz .game-retry-badge,
+#sc-quiz [class*="retry-badge"],
+#sc-quiz .battle-fx-root,
+.game-result-pop,
+.game-spark{
+  display:none!important;
+}
+
+/* 問題画面全体 */
+#sc-quiz{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  background:#f4f6f8!important;
+}
+
+/* 上部情報は詰めすぎない */
+#sc-quiz .q-hd{
+  min-height:58px!important;
+  padding:10px 16px!important;
+  flex-shrink:0!important;
+}
+#sc-quiz .q-warn,
+#sc-quiz .q-warn.game-revenge-warn{
+  margin:8px 16px 0!important;
+  padding:9px 11px!important;
+  min-height:42px!important;
+  border:1px solid #e5aaa5!important;
+  border-left:5px solid var(--red)!important;
+  background:#fff2f1!important;
+  color:#96332e!important;
+  box-shadow:none!important;
+  animation:none!important;
+  transform:none!important;
+  font-size:11px!important;
+  line-height:1.45!important;
+}
+
+/* 問題エリアを flex:1 で伸ばさない。
+   これが「短文は巨大、長文は潰れる」の主原因。 */
+#sc-quiz .q-body{
+  display:block!important;
+  flex:0 0 auto!important;
+  min-height:0!important;
+  padding:12px 16px 12px!important;
+}
+
+/* 通常・再挑戦・回答後すべて同じ基本サイズ */
+#sc-quiz .q-card,
+#sc-quiz .q-card.game-retry-card,
+#sc-quiz .q-card.battle-card-in{
+  display:flex!important;
+  align-items:center!important;
+  width:100%!important;
+  min-height:clamp(205px,26dvh,240px)!important;
+  max-height:34dvh!important;
+  height:auto!important;
+  padding:20px 20px!important;
+  border:1px solid var(--line)!important;
+  border-top:4px solid var(--yellow)!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  box-shadow:0 8px 22px rgba(21,35,49,.065)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  transform:none!important;
+  animation:none!important;
+}
+
+/* 旧バッジ用に付いた余白を完全解除 */
+#sc-quiz .game-retry-card .q-txt,
+#sc-quiz .q-card .q-txt{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  color:#101820!important;
+  font-size:clamp(19px,4.8vw,22px)!important;
+  font-weight:750!important;
+  line-height:1.62!important;
+  letter-spacing:0!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+
+/* 回答エリア。問題カードとの距離を一定にする */
+#sc-quiz .ans{
+  flex:0 0 auto!important;
+  min-height:188px!important;
+  padding:12px 16px 16px!important;
+  border-top:1px solid var(--line)!important;
+  background:#fff!important;
+}
+
+#sc-quiz .conf-h{
+  min-height:18px!important;
+  margin:0 0 8px!important;
+  font-size:12px!important;
+  line-height:18px!important;
+}
+
+#sc-quiz .conf-h.hide{
+  display:block!important;
+  visibility:hidden!important;
+}
+
+#sc-quiz .conf{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:10px!important;
+  margin-bottom:10px!important;
+}
+
+#sc-quiz .chip{
+  min-width:0!important;
+  min-height:60px!important;
+  height:60px!important;
+  padding:7px 8px!important;
+  border-radius:14px!important;
+  font-size:14px!important;
+  line-height:1.15!important;
+  transition:none!important;
+}
+
+#sc-quiz .chip small{
+  margin-top:4px!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+}
+
+#sc-quiz .ox{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:10px!important;
+}
+
+#sc-quiz .btn-ox{
+  width:100%!important;
+  height:88px!important;
+  min-height:88px!important;
+  border-radius:16px!important;
+  transition:none!important;
+}
+
+#sc-quiz .btn-ox .m{
+  font-size:36px!important;
+  line-height:1!important;
+}
+
+#sc-quiz .btn-ox .k{
+  margin-top:7px!important;
+  font-size:10px!important;
+}
+
+/* 回答後は元の表示。
+   ○×エリアは消え、解説＋次へだけになる。 */
+#sc-quiz #ans.hide,
+#sc-quiz #ans.answer-locked{
+  display:none!important;
+}
+
+#sc-quiz .jd{
+  flex:0 0 auto!important;
+  padding:12px 16px 18px!important;
+  border-top:1px solid var(--line)!important;
+  background:#fff!important;
+}
+
+#sc-quiz .jd.show{
+  display:flex!important;
+  flex-direction:column!important;
+  animation:none!important;
+}
+
+#sc-quiz .jd-s{
+  min-height:132px!important;
+  max-height:29dvh!important;
+  overflow-y:auto!important;
+  margin:0 0 10px!important;
+  padding:14px 15px!important;
+  border-radius:16px!important;
+  box-shadow:none!important;
+}
+
+#sc-quiz .jd-a{
+  min-height:34px!important;
+  align-items:center!important;
+}
+
+#sc-quiz .jd-a .r{
+  font-size:10px!important;
+}
+
+#sc-quiz .jd-a b{
+  font-size:24px!important;
+}
+
+#sc-quiz .jd-rule{
+  margin:8px 0!important;
+}
+
+#sc-quiz .jd-e{
+  font-size:14px!important;
+  line-height:1.7!important;
+}
+
+#sc-quiz #btn-next{
+  min-height:52px!important;
+  border-radius:14px!important;
+}
+
+/* 一切の画面移動・揺れを禁止 */
+#sc-quiz .stamp{
+  display:none!important;
+}
+#sc-quiz .btn-ox:active,
+#sc-quiz .chip:active{
+  transform:none!important;
+}
+body.battle-screen-shake #sc-quiz,
+body.battle-fail-shake #sc-quiz,
+body.battle-hitstop #sc-quiz{
+  animation:none!important;
+  transform:none!important;
+  filter:none!important;
+}
+
+/* 小さいiPhone向け */
+@media(max-height:760px){
+  #sc-quiz .q-card{
+    min-height:185px!important;
+    max-height:30dvh!important;
+  }
+  #sc-quiz .ans{
+    min-height:174px!important;
+    padding-top:10px!important;
+  }
+  #sc-quiz .chip{
+    height:55px!important;
+    min-height:55px!important;
+  }
+  #sc-quiz .btn-ox{
+    height:80px!important;
+    min-height:80px!important;
+  }
+}
+
+@media(min-height:900px){
+  #sc-quiz .q-card{
+    min-height:225px!important;
+  }
+}

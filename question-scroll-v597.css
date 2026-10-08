@@ -1,0 +1,67 @@
+/* Ver 5.9.7 lightweight long-question scroll */
+
+/* Academic already has max-height/overflow in quiz-balance-v594.css.
+   Only add iOS-friendly scrolling; no MutationObserver is needed. */
+#sc-quiz .q-card{
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+}
+
+#sc-quiz .q-txt{
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+
+/* Practical: max-height alone is enough.
+   Short content stays natural height; long content scrolls automatically. */
+#pt-quiz .pt-question-scroll{
+  position:relative;
+  max-height:min(48dvh,500px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  margin-bottom:12px;
+  padding-right:2px;
+}
+
+#pt-quiz .pt-question-scroll .pt-figure{
+  margin:10px 0!important;
+}
+
+#pt-quiz .pt-question-scroll .pt-figure img{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  object-fit:contain!important;
+}
+
+#pt-quiz .pt-material{
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+
+/* Large option blocks scroll independently so the submit button stays reachable. */
+#pt-quiz .pt-answer-area{
+  max-height:min(38dvh,380px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  padding-right:2px;
+}
+
+#pt-quiz .pt-question-scroll *,
+#pt-quiz .pt-answer-area *{
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+@media(max-height:760px){
+  #pt-quiz .pt-question-scroll{max-height:min(42dvh,390px)}
+  #pt-quiz .pt-answer-area{max-height:min(34dvh,300px)}
+}

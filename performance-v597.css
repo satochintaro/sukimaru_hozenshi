@@ -1,0 +1,28 @@
+/* Ver 5.9.7 iPhone performance hotfix */
+body.skimaru-booting::before,
+body.page-transitioning::before{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  animation:none!important;
+  background:rgba(247,249,250,.94)!important;
+  pointer-events:none!important;
+}
+body.skimaru-booting::after,
+body.page-transitioning::after{
+  width:30px!important;
+  height:30px!important;
+  margin:-15px 0 0 -15px!important;
+  border:3px solid rgba(37,138,97,.18)!important;
+  border-top-color:#258a61!important;
+  border-radius:50%!important;
+  background:none!important;
+  -webkit-mask:none!important;
+  mask:none!important;
+  filter:none!important;
+  box-shadow:none!important;
+  animation:skimaruLightSpin .7s linear infinite!important;
+  pointer-events:none!important;
+}
+body.page-transitioning{pointer-events:none!important}
+@keyframes skimaruLightSpin{to{transform:rotate(360deg)}}
