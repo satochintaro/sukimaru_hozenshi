@@ -4,32 +4,16 @@
   const C=window.SKIMARU_COACH||{};
   const KEY="skimaru-manager-site-session-v15",ACCOUNT_KEY="manager-device-account-v166";
   const IDENTITY_KEY="skimaru-manager-identity-v1613",SITES=["四日市","石岡","足利","水戸","真岡","門真","北九州"];
-  const SITE_ACCOUNTS={"四日市":"yokkaichi","石岡":"ishioka","足利":"ashikaga","水戸":"mito","真岡":"moka","門真":"kadoma","北九州":"kitakyushu"};
-  const savedId=site=>site?`skimaru-manager:${SITE_ACCOUNTS[site]}`:'';
-  const siteForId=id=>SITES.find(site=>savedId(site)===String(id||'').trim())||'';
-  function syncSavedId(clearPassword=true){
-    document.getElementById('viewer-username').value=savedId(document.getElementById('viewer-view-site').value);
-    if(clearPassword)document.getElementById('viewer-password').value='';
-  }
-  function syncAutofilledSite(){
-    const site=siteForId(document.getElementById('viewer-username').value);
-    if(site)document.getElementById('viewer-view-site').value=site;
-  }
-  function passwordApi(){return window.isSecureContext&&typeof window.PasswordCredential==='function'&&navigator.credentials;}
-  function offerPasswordSave(site,password){
-    if(!document.getElementById('viewer-save-password').checked||!passwordApi()||typeof navigator.credentials.store!=='function')return;
-    try{const credential=new PasswordCredential({id:savedId(site),name:`スキマル保全士 ${site}`,password});Promise.resolve(navigator.credentials.store(credential)).catch(()=>{});}catch{}
-  }
-  async function chooseSavedPassword(){
-    if(!passwordApi()||typeof navigator.credentials.get!=='function'){document.getElementById('viewer-password').focus();return;}
-    try{
-      const credential=await navigator.credentials.get({password:true,mediation:'required'});
-      if(!credential)return;
-      const site=siteForId(credential.id);
-      if(!site){showLogin('このアプリの拠点用パスワードを選択してください。');return;}
-      document.getElementById('viewer-view-site').value=site;syncSavedId();
-      document.getElementById('viewer-password').value=credential.password;document.getElementById('viewer-login-btn').focus();
-    }catch{document.getElementById('viewer-password').focus();}
+  let fillRevision=0,autofilledSite='',autofilledPassword='';
+  function clearPassword(){++fillRevision;autofilledSite='';autofilledPassword='';document.getElementById('viewer-password').value='';}
+  async function fillSavedPassword(){
+    clearPassword();const revision=fillRevision,site=document.getElementById('viewer-view-site').value;
+    document.getElementById('viewer-login-message').textContent='';
+    if(!site||!identity?.manager_no)return;
+    try{const password=await window.SKIMARU_MANAGER_PASSWORDS?.load(identity.token,site);
+      if(revision!==fillRevision||viewerSession||document.getElementById('viewer-login-btn').disabled||document.getElementById('viewer-view-site').value!==site)return;
+      if(password){document.getElementById('viewer-password').value=password;autofilledSite=site;autofilledPassword=password;}
+    }catch{} // Storage disabled: manual login remains available.
   }
   const installed=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
   let identity=null,nextEvent="open",loginRevision=0;
@@ -49,7 +33,8 @@
   function saveSession(v){viewerSession=v;try{sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);localStorage.removeItem(ACCOUNT_KEY);}catch(e){}}
   function showIdentity(){
     const registered=!!identity?.manager_no;
-    document.getElementById('viewer-manager-identity').textContent=registered?`${identity.home_site} ／ ${identity.name} ／ ${identity.manager_no}`:'初回のみ所属拠点と名前を登録します。';
+    document.getElementById('viewer-manager-identity').textContent=registered?`${identity.home_site} ／ ${identity.name}`:'';
+    document.getElementById('viewer-registration-fields').hidden=registered;
     document.getElementById('viewer-home-site').disabled=registered;
     document.getElementById('viewer-name').readOnly=registered;
   }
@@ -92,14 +77,13 @@
 
   async function login(){
     if(!installed()){showLogin("ホーム画面のアイコンから開いてください。");return;}
-    syncAutofilledSite();
     const attempt=++loginRevision;
     const input=document.getElementById("viewer-password"),btn=document.getElementById("viewer-login-btn"),password=input.value;
     if(!password){showLogin("管理者パスワードを入力してください。");return;}
     btn.disabled=true;btn.textContent="確認中…";
     try{
       const home=document.getElementById('viewer-home-site').value,name=document.getElementById('viewer-name').value.trim(),site=document.getElementById('viewer-view-site').value;
-      if(!home||!name||!site||document.getElementById('viewer-username').value.trim()!==savedId(site))throw Error('invalid_input');
+      if(!home||!name||!site)throw Error('invalid_input');
       if(!identity?.token){identity={token:Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('')};localStorage.setItem(IDENTITY_KEY,JSON.stringify(identity));}
       // Persist the pending identity before the request: a lost response cannot create another No.
       identity={...identity,name,home_site:home};localStorage.setItem(IDENTITY_KEY,JSON.stringify(identity));
@@ -110,14 +94,18 @@
       identity={token:identity.token,manager_no:row.manager_no,name:row.name,home_site:row.home_site};
       localStorage.setItem(IDENTITY_KEY,JSON.stringify(identity));localStorage.setItem('skimaru-role','manager');showIdentity();
       lastActivity=Date.now();saveSession({token:row.token,expires_at:row.expires_at,site:row.site,account:row.account});setSite();
-      offerPasswordSave(site,password);
-      hideLogin();await load();notify("管理者画面を開きました");
-    }catch(e){if(attempt===loginRevision)showLogin(e.message==="rate_limited"?"試行回数が上限に達しました。15分後にお試しください。":e.message==="identity_mismatch"?"登録情報が一致しないか、利用が停止されています。開発者へご連絡ください。":e.message==="login_failed"?"閲覧拠点またはパスワードが違います。":"登録・閲覧履歴を保存できませんでした。通信と端末の保存設定を確認してください。");}
-    finally{input.value="";btn.disabled=false;btn.textContent="管理者画面を開く";}
+      const vaultIdentity=identity.token,vaultSite=site;
+      let passwordSaved=false;
+      try{passwordSaved=await window.SKIMARU_MANAGER_PASSWORDS.save(vaultIdentity,vaultSite,password);}catch{}
+      if(attempt!==loginRevision||document.hidden)return;
+      hideLogin();await load();notify(passwordSaved?"管理者画面を開きました":"ログインしました。この端末ではパスワードを保存できません。");
+    }catch(e){if(e.message==='login_failed'&&autofilledSite===document.getElementById('viewer-view-site').value&&autofilledPassword===password){window.SKIMARU_MANAGER_PASSWORDS?.forget(identity.token,autofilledSite).catch(()=>{});}
+    if(attempt===loginRevision)showLogin(e.message==="rate_limited"?"試行回数が上限に達しました。15分後にお試しください。":e.message==="identity_mismatch"?"登録情報が一致しないか、利用が停止されています。開発者へご連絡ください。":e.message==="login_failed"?"閲覧拠点またはパスワードが違います。":"登録・閲覧履歴を保存できませんでした。通信と端末の保存設定を確認してください。");}
+    finally{input.value="";btn.disabled=false;btn.textContent="ログイン";}
   }
 
   async function logout(){
-    ++loginRevision;const token=viewerSession?.token;closeDetail();saveSession(null);document.getElementById('viewer-view-site').value="";syncSavedId();rows=[];groups=[];window.SKIMARU_COMPARISON?.clear();render();setConnection(false,'拠点を選択してください');nextEvent='switch';showLogin("閲覧する拠点を選び、パスワードを入力してください。");
+    ++loginRevision;const token=viewerSession?.token;closeDetail();saveSession(null);document.getElementById('viewer-view-site').value="";clearPassword();rows=[];groups=[];window.SKIMARU_COMPARISON?.clear();render();setConnection(false,'拠点を選択してください');nextEvent='switch';showLogin();
     if(token){try{await rpc("skimaru_manager_logout",{p_token:token});}catch(e){}}
   }
 
@@ -276,11 +264,13 @@
   document.getElementById('viewer-home-site').value=identity?.home_site||player.site||'';
   document.getElementById('viewer-name').value=identity?.name||player.name||'';
   showIdentity();saveSession(null);
-  syncSavedId(false);
-  document.getElementById('viewer-view-site').addEventListener('change',()=>syncSavedId());
-  document.getElementById('viewer-username').addEventListener('input',syncAutofilledSite);
-  document.getElementById('viewer-username').addEventListener('change',syncAutofilledSite);
-  document.getElementById('viewer-autofill').addEventListener('click',chooseSavedPassword);
+  document.getElementById('viewer-view-site').addEventListener('change',fillSavedPassword);
+  document.getElementById('viewer-password').addEventListener('input',()=>{++fillRevision;autofilledSite='';autofilledPassword='';});
+  document.getElementById('viewer-forget-passwords').addEventListener('click',async()=>{
+    clearPassword();
+    try{await window.SKIMARU_MANAGER_PASSWORDS?.clear(identity?.token||'');showLogin('この端末に保存した拠点パスワードを削除しました。');}
+    catch{showLogin('削除できませんでした。端末の保存設定を確認してください。');}
+  });
   document.getElementById('viewer-install-gate').hidden=installed();
   document.getElementById('viewer-login-form').hidden=!installed();
   window.addEventListener('pageshow',e=>{if(e.persisted)logout();});
