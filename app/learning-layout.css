@@ -205,3 +205,8 @@ body.academic-quiz .q-txt,#sc-quiz .q-txt{font-weight:700!important;color:var(--
 body[data-kind=jitugi] .early-back{display:flex;justify-content:center;align-items:center;padding:0;border-radius:0;background:none;min-height:44px}
 .learning-home-shell .hd-ttl{white-space:normal!important;text-overflow:clip!important;overflow:visible!important;min-width:0;overflow-wrap:anywhere}
 .study-task-menu .member-bar{display:none!important}
+/* A tool is a separate screen, not an expansion beneath the home overview.
+   This also hides late-arriving dashboard updates while a tool is open. */
+body.practical-tools-view #pt-home .practical-pad>:not(#practical-tools-panel){display:none!important}
+body.practical-tools-view #pt-home #practical-tools-panel{display:grid!important;margin:0;min-width:0;width:100%}
+body.practical-tools-view #pt-home #practical-tools-panel[hidden]{display:none!important}
