@@ -79,12 +79,14 @@
     $('oneqProgress').textContent = `${YEAR}年度 / 解答欄 ${current}`;
     $('study-task-title').textContent=$('taskTitle').textContent;
     $('study-question-no').textContent=`${questions.findIndex(x=>x.number===current)+1} / ${TOTAL}`;
-    $('oneqPrompt').textContent = q.prompt;
-    $('oneqContext').textContent = q.context;
+    $('oneqPrompt').innerHTML = window.SKIMARU_STUDY_SCREEN.text(q.prompt);
+    const context=String(q.context||'');
+    $('oneqContext').textContent = context;
+    $('oneqContext').hidden = !context.trim() || /^(?:課題共通の図・資料|画像をタップ|図をタップ|原本を)/.test(context.trim());
     $('source').replaceChildren();
     const label = document.createElement('div'); label.className = 'oneq-figure-label';
     const title = document.createElement('span'); title.textContent = q.figure.title;
-    const hint = document.createElement('span'); hint.textContent = 'タップで原本全体'; label.append(title,hint);
+    const hint = document.createElement('span'); hint.textContent = '拡大'; label.append(title,hint);
     const figure = document.createElement('button'); figure.className = 'v9-figure-button'; figure.type = 'button';
     figure.setAttribute('aria-label', `${q.figure.title}：原本PDF ${q.figure.page}ページを全画面表示`);
     figure.append(viewport(q.figure)); figure.onclick = () => openOriginal(q.figure.page, figure);
@@ -113,7 +115,7 @@
       button.setAttribute('aria-label', `問題${current} ${option.letter} ${option.text}`);
       button.disabled = !!state.finished;
       const letter = document.createElement('span'); letter.className = 'v9-letter'; letter.textContent = option.letter;
-      const word = document.createElement('span'); word.className = 'oneq-word'; word.textContent = option.text;
+      const word = document.createElement('span'); word.className = 'oneq-word'; word.innerHTML = window.SKIMARU_STUDY_SCREEN.text(option.text);
       button.append(letter);
       if (option.figure) button.append(viewport(option.figure)); else button.append(word);
       button.onclick = () => {

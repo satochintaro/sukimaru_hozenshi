@@ -384,7 +384,7 @@ function renderQ(){
   const q=S.queue[S.i];
   S.answered=false; S.conf=null; S.q=q;
   document.getElementById("q-cat").textContent=q.category;
-  document.getElementById("q-txt").textContent=q.text;
+  document.getElementById("q-txt").innerHTML=window.SKIMARU_STUDY_SCREEN.text(q.text);
   document.getElementById("q-no").textContent=`${S.i+1} / ${S.queue.length}`;
   document.getElementById("q-prog").style.width=((S.i+1)/S.queue.length*100)+"%";
   document.getElementById("q-prog-wrap").setAttribute("aria-valuenow",String(S.i+1));

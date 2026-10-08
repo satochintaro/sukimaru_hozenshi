@@ -210,3 +210,11 @@ body[data-kind=jitugi] .early-back{display:flex;justify-content:center;align-ite
 body.practical-tools-view #pt-home .practical-pad>:not(#practical-tools-panel){display:none!important}
 body.practical-tools-view #pt-home #practical-tools-panel{display:grid!important;margin:0;min-width:0;width:100%}
 body.practical-tools-view #pt-home #practical-tools-panel[hidden]{display:none!important}
+/* Meaningful word wrapping without changing question/answer data. */
+.study-phrase{display:inline-block;width:max-content;max-width:100%;white-space:normal;vertical-align:baseline;overflow-wrap:anywhere;line-break:strict}
+.study-text-line{display:block;white-space:normal;overflow-wrap:anywhere}
+.study-text-line+.study-text-line{margin-top:.55em}
+body.academic-quiz .q-txt,#sc-quiz .q-txt,.practical-quiz .oneq-prompt{font-size:18px!important;line-height:1.75!important}
+body.large-text.academic-quiz .q-txt,body.large-text #sc-quiz .q-txt,body.large-text.practical-quiz .oneq-prompt{font-size:22px!important}
+.practical-quiz .oneq-context[hidden]{display:none!important}
+.practical-quiz .oneq-figure-label{font-size:12px!important;margin:10px 0 6px!important}
