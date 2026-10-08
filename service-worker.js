@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-21-entry-safe-area";
+const CACHE="skimaru-live-20261008-v16-22-large-display";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
