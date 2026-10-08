@@ -4,19 +4,13 @@
   if(current!=="academic"&&current!=="practical")return;
   const loaded=new Set();
 
-  // Keep the current screen visible; put a glass loading ring over it.
+  // Enhancements are optional: never cover or lock the already usable base app.
   const bootStyle=document.createElement("style");
   bootStyle.id="skimaru-boot-style";
   bootStyle.textContent=`
-    body.skimaru-booting::before{
-      content:"";position:fixed;inset:0;z-index:999990;
-      background:rgba(247,249,250,.60);
-      -webkit-backdrop-filter:blur(7px) saturate(.92);
-      backdrop-filter:blur(7px) saturate(.92);
-    }
-    body.skimaru-booting::after{
-      content:"";position:fixed;left:50%;top:50%;z-index:999991;
-      width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;
+    body.skimaru-enhancing::after{
+      content:"";position:fixed;right:12px;bottom:max(12px,env(safe-area-inset-bottom));z-index:999991;pointer-events:none;
+      width:20px;height:20px;border-radius:50%;
       background:conic-gradient(from 10deg,#258a61 0 28%,#e8ad20 28% 47%,rgba(37,138,97,.13) 47% 100%);
       -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
       mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
@@ -24,10 +18,10 @@
     }
     @keyframes skimaruBootSpin{to{transform:rotate(360deg)}}`;
   document.head.appendChild(bootStyle);
-  document.body.classList.add("skimaru-booting");
+  document.body.classList.add("skimaru-enhancing");
 
   const safetyTimer=setTimeout(()=>{
-    document.body.classList.remove("skimaru-booting");
+    document.body.classList.remove("skimaru-enhancing");
     document.getElementById("skimaru-boot-style")?.remove();
   },7000);
 
@@ -36,8 +30,9 @@
     return new Promise((resolve,reject)=>{
       const s=document.createElement("script");
       s.src=src;s.async=false;
-      s.onload=()=>{loaded.add(src);resolve();};
-      s.onerror=()=>reject(new Error(`load failed: ${src}`));
+      const timer=setTimeout(()=>reject(new Error(`load timed out: ${src}`)),8000);
+      s.onload=()=>{clearTimeout(timer);loaded.add(src);resolve();};
+      s.onerror=()=>{clearTimeout(timer);reject(new Error(`load failed: ${src}`));};
       document.body.appendChild(s);
     });
   }
@@ -52,8 +47,10 @@
     }
     return new Promise(resolve=>{
       const l=document.createElement("link");
-      l.rel="stylesheet";l.href=src;
-      l.onload=resolve;l.onerror=resolve;
+      l.rel="stylesheet";l.href=src;l.media="print";
+      const timer=setTimeout(resolve,1200);
+      l.onload=()=>{l.media="all";clearTimeout(timer);resolve();};
+      l.onerror=()=>{clearTimeout(timer);resolve();};
       document.head.appendChild(l);
     });
   }
@@ -72,13 +69,15 @@
       if(current==="academic"){
         commonStyles.push("./academic-ui-v56.css","./answer-animation-off.css","./quiz-static.css?v=15");
       }
-      await Promise.all(commonStyles.map(loadStyle));
+      // CSS downloads do not hold up the functional scripts or existing controls.
+      const styleReady=Promise.all(commonStyles.map(loadStyle));
 
       const scripts=["./ui-v58.js?v=590","./year-mode-core.js"];
       if(current==="academic")scripts.push("./academic-remove-practical.js","./year-question-data.js","./year-mode.js","./academic-ui-v56.js","./quiz-static.js?v=590","./coach-shared.js","./learning-home.js?v=16.12","./coach-player.js?v=16.10","./game-effects.js?v=14");
       else scripts.push("./practical-year-data.js","./practical-year-data-v58.js","./practical-year-mode.js","./practical-v58.js","./coach-shared.js","./learning-home.js?v=16.12","./coach-player.js?v=16.10");
       // async=false preserves insertion/execution order; requests are concurrent.
       await Promise.all(scripts.map(loadScript));
+      await styleReady;
       if(typeof APP!=="undefined"&&APP)APP.version="16.10";
 
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
@@ -93,7 +92,7 @@
       const ver=document.querySelector('#sc-set .sts span:last-child');if(ver)ver.innerHTML='Ver 16.10 ／ 全 <span id="st-qn">'+(window.QUESTIONS?.length||1000)+'</span> 問';
 
       clearTimeout(safetyTimer);
-      document.body.classList.remove("skimaru-booting");
+      document.body.classList.remove("skimaru-enhancing");
       document.getElementById("skimaru-boot-style")?.remove();
     }
   }
