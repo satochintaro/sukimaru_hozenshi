@@ -3,11 +3,15 @@
   const CLOUD=window.SKIMARU_SUPABASE||{};
   const C=window.SKIMARU_COACH||{};
   const KEY="skimaru-manager-site-session-v15",ACCOUNT_KEY="manager-device-account-v166";
+  const IDENTITY_KEY="skimaru-manager-identity-v1613",SITES=["四日市","石岡","足利","水戸","真岡","門真","北九州"];
+  const installed=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
+  let identity=null,nextEvent="open",loginRevision=0;
+  try{identity=JSON.parse(localStorage.getItem(IDENTITY_KEY)||"null");}catch{}
   const ACADEMIC=["生産の基本","設備の日常保全","効率化とロス","改善・解析","設備保全の基礎"];
   const PRACTICAL=["安全・環境","TPM・5S","自主保全","改善・解析","設備保全","図面・測定","効率化とロス"];
   let lastActivity=Date.now();
   for(const event of ["pointerdown","keydown","touchstart"])document.addEventListener(event,()=>lastActivity=Date.now(),{passive:true});
-  let viewerSession=readSession(),rows=[],mode="combined",groups=[],toastTimer=null;
+  let viewerSession=null,rows=[],mode="combined",groups=[],toastTimer=null;
 
   function setSite(){const select=document.getElementById("site-filter");if(select&&viewerSession?.site){select.replaceChildren(new Option(viewerSession.site,viewerSession.site));select.value=viewerSession.site;select.disabled=true;}}
   async function comparison(){const token=viewerSession?.token,grade=Number(document.getElementById("manager-grade")?.value||2);if(token)await window.SKIMARU_COMPARISON?.load(rpc,token,()=>viewerSession?.token===token&&Number(document.getElementById("manager-grade")?.value||2)===grade,grade);}
@@ -15,7 +19,13 @@
   function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function parse(v,f){if(v==null)return f;if(typeof v==="string"){try{return JSON.parse(v);}catch(e){return f;}}return v;}
   function readSession(){try{return JSON.parse(localStorage.getItem(KEY)||sessionStorage.getItem(KEY)||"null");}catch(e){return null;}}
-  function saveSession(v){viewerSession=v;try{sessionStorage.removeItem(KEY);if(v){sessionStorage.setItem(KEY,JSON.stringify(v));if(document.getElementById('viewer-remember')?.checked!==false)localStorage.setItem(KEY,JSON.stringify(v));else localStorage.removeItem(KEY);}else{localStorage.removeItem(KEY);}}catch(e){}}
+  function saveSession(v){viewerSession=v;try{sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);localStorage.removeItem(ACCOUNT_KEY);}catch(e){}}
+  function showIdentity(){
+    const registered=!!identity?.manager_no;
+    document.getElementById('viewer-manager-identity').textContent=registered?`${identity.home_site} ／ ${identity.name} ／ ${identity.manager_no}`:'初回のみ所属拠点と名前を登録します。';
+    document.getElementById('viewer-home-site').disabled=registered;
+    document.getElementById('viewer-name').readOnly=registered;
+  }
   function notify(msg){const e=document.getElementById("viewer-toast");e.textContent=msg;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2200);}
   function fmt(v){if(!v)return"—";const d=new Date(v);return Number.isNaN(d.getTime())?"—":d.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});}
   function pct(c,t){return t?Math.round(c/t*100):null;}
@@ -34,13 +44,17 @@
   }
 
   function showLogin(message=""){
+    document.querySelector('.admin-main').inert=true;
     document.getElementById("viewer-login").classList.add("show");
     document.getElementById("viewer-login-message").textContent=message;
   }
   function hideLogin(){
+    document.querySelector('.admin-main').inert=false;
     document.getElementById("viewer-login").classList.remove("show");
     document.getElementById("viewer-login-message").textContent="";
     document.getElementById("viewer-password").value="";
+    document.getElementById("viewer-password").blur();
+    document.getElementById("viewer-logout").focus();
   }
 
   async function valid(){
@@ -50,21 +64,31 @@
   }
 
   async function login(){
+    if(!installed()){showLogin("ホーム画面のアイコンから開いてください。");return;}
+    const attempt=++loginRevision;
     const input=document.getElementById("viewer-password"),btn=document.getElementById("viewer-login-btn"),password=input.value;
     if(!password){showLogin("管理者パスワードを入力してください。");return;}
     btn.disabled=true;btn.textContent="確認中…";
     try{
-      const j=await rpc("skimaru_manager_login",{p_account:document.getElementById("viewer-account").value.trim(),p_password:password});
+      const home=document.getElementById('viewer-home-site').value,name=document.getElementById('viewer-name').value.trim(),site=document.getElementById('viewer-view-site').value;
+      if(!home||!name||!site)throw Error('invalid_input');
+      if(!identity?.token){identity={token:Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('')};localStorage.setItem(IDENTITY_KEY,JSON.stringify(identity));}
+      // Persist the pending identity before the request: a lost response cannot create another No.
+      identity={...identity,name,home_site:home};localStorage.setItem(IDENTITY_KEY,JSON.stringify(identity));
+      const j=await rpc("skimaru_manager_enter",{p_home_site:home,p_name:name,p_view_site:site,p_password:password,p_identity_token:identity.token,p_manager_no:identity.manager_no||null,p_event_id:crypto.randomUUID(),p_event:nextEvent});
       const row=Array.isArray(j)?j[0]:j;
       if(!row?.token)throw new Error(row?.error||"login_failed");
-      lastActivity=Date.now();if(document.getElementById('viewer-remember').checked)localStorage.setItem(ACCOUNT_KEY,document.getElementById('viewer-account').value.trim());else localStorage.removeItem(ACCOUNT_KEY);saveSession({token:row.token,expires_at:row.expires_at,site:row.site,account:row.account});setSite();
+      if(attempt!==loginRevision||document.hidden){await rpc('skimaru_manager_logout',{p_token:row.token});return;}
+      identity={token:identity.token,manager_no:row.manager_no,name:row.name,home_site:row.home_site};
+      localStorage.setItem(IDENTITY_KEY,JSON.stringify(identity));localStorage.setItem('skimaru-role','manager');showIdentity();
+      lastActivity=Date.now();saveSession({token:row.token,expires_at:row.expires_at,site:row.site,account:row.account});setSite();
       hideLogin();await load();notify("管理者画面を開きました");
-    }catch(e){showLogin(e.message==="rate_limited"?"試行回数が上限に達しました。15分後にお試しください。":"管理者IDまたはパスワードが違います。");}
-    finally{btn.disabled=false;btn.textContent="管理者画面を開く";}
+    }catch(e){if(attempt===loginRevision)showLogin(e.message==="rate_limited"?"試行回数が上限に達しました。15分後にお試しください。":e.message==="identity_mismatch"?"登録情報が一致しないか、利用が停止されています。開発者へご連絡ください。":e.message==="login_failed"?"閲覧拠点またはパスワードが違います。":"登録・閲覧履歴を保存できませんでした。通信と端末の保存設定を確認してください。");}
+    finally{input.value="";btn.disabled=false;btn.textContent="管理者画面を開く";}
   }
 
   async function logout(){
-    const token=viewerSession?.token;closeDetail();saveSession(null);localStorage.removeItem(ACCOUNT_KEY);document.getElementById("viewer-account").value="";document.getElementById("viewer-password").value="";rows=[];groups=[];window.SKIMARU_COMPARISON?.clear();render();showLogin("退出しました。");
+    ++loginRevision;const token=viewerSession?.token;closeDetail();saveSession(null);document.getElementById("viewer-password").value="";document.getElementById('viewer-view-site').value="";rows=[];groups=[];window.SKIMARU_COMPARISON?.clear();render();setConnection(false,'拠点を選択してください');nextEvent='switch';showLogin("閲覧する拠点を選び、パスワードを入力してください。");
     if(token){try{await rpc("skimaru_manager_logout",{p_token:token});}catch(e){}}
   }
 
@@ -218,11 +242,19 @@
   }
   function closeDetail(){const m=document.getElementById("viewer-detail");m.classList.remove("show");m.setAttribute("aria-hidden","true");}
 
-  document.getElementById('viewer-account').value=localStorage.getItem(ACCOUNT_KEY)||viewerSession?.account||'';
+  for(const id of ['viewer-home-site','viewer-view-site']){const select=document.getElementById(id);select.add(new Option('拠点を選択',''));SITES.forEach(s=>select.add(new Option(s,s)));}
+  let player={};try{player=JSON.parse(localStorage.getItem('skimaruData')||'{}');}catch{}
+  document.getElementById('viewer-home-site').value=identity?.home_site||player.site||'';
+  document.getElementById('viewer-name').value=identity?.name||player.name||'';
+  showIdentity();saveSession(null);
+  document.getElementById('viewer-install-gate').hidden=installed();
+  document.getElementById('viewer-login-form').hidden=!installed();
+  window.addEventListener('pageshow',e=>{if(e.persisted)logout();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){logout();nextEvent='open';}});
   document.getElementById('viewer-login-form').addEventListener('submit',e=>{e.preventDefault();login();});
   window.addEventListener('storage',e=>{if(e.key===KEY&&!e.newValue&&viewerSession){viewerSession=null;rows=[];groups=[];window.SKIMARU_COMPARISON?.clear();closeDetail();render();showLogin('別の画面でログアウトしました。');}});
 
-  setInterval(async()=>{if(viewerSession&&!(await valid()))logout();},60000);
+  setInterval(async()=>{if(viewerSession&&(Date.now()-lastActivity>30*60*1000||!(await valid())))logout();},60000);
   
   document.getElementById("viewer-logout").addEventListener("click",logout);
   document.getElementById("viewer-refresh").addEventListener("click",load);
@@ -230,5 +262,5 @@
   document.getElementById("viewer-detail").addEventListener("click",e=>{if(e.target.id==="viewer-detail")closeDetail();});
   document.querySelectorAll("[data-viewer-mode]").forEach(b=>b.addEventListener("click",()=>{mode=b.dataset.viewerMode;render();setConnection(true,mode==="combined"?"総合分析":mode==="academic"?"学科分析":"実技分析");}));
 
-  (async()=>{if(!configured()){showLogin("Supabase接続設定がありません。");return;}if(await valid()){hideLogin();await load();}else{saveSession(null);showLogin();}})();
+  if(!configured())showLogin("Supabase接続設定がありません。");else showLogin();
 })();

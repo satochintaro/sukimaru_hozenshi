@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-12-home-scroll";
+const CACHE="skimaru-live-20261008-v16-13-manager-identity";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
