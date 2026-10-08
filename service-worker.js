@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-24-practical-tool-screen";
+const CACHE="skimaru-live-20261008-v16-25-readable-questions";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
