@@ -2,6 +2,10 @@
 /* Manager information architecture + overflow fix */
 .manager-body,.manager-body *{box-sizing:border-box}
 .manager-body{overflow-x:hidden}
+/* Android: body is an overflow-x container without a vertical scroll range.
+   Let vertical touch gestures reach the document scroller; keep horizontal edges locked. */
+.manager-body{overscroll-behavior-y:auto}
+.manager-body .player-detail-card{overscroll-behavior-y:contain}
 .manager-header-title,.manager-section-head>div,.mgr-page-head>div,.mgr-section-title>div{min-width:0}
 .manager-body h1,.manager-body h2,.manager-body h3,.manager-body p,.manager-body b,.manager-body strong,.manager-body span,.manager-body small,.manager-body td,.manager-body th,.manager-body button,.manager-body label{
   overflow-wrap:anywhere;word-break:normal;white-space:normal

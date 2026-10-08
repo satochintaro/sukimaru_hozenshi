@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-13-manager-identity";
+const CACHE="skimaru-live-20261008-v16-14-android-manager-scroll";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
