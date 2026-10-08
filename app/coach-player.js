@@ -189,5 +189,18 @@
     updatePracticalCats();
   }
 
+  // Late home-menu enhancements can replace the overview. Restore it locally,
+  // without waiting for a remote refresh or deleting any progress.
+  const homeRoot=document.getElementById(current==="academic"?"sc-home":"pt-home");
+  let repairScheduled=false;
+  if(homeRoot)new MutationObserver(()=>{
+    if(repairScheduled)return;
+    const host=homeRoot.querySelector(current==="academic"?".player-home-pad":".practical-pad");
+    if(!host||host.querySelector(".learning-dashboard"))return;
+    repairScheduled=true;
+    requestAnimationFrame(()=>{repairScheduled=false;renderCoach();});
+  }).observe(homeRoot,{childList:true,subtree:true});
+  document.addEventListener("skimaru-profile",renderCoach);
+  window.addEventListener("storage",renderCoach);
   renderCoach();refreshRemote();setInterval(refreshRemote,300000);
 })();
