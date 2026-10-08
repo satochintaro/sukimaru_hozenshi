@@ -73,8 +73,8 @@
       const styleReady=Promise.all(commonStyles.map(loadStyle));
 
       const scripts=["./ui-v58.js?v=590","./year-mode-core.js"];
-      if(current==="academic")scripts.push("./academic-remove-practical.js","./year-question-data.js","./year-mode.js","./academic-ui-v56.js","./quiz-static.js?v=590","./coach-shared.js","./learning-home.js?v=16.12","./coach-player.js?v=16.10","./game-effects.js?v=14");
-      else scripts.push("./practical-year-data.js","./practical-year-data-v58.js","./practical-year-mode.js","./practical-v58.js","./coach-shared.js","./learning-home.js?v=16.12","./coach-player.js?v=16.10");
+      if(current==="academic")scripts.push("./academic-remove-practical.js","./year-question-data.js","./year-mode.js","./academic-ui-v56.js","./quiz-static.js?v=590","./coach-shared.js","./learning-home.js?v=16.12","./coach-player.js?v=16.19","./game-effects.js?v=14");
+      else scripts.push("./practical-year-data.js","./practical-year-data-v58.js","./practical-year-mode.js","./practical-v58.js","./coach-shared.js","./learning-home.js?v=16.12","./coach-player.js?v=16.19");
       // async=false preserves insertion/execution order; requests are concurrent.
       await Promise.all(scripts.map(loadScript));
       await styleReady;
