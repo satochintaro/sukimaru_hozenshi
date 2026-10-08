@@ -18,6 +18,10 @@
   }
   if(selectedTask){fullState.taskSessions ||= {};state=fullState.taskSessions[requested] ||= {answers:{},branch:'A',finished:false};}
   if(review){fullState.reviewSessions ||= {};let nums;if(review==='random'){nums=info.questions.map(q=>q.number);for(let i=nums.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}nums=nums.slice(0,5);}else nums=window.SKIMARU_PRACTICAL_PROGRESS.numbers(info,review);state=fullState.reviewSessions[reviewRun] ||= {answers:{},branch:'A',finished:false,questionNumbers:nums};}
+  document.body.classList.add('practical-quiz');
+  const progressCard=document.querySelector('.wrap>.card');progressCard.className='q-bar';
+  const footer=document.createElement('div');footer.className='quiz-footer';const pause=document.createElement('button');pause.textContent='中断してホームへ';pause.onclick=()=>location.href='./practical.html';const grade=document.createElement('button');grade.textContent='終了・採点';grade.onclick=()=>finish();footer.append(pause,grade);document.querySelector('.wrap').append(footer);document.getElementById('exam').append(document.getElementById('oneqDots'));
+  const questionHeader=document.createElement('div');questionHeader.className='q-hd';questionHeader.innerHTML='<span class="q-cat" id="study-task-title"></span><span id="study-star-anchor"></span><span class="q-no" id="study-question-no"></span>';document.getElementById('answerCard').before(questionHeader);
   const questions=info.questions.filter(q=>review?state.questionNumbers.includes(q.number):!selectedTask||(q.number>=selectedTask.start&&q.number<=selectedTask.end));
   if(!questions.length){document.querySelector('.wrap').innerHTML='<p>対象の問題はありません。</p><a href="./practical.html">実技トップへ戻る</a>';return;}
   const tasks=info.tasks.filter(t=>questions.some(q=>q.number>=t.start&&q.number<=t.end));
@@ -46,7 +50,7 @@
   const taskOf = n => tasks.findIndex(t => n >= t.start && n <= t.end);
   const progress = () => {
     $('count').textContent = `${answered()} / ${TOTAL}問`;
-    $('bar').style.width = `${answered() / TOTAL * 100}%`;
+    $('bar').style.width = `${(questions.findIndex(q=>q.number===current)+1) / TOTAL * 100}%`;
   };
   const imagePath = page => `./practical-${YEAR}-${info.imageVersion||'v10'}-p${page}.jpg`;
   function viewport(figure) {
@@ -70,9 +74,11 @@
     $('taskMeta').textContent = `設問 ${t.start}〜${t.end}`;
     $('reviewNote').textContent = state.finished ? '採点済み：解答を変更する場合は「最初から解く」を使用してください。' : '全問解答後にまとめて採点します。途中では正誤・正解を表示しません。';
     $('oneqNo').textContent = `問題 ${current}`;
-    let mark=$('pt-bookmark');if(!mark){mark=document.createElement('button');mark.id='pt-bookmark';mark.className='pt-bookmark';mark.type='button';$('oneqPanel').prepend(mark);}
-    const starred=!!fullState.bookmarks?.[current];mark.textContent=starred?'★ 重点マーク':'☆ 重点マーク';mark.setAttribute('aria-pressed',String(starred));mark.onclick=()=>{fullState.bookmarks ||= {};fullState.bookmarks[current]=!fullState.bookmarks[current];save();render();};
-    $('oneqProgress').textContent = `${current-t.start+1} / ${t.end-t.start+1}`;
+    let mark=$('pt-bookmark');if(!mark){mark=document.createElement('button');mark.id='pt-bookmark';mark.className='pt-bookmark';mark.type='button';$('study-star-anchor').append(mark);}
+    const starred=!!fullState.bookmarks?.[current];mark.className='q-star';mark.textContent=starred?'★':'☆';mark.setAttribute('aria-label','重点マーク');mark.setAttribute('aria-pressed',String(starred));mark.onclick=()=>{fullState.bookmarks ||= {};fullState.bookmarks[current]=!fullState.bookmarks[current];save();render();};
+    $('oneqProgress').textContent = `${YEAR}年度 / 解答欄 ${current}`;
+    $('study-task-title').textContent=$('taskTitle').textContent;
+    $('study-question-no').textContent=`${questions.findIndex(x=>x.number===current)+1} / ${TOTAL}`;
     $('oneqPrompt').textContent = q.prompt;
     $('oneqContext').textContent = q.context;
     $('source').replaceChildren();
@@ -116,7 +122,7 @@
       };
       options.append(button);
     });
-    $('questions').append(options); syncOptions();
+    $('questions').append(options);$('questions').after($('oneqSource'));syncOptions();
     $('oneqDots').replaceChildren();
     for (let n=t.start; n<=t.end; n++) {
       if(!questions.some(q=>q.number===n))continue;
@@ -125,9 +131,9 @@
       b.setAttribute('aria-current', n === current ? 'true' : 'false');
       b.onclick = () => go(n); $('oneqDots').append(b);
     }
-    $('prev').disabled = current === FIRST;
+    $('prev').textContent='前の問題';$('prev').disabled = current === FIRST;
     $('prev').onclick = () => go(questions[questions.findIndex(q=>q.number===current)-1]?.number);
-    $('next').textContent = current === LAST ? (state.finished ? '採点結果を見る' : '採点する') : current === t.end ? '次の課題へ →' : '次へ →';
+    $('next').textContent = current === LAST ? (state.finished ? '採点結果を見る' : '採点する') : current === t.end ? '次の問題' : '次の問題';
     $('next').onclick = () => current < LAST ? go(questions[questions.findIndex(q=>q.number===current)+1].number) : finish();
   }
   function syncOptions() {
@@ -216,14 +222,11 @@
   save();render();
   if(state.finished && answered()===TOTAL){recordHistory();syncLegacy();showResults();}
   function showTaskMenu(){
-    const wrap=document.querySelector('.wrap');wrap.replaceChildren();
-    const section=document.createElement('section');section.className='pt-task-menu';
-    const heading=document.createElement('h2');heading.textContent='学習する課題を選ぶ';section.append(heading);
-    const note=document.createElement('p');note.className='pt-task-menu-note';note.textContent='全課題を通して解くか、課題ごとに学習できます。採点は選んだ範囲の回答後に行います。';section.append(note);
-    const all=document.createElement('a');all.className='pt-all-start';all.href=location.pathname+'?mode=all';all.textContent=`全課題をはじめる ／ ${info.total}問`;section.append(all);
-    if(Object.keys(fullState.answers||{}).length){const n=document.createElement('p');n.className='pt-task-menu-note';n.textContent='全課題モードには以前の回答が保存されています。そのまま続きから利用できます。';section.append(n);}
-    const list=document.createElement('div');list.className='pt-task-list';
-    info.tasks.forEach((t,i)=>{const a=document.createElement('a');a.href=location.pathname+'?task='+(i+1);a.className='pt-task-card';const title=document.createElement('b');title.textContent=`課題${i+1}：${t.title}`;const meta=document.createElement('span');const session=fullState.taskSessions?.[i+1];meta.textContent=`${t.end-t.start+1}問${t.branch?' ／ 選択A':''}${session?.finished?' ／ 採点済み':Object.keys(session?.answers||{}).length?' ／ 続きから':''}`;a.append(title,meta);list.append(a);});
-    section.append(list);wrap.append(section);
+    const wrap=document.querySelector('.wrap');wrap.classList.add('study-task-menu');wrap.replaceChildren();
+    const note=document.createElement('p');note.className='note';note.textContent='全課題または課題ごとに始められます。';wrap.append(note);
+    const branch=document.createElement('label');branch.className='note';branch.textContent='選択課題';const choice=document.createElement('select');choice.disabled=true;choice.innerHTML='<option>選択A</option>';branch.append(choice);wrap.append(branch);
+    const all=document.createElement('button');all.type='button';all.className='study-all';all.textContent='全課題をはじめる';all.onclick=()=>location.href=location.pathname+'?mode=all';wrap.append(all);
+    const list=document.createElement('div');wrap.append(list);
+    window.SKIMARU_STUDY_SCREEN.tasks(list,info.tasks.map((t,i)=>{const session=fullState.taskSessions?.[i+1];return {index:i+1,title:`課題${i+1}：${t.title}`,detail:`${t.end-t.start+1}問${t.branch?' ／ 選択A':''}${session?.finished?' ／ 採点済み':Object.keys(session?.answers||{}).length?' ／ 続きから':''}`};}),row=>location.href=location.pathname+'?task='+row.index);
   }
 })();

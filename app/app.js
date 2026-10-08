@@ -344,26 +344,9 @@ function acc(sub){
   return t>0?Math.round(c/t*100):null;
 }
 function showSubjects(){
-  const L=document.getElementById("subj-list");
-  L.innerHTML="";
-  const m=acc(null);
-  L.innerHTML+=`<button class="pn row" onclick="startQuiz('normal')" style="margin-bottom:8px">
-    <span class="row-i">🎲</span>
-    <span class="row-b"><span class="row-t">全科目ミックス</span>
-      <span class="row-d">全${QUESTIONS.length}問からランダム10問</span>
-      <span class="bar"><i style="width:${m||0}%"></i></span></span>
-    <span class="row-v">${m!==null?m+"%":"–"}</span></button>`;
-  SUBJ.forEach(s=>{
-    const n=QUESTIONS.filter(q=>q.category===s).length;
-    const a=acc(s);
-    L.innerHTML+=`<button class="pn row" onclick="showSets('${s}')" style="margin-bottom:8px">
-      <span class="row-b"><span class="row-t">${s}</span>
-        <span class="row-d">${n} 問</span>
-        <span class="bar"><i style="width:${a||0}%"></i></span></span>
-      <span class="row-v">${a!==null?a+"%":"–"}</span>
-      <span class="row-go">›</span></button>`;
-  });
-  show("sc-subj");
+ const rows=[{title:'全科目ミックス',detail:`全${QUESTIONS.length}問からランダム10問`,rate:acc(null),category:null},...SUBJ.map(category=>({title:category,detail:`${QUESTIONS.filter(q=>q.category===category).length} 問`,rate:acc(category),category}))];
+ window.SKIMARU_STUDY_SCREEN.subjects(document.getElementById('subj-list'),rows,row=>row.category?showSets(row.category):startQuiz('normal'));
+ show('sc-subj');
 }
 function showSets(sub){
   currentSubject=sub;

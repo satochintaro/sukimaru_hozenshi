@@ -56,25 +56,8 @@
       section.querySelector(".hd-back").addEventListener("click",goHome);
       document.body.insertBefore(section,document.getElementById("toast")||null);
     }
-    const list=section.querySelector("#year-list");list.innerHTML="";
-    Core.YEARS.slice().reverse().forEach(year=>{
-      const s=yearStats(year),card=document.createElement("div");
-      card.className="pn";card.style.marginBottom="9px";
-      const rate=s.rate===null?"–":s.rate+"%";
-      card.innerHTML=`<div class="row" style="padding:0">
-        <span class="row-i">${String(year).slice(2)}</span>
-        <span class="row-b"><span class="row-t">${year}年度</span><span class="row-d">${statusText(year)}</span></span>
-        <span class="row-v">${rate}</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px">
-          <button class="btn-g js-full" type="button"${s.questions?"":" disabled"}>本番 ${s.questions||100}問</button>
-          <button class="btn-g js-quick" type="button"${s.questions?"":" disabled"}>ランダム10問</button>
-        </div>`;
-      if(s.questions){
-        card.querySelector(".js-full").addEventListener("click",()=>startPastYear(year));
-        card.querySelector(".js-quick").addEventListener("click",()=>startPastYearQuick(year));
-      }
-      list.appendChild(card);
-    });
+    const list=section.querySelector('#year-list');
+    window.SKIMARU_STUDY_SCREEN.years(list,Core.YEARS.slice().reverse().map(year=>{const s=yearStats(year);return {year,count:s.questions,rate:s.rate,detail:statusText(year)};}),true,(row,mode)=>mode==='quick'?startPastYearQuick(row.year):startPastYear(row.year));
     show("sc-years");
   }
 
