@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-19-dashboard-repair";
+const CACHE="skimaru-live-20261008-v16-20-overview-stability";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

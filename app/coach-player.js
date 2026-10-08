@@ -97,7 +97,7 @@
   function coachPanelHtml(){
     const earned=typeof U!=="undefined"?U:academicProfile(),summary=combinedSummary(),msg=C.coachMessage(summary),badges=C.badges(summary);
     const cd=countdownText(remoteData().examDate);
-    if(window.SKIMARU_LEARNING_HOME)return `<div id="coach-dashboard">${window.SKIMARU_LEARNING_HOME.html(summary,remoteData().examDate,earned,()=>{if(typeof U!=="undefined"&&earned===U&&typeof window.save==="function")window.save();else save(ACADEMIC_KEY,earned);},current)}</div>`;
+    if(window.SKIMARU_LEARNING_HOME)return `<div class="coach-dashboard" id="coach-dashboard">${window.SKIMARU_LEARNING_HOME.html(summary,remoteData().examDate,earned,()=>{if(typeof U!=="undefined"&&earned===U&&typeof window.save==="function")window.save();else save(ACADEMIC_KEY,earned);},current)}</div>`;
     const best=summary.bestPast==null?"—":summary.bestPast+"点";
     const pRate=summary.practicalRate==null?"—":summary.practicalRate+"%";
     const latestMessage=(remoteData().messages||[])[0];
@@ -133,7 +133,7 @@
       const home=document.querySelector("#pt-home .practical-pad");if(!home)return;
       let compact=document.getElementById("coach-practical-summary");
       const earned=typeof U!=="undefined"?U:academicProfile(),s=combinedSummary(),m=C.coachMessage(s),cd=countdownText(remoteData().examDate);
-      const html=window.SKIMARU_LEARNING_HOME?`<div id="coach-practical-summary">${window.SKIMARU_LEARNING_HOME.html(s,remoteData().examDate,earned,()=>{if(typeof U!=="undefined"&&earned===U&&typeof window.save==="function")window.save();else save(ACADEMIC_KEY,earned);},current)}</div>`:`<div class="coach-practical-summary" id="coach-practical-summary"><div><span>試験</span><b>${cd.big}</b></div><p><strong>${esc(m.title)}</strong><br>${esc(m.action)}</p></div>`;
+      const html=window.SKIMARU_LEARNING_HOME?`<div class="coach-dashboard" id="coach-practical-summary">${window.SKIMARU_LEARNING_HOME.html(s,remoteData().examDate,earned,()=>{if(typeof U!=="undefined"&&earned===U&&typeof window.save==="function")window.save();else save(ACADEMIC_KEY,earned);},current)}</div>`:`<div class="coach-practical-summary" id="coach-practical-summary"><div><span>試験</span><b>${cd.big}</b></div><p><strong>${esc(m.title)}</strong><br>${esc(m.action)}</p></div>`;
       if(compact){const box=document.createElement("div");box.innerHTML=html;compact.replaceWith(box.firstElementChild);}
       else{const hero=home.querySelector(".pt-hero");if(hero)hero.insertAdjacentHTML("beforebegin",html);}
     }
