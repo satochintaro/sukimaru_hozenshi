@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-22-large-display";
+const CACHE="skimaru-live-20261008-v16-23-unified-study";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
