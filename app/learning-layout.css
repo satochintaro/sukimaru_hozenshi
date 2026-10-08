@@ -116,3 +116,14 @@ body.grade1-app:not(.academic-quiz) .quiz-frame .oneq-nav button{min-height:52px
 .learning-home-shell .unified-home>#coach-dashboard,
 .learning-home-shell .unified-home>#coach-practical-summary{display:block!important;visibility:visible!important;height:auto!important;min-height:0!important;flex:0 0 auto!important;width:100%;order:0!important}
 .learning-home-shell .unified-home .learning-dashboard{display:grid!important;visibility:visible!important;height:auto!important;min-height:0!important;flex:0 0 auto!important}
+
+/* Keep standalone iPhone headers below the status bar / Dynamic Island. */
+.learning-home-shell{--skimaru-safe-top:env(safe-area-inset-top,0px)}
+.learning-home-shell #sc-home>.hd,
+.learning-home-shell #pt-home>.hd,
+body.learning-home-shell.grade1-app>.hd{
+ height:calc(96px + var(--skimaru-safe-top))!important;
+ min-height:calc(96px + var(--skimaru-safe-top))!important;
+ padding:calc(16px + var(--skimaru-safe-top)) 16px 16px!important;
+ box-sizing:border-box;flex-shrink:0;
+}
