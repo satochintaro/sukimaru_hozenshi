@@ -53,8 +53,9 @@
     <p>所属拠点・名前を登録し、閲覧する拠点の既存パスワードで入ります。初回認証後にマネージャーNo.を発行します。</p>
     <p id="viewer-manager-identity" role="status"></p>
     <div id="viewer-install-gate" hidden><p>ホーム画面に追加して、追加したアイコンから開いてください。</p><button type="button" class="btn" data-open-install>ホーム画面に追加する</button></div>
-    <form id="viewer-login-form"><label for="viewer-home-site">所属拠点</label><select id="viewer-home-site" required></select><label for="viewer-name">名前</label><input id="viewer-name" required maxlength="20" autocomplete="name" placeholder="名前を入力"><label for="viewer-view-site">閲覧する拠点</label><select id="viewer-view-site" required></select><label for="viewer-password">この拠点のパスワード</label>
+    <form id="viewer-login-form" method="post" autocomplete="on"><label for="viewer-home-site">所属拠点</label><select id="viewer-home-site" required></select><label for="viewer-name">名前</label><input id="viewer-name" required maxlength="20" autocomplete="off" placeholder="名前を入力"><label for="viewer-view-site">閲覧する拠点</label><select id="viewer-view-site" required></select><label for="viewer-username">パスワード保存用ID（拠点選択で自動入力）</label><input id="viewer-username" name="username" type="text" required autocomplete="username" autocapitalize="none" spellcheck="false" aria-describedby="viewer-autofill-help"><label for="viewer-password">この拠点のパスワード</label>
     <input id="viewer-password" name="password" required type="password" maxlength="72" autocomplete="current-password" placeholder="既存の拠点パスワード">
+    <button type="button" class="btn secondary" id="viewer-autofill">保存済みパスワードを使う</button><p id="viewer-autofill-help" style="font-size:12px;line-height:1.7">初回は拠点のパスワードを入力し、端末の保存確認が出たら保存してください。次回は拠点を選び、端末の保存済みパスワードを選択します。iPhoneで候補が出ない場合は、キーボードの「パスワード」から選んでください。</p><label style="display:flex;align-items:center;gap:8px;font-size:12px"><input id="viewer-save-password" type="checkbox" checked style="width:auto;margin:0">認証成功時、端末のパスワード管理に保存を依頼する</label><p style="font-size:11px;line-height:1.7">共用端末では保存を依頼せず、端末側の保存確認も拒否してください。保存・候補表示は端末の設定に依存します。</p>
     <button type="submit" class="btn" id="viewer-login-btn">管理者画面を開く</button></form><p style="font-size:11px;line-height:1.7">名前・所属・マネージャーNo.をこの端末に保持します。パスワードはアプリに保存しません。開くたびに閲覧拠点を選択してください。閲覧日時と拠点は開発者向けの履歴に記録されます。登録名は自己申告です。</p>
     <div class="manager-login-message" id="viewer-login-message"></div>
     <small>閲覧モードでは成績・学科・実技・総合分析のみ確認できます。</small>
@@ -64,7 +65,7 @@
 <div class="toast" id="viewer-toast" role="status" aria-live="polite"></div>
 <script src="./supabase-config.js"></script>
 <script src="./coach-shared.js"></script>
-<script src="./manager-metrics.js?v=12"></script><script src="./site-comparison.js?v=16"></script><script src="./viewer-manager.js?v=16.13"></script>
+<script src="./manager-metrics.js?v=12"></script><script src="./site-comparison.js?v=16"></script><script src="./viewer-manager.js?v=16.15"></script>
 <script src="./ui-v57.js"></script>
 </body>
 </html>
