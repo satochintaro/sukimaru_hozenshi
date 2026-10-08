@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-16-manager-simple-login";
+const CACHE="skimaru-live-20261008-v16-17-player-startup";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

@@ -1,0 +1,127 @@
+"use strict";
+(() => {
+  const SITES=["四日市","石岡","足利","水戸","真岡","門真","北九州"],KEY="skimaruData",LEDGER="skimaru-submitted-v11",QUEUE="skimaru-pending-submissions-v1";
+  const read=(k,f={})=>{try{return JSON.parse(localStorage.getItem(k)||"null")||f;}catch{return f;}};
+  const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  let profile=read(KEY),busy=false;
+  const REG="skimaru-registration-v13";
+  const secret=()=>crypto.randomUUID().replace(/-/g,"")+crypto.randomUUID().replace(/-/g,"");
+  // Adopt locally saved players before the academic app reads its state.
+  // This only carries existing progress forward; cloud writes still require a verified token.
+  function adoptExisting(){
+    const current=read(KEY),r=read(REG);
+    let p=current;
+    if(!String(p.name||'').trim()){
+      const fallback=[read('skimaruDataAutoBackup'),read('quizAppData')].find(x=>String(x.name||'').trim());
+      if(fallback){const raw=localStorage.getItem(KEY);const saved=raw&&current&&typeof current==='object'&&!Array.isArray(current);p=saved?{...fallback,...current,name:fallback.name,playerNo:current.playerNo||fallback.playerNo,site:current.site||fallback.site}:fallback;}
+      else if(String(r.name||'').trim())p={...current,name:r.name,playerNo:current.playerNo||r.playerNo,site:current.site||r.site};
+    }
+    if(!String(p.name||'').trim())return false;
+    const playerNo=p.playerNo||r.playerNo||'P-'+crypto.randomUUID().replace(/-/g,'').slice(0,12).toUpperCase();
+    const site=SITES.includes(p.site)?p.site:SITES.includes(r.site)?r.site:'四日市';
+    const name=String(p.name).trim().slice(0,20);
+    const same=r.playerNo===playerNo;
+    write(KEY,{...p,playerNo,name,site});
+    write(REG,{...(same?r:{}),playerNo,name,site,token:same&&r.token?r.token:secret(),confirmed:same&&r.confirmed===true,legacy:true,recoveryShown:true});
+    return true;
+  }
+  adoptExisting();
+  const valid=()=>{const p=read(KEY),r=read(REG);return !!p.name?.trim()&&SITES.includes(p.site)&&(r.confirmed===true||r.legacy===true)&&r.playerNo===p.playerNo&&r.name===p.name&&r.site===p.site;};
+  let migrating=null;
+  async function migrateExisting(){
+    const p=read(KEY),r=read(REG);if(!r.legacy||r.confirmed)return true;
+    if(!navigator.onLine)return false;
+    if(migrating)return migrating;
+    migrating=(async()=>{try{
+      const j=await rpc('skimaru_register_player',{p_player_no:p.playerNo,p_name:p.name,p_site:p.site,p_token:r.token});
+      if(j.state!=='active')return false;
+      // Preserve changes and all learning keys while the network request was pending.
+      const latest=read(REG);if(latest.playerNo!==p.playerNo||latest.token!==r.token)return false;
+      write(REG,{...latest,confirmed:true,registeredAt:latest.registeredAt||new Date().toISOString()});return true;
+    }catch(e){if(e.message.includes('registration_revoked')){clearRemovedPlayer();return false;}if(e.message.includes('registration_token_mismatch')){write(REG,{...read(REG),needsRecovery:true});}return false;}finally{migrating=null;}})();return migrating;
+  }
+  async function rpc(name,body){const c=window.SKIMARU_SUPABASE||{};if(!c.url||!c.publishableKey)throw Error("接続設定がありません。展開担当者へ連絡してください。");const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);try{const r=await nativeFetch(`${c.url}/rest/v1/rpc/${name}`,{method:"POST",headers:{apikey:c.publishableKey,"Content-Type":"application/json"},body:JSON.stringify(body),signal:controller.signal,cache:"no-store"});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.message||"通信に失敗しました");return j;}finally{clearTimeout(timer);}}
+  function clearRemovedPlayer(){for(const k of Object.keys(localStorage)){if(["skimaru-grade1-v16",KEY,"skimaruDataAutoBackup",REG,LEDGER,QUEUE,"skimaru-manager-inbox-v1","skimaru-study-time-v12","skimaruExamHistory_v1","skimaru-cloud-backup-v15"].includes(k)||/^skimaru(Early_|Practical|Coach)/.test(k)||k==="skimaru-coach-v1")localStorage.removeItem(k);}sessionStorage.setItem("skimaru-registration-notice","開発者が登録と成績を削除しました。利用を再開する場合は、新しく拠点と名前を登録してください。");location.reload();}
+  let checking=null;
+  async function checkRegistration(force=false){
+    if(!valid())return false;
+    const initial=read(REG);
+    if(initial.legacy&&!initial.confirmed){const migrated=await migrateExisting();if(!migrated){if(force)throw Error(read(REG).needsRecovery?'登録情報が一致しません。復旧コードで復元してください。':'オンラインで登録情報の引き継ぎが完了してから提出してください。');return true;}}
+    if(!navigator.onLine)return !force;
+    if(checking)return checking;
+    const p=read(KEY),r=read(REG);
+    checking=(async()=>{try{
+      const j=await rpc('skimaru_player_status',{p_player_no:p.playerNo,p_token:r.token});
+      if(j.state==='revoked'){clearRemovedPlayer();return false;}
+      if(j.state!=='active'){
+        if(r.legacy){write(REG,{...r,confirmed:false,needsRecovery:j.state==='invalid'});if(j.state==='missing'&&await migrateExisting())return true;if(force)throw Error('登録情報の引き継ぎが必要です。歯車から復旧コードで復元してください。');return true;}
+        r.confirmed=false;write(REG,r);register();return false;
+      }
+      return true;
+    }catch(e){if(force)throw e;return true;}finally{checking=null;}})();return checking;
+  }
+
+
+  if(!window.SKIMARU_ROLLOUT&&!document.querySelector('script[src*="rollout.js"]')){const help=document.createElement("script");help.src="./rollout.js?v=13";document.head.append(help);}
+  const style=document.createElement("style");style.textContent=`
+    .member-gate{position:fixed;inset:0;z-index:2000000;background:#172431dc;display:grid;place-items:center;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));overflow:auto}
+    .member-card{background:#fff;color:#172431;padding:26px;border-radius:20px;width:min(420px,100%);max-height:100%;overflow:auto;box-sizing:border-box}.member-card h2{margin:0 0 10px}.member-card p{font-size:14px;line-height:1.6}.member-card label{display:block;margin:18px 0 8px;font-weight:700}.member-card select,.member-card input{width:100%;box-sizing:border-box;font-size:16px;padding:13px;border:1px solid #98aaa2;border-radius:9px;background:white;color:#172431}.member-card button,.member-bar button{border:0;border-radius:9px;background:#176844;color:white;padding:12px 16px;font-weight:700;cursor:pointer}.member-card button{width:100%;margin-top:22px}.member-card .member-guide,.member-card .member-cancel{background:#edf3ef;color:#176844;margin-top:8px}.member-card button:disabled{opacity:.65}.member-error{color:#a32b20;font-size:14px}.member-bar{background:#f5faf7;border:1px solid #a6c3b5;border-radius:12px;padding:12px;margin:12px auto;width:min(880px,calc(100% - 24px));box-sizing:border-box;color:#172431;font-size:14px;line-height:1.5}.member-bar header{display:flex;justify-content:space-between;align-items:center;gap:10px}.member-bar header button{background:#e1ece5;color:#174831;padding:6px 10px}.member-alert{margin-top:10px;padding:12px;background:#fff1d6;border-radius:9px}.member-alert button{margin-top:8px}.member-alert[hidden],.member-bar[hidden],.hd-no[hidden]{display:none!important}
+  `;document.head.append(style);
+  function sync(){profile=read(KEY);window.dispatchEvent(new CustomEvent("skimaru-profile",{detail:profile}));refresh();}
+  const standalone=()=>navigator.standalone===true||['standalone','fullscreen','minimal-ui'].some(x=>matchMedia('(display-mode: '+x+')').matches);
+  function installGate(){
+    if(document.querySelector('.member-gate'))return;
+    const gate=document.createElement('div');gate.className='member-gate install-gate';gate.setAttribute('role','dialog');gate.setAttribute('aria-modal','true');gate.setAttribute('aria-labelledby','install-gate-title');
+    gate.innerHTML='<div class="member-card"><h2 id="install-gate-title">まず、ホーム画面に追加</h2><p>新しく始める方は、ホーム画面のアイコンから登録・学習してください。登録済みの方は今までどおり利用できます。</p><ol><li>下のボタンで追加方法を確認</li><li>ホーム画面に追加</li><li>追加した「スキマル保全士」のアイコンから開く</li></ol><button type="button" class="install-gate-help">ホーム画面に追加する</button><button type="button" class="install-gate-check">起動方法を確認</button><p class="member-error" role="status"></p></div>';
+    const frozen=[...document.body.children].filter(e=>!e.inert&&e.tagName!=='SCRIPT'&&e.tagName!=='STYLE');frozen.forEach(e=>e.inert=true);document.body.append(gate);
+    const proceed=()=>{if(!standalone()&&!valid()){gate.querySelector('.member-error').textContent='このブラウザでは開始できません。追加したホーム画面のアイコンから開いてください。';return;}frozen.forEach(e=>e.inert=false);gate.remove();if(!valid())register();};
+    gate.querySelector('.install-gate-help').onclick=()=>window.SKIMARU_ROLLOUT?.install();gate.querySelector('.install-gate-check').onclick=proceed;gate.querySelector('button').focus();
+    matchMedia('(display-mode: standalone)').addEventListener('change',e=>{if(e.matches&&gate.isConnected)proceed();},{once:true});
+  }
+  document.addEventListener('click',e=>{if(document.querySelector('.install-gate')&&!e.target.closest('.member-gate,.rollout-overlay')){e.preventDefault();e.stopImmediatePropagation();}},true);
+  function register(edit=false){
+    if(!edit&&!valid()&&!standalone()){installGate();return;}
+
+    if(!edit&&read(REG).legacy&&valid()){migrateExisting();return;}
+    if(document.querySelector(".member-gate"))return;
+    const p=read(KEY),notice=sessionStorage.getItem("skimaru-registration-notice")||"";sessionStorage.removeItem("skimaru-registration-notice");
+    const gate=document.createElement("div");gate.className="member-gate";gate.setAttribute("role","dialog");gate.setAttribute("aria-modal","true");gate.setAttribute("aria-labelledby","member-title");
+    gate.innerHTML='<form class="member-card"><h2 id="member-title">'+(edit?'登録情報の変更':'はじめに登録してください')+'</h2><p>拠点と名前を登録すると学科・実技を利用できます。初回登録時はインターネット接続が必要です。</p><label for="member-site">拠点</label><select id="member-site" required><option value="">拠点を選択</option></select><label for="member-name">名前</label><input id="member-name" maxlength="20" autocomplete="name" required placeholder="名前を入力"><div class="member-error" role="alert"></div><button type="submit">'+(edit?'変更を保存':'登録してはじめる')+'</button>'+(edit?'<button type="button" class="member-cancel">キャンセル</button>':'')+'<button type="button" class="member-guide">使い方を見る</button></form>';
+    if(!edit){const choice=document.createElement('p');choice.textContent='プレイヤーとして登録します。';const manager=document.createElement('a');manager.href='./viewer.html';manager.textContent='マネージャーとして登録する →';manager.onclick=()=>localStorage.setItem('skimaru-role','manager');choice.append(document.createElement('br'),manager);gate.querySelector('h2').after(choice);}
+    SITES.forEach(site=>gate.querySelector("select").add(new Option(site,site)));gate.querySelector("select").value=p.site||"";gate.querySelector("input").value=p.name||"";gate.querySelector(".member-error").textContent=notice;
+    const frozen=[...document.body.children].filter(e=>!e.inert&&e.tagName!=="SCRIPT"&&e.tagName!=="STYLE");frozen.forEach(e=>e.inert=true);document.body.append(gate);
+    function close(){frozen.forEach(e=>e.inert=false);gate.remove();}
+    gate.querySelector("form").onsubmit=async e=>{e.preventDefault();const name=gate.querySelector("input").value.trim(),site=gate.querySelector("select").value,error=gate.querySelector(".member-error"),button=gate.querySelector('[type="submit"]');if(!name||!SITES.includes(site)){error.textContent="拠点を選び、名前を入力してください。";return;}button.disabled=true;button.textContent="登録中…";error.textContent="";
+      try{const profile=read(KEY),meta=read(REG);const playerNo=profile.playerNo||"P-"+crypto.randomUUID().replace(/-/g,"").slice(0,12).toUpperCase(),token=meta.playerNo===playerNo&&meta.token?meta.token:secret();if(!meta.confirmed||meta.playerNo!==playerNo){write(REG,{playerNo,token,confirmed:false,name:profile.name||"",site:profile.site||""});write(KEY,{...profile,playerNo});}const result=await rpc("skimaru_register_player",{p_player_no:playerNo,p_name:name,p_site:site,p_token:token});if(result.state!=="active")throw Error("登録できませんでした");profile.name=name;profile.site=site;profile.playerNo=playerNo;write(KEY,profile);write(REG,{...meta,playerNo,token,name,site,confirmed:true,registeredAt:new Date().toISOString()});close();sync();window.dispatchEvent(new CustomEvent("skimaru-registered",{detail:{first:!edit}}));if(!edit)window.SKIMARU_ROLLOUT?.welcome();if(typeof window.retryPendingSubmissions==="function")window.retryPendingSubmissions();else retry();}
+      catch(e){error.textContent=e.message.includes("registration_revoked")?"この登録は削除されています。ページを再読み込みしてください。":e.message.includes("registration_token_mismatch")?"この端末の登録情報が一致しません。「以前の登録・学習データを復元」から復旧コードで復元してください。":"登録できませんでした。通信を確認してもう一度お試しください。";button.disabled=false;button.textContent=edit?"変更を保存":"登録してはじめる";}
+    };
+    if(edit){const b=document.createElement('button');b.type='button';b.className='member-guide';b.textContent='復旧コードを確認・控える';b.onclick=()=>window.SKIMARU_BACKUP.showCode();gate.querySelector('form').append(b);}
+    gate.querySelector(".member-cancel")?.addEventListener("click",close);gate.querySelector(".member-guide").onclick=()=>window.SKIMARU_ROLLOUT?.guide("player");
+    gate.addEventListener("keydown",e=>{if(e.key!=="Tab")return;const els=[...gate.querySelectorAll("select,input,button")],first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});gate.querySelector("select").focus();
+  }
+  const nativeFetch=window.fetch.bind(window);
+  window.fetch=async(input,init)=>{
+    const url=typeof input==="string"?input:input?.url;
+    let row;
+    if(init?.method==="POST"&&url?.includes("/rest/v1/")&&!url.includes("/rpc/")){
+      try{row=JSON.parse(init.body);}catch{}
+      if(row?.raw_result){if(!valid()){register();throw Error("registration_required");}if(!(await checkRegistration(true)))throw Error("registration_required");if(row.player_no!==read(KEY).playerNo)throw Error("registration_player_mismatch");row.exam_version="13.0";row.user_name=read(KEY).name;row.raw_result.name=read(KEY).name;row.raw_result.site=read(KEY).site;if(row.raw_result.examType!=="practical"){row.raw_result.academicSnapshot??=Number(row.raw_result.total)||0;row.raw_result.progressEpoch??=0;}init={...init,body:JSON.stringify(row)};}
+    }
+    const res=row?.raw_result?await window.SKIMARU_BACKUP.submit(row):await nativeFetch(input,init);
+    if(res.ok&&row?.raw_result){const r=row.raw_result,l=read(LEDGER);if(r.examType==="practical"){l.practical=[...new Set([...(l.practical||[]),...(r.historyIds||[])])];}else if((r.progressEpoch||0)===(read(KEY).progressEpoch||0)){l.academic=Math.max(Number(l.academic)||0,Number(r.academicSnapshot??r.total)||0);l.academicHistory=[...new Set([...(l.academicHistory||[]),...(r.historyIds||[])])];}write(LEDGER,l);refresh();}
+    return res;
+  };
+  function outstanding(){const p=read(KEY),l=read(LEDGER),q=read(QUEUE,[]);const academic=Math.max(0,(Number(p.total)||0)-Math.max(Number(l.academic)||0,...q.filter(r=>r.examType!=="practical"&&(r.progressEpoch||0)===(p.progressEpoch||0)).map(r=>Number(r.academicSnapshot??r.total)||0)));const covered=new Set([...(l.practical||[]),...q.flatMap(r=>r.historyIds||[])]);const hist=read("skimaruExamHistory_v1",[]).filter(r=>r.kind==="jitugi"&&r.completedAt&&!covered.has(r.id));const aCovered=new Set([...(l.academicHistory||[]),...q.filter(r=>r.examType!=="practical").flatMap(r=>r.historyIds||[])]),academicHist=read("skimaruExamHistory_v1",[]).filter(r=>r.kind==="gakka"&&r.completedAt&&!aCovered.has(r.id));return {academic,academicHist,hist,pending:q.length};}
+  let bar;
+  function setText(el,value){if(!el)return;if(el.textContent!==value)el.textContent=value;}
+  function refresh(){if(!bar)return;const p=read(KEY);const settings=document.getElementById("st-name");if(settings)settings.textContent=`${p.site||"未登録"} ／ ${p.name||"名前未登録"}`;setText(bar.querySelector(".member-identity"),`${p.site||"未登録"} ／ ${p.name||"名前未登録"}`);const {academic,academicHist,hist,pending}=outstanding(),box=bar.querySelector(".member-alert");box.hidden=!academic&&!academicHist.length&&!hist.length&&!pending;bar.hidden=box.hidden;const parts=[];if(academic)parts.push(`学科 ${academic}問分`);if(academicHist.length)parts.push(`学科過去問 ${academicHist.length}回分`);if(hist.length)parts.push(`実技 ${hist.length}回分`);setText(box.querySelector("span"),parts.length?`未提出の成績があります（${parts.join("・")}）。成績を提出してください。${pending?` 送信待ち ${pending}件。オンラインで再送します。`:""}`:`送信待ち ${pending}件。通信が戻ると再送します。`);box.querySelector("button").hidden=!parts.length;}
+  async function submit(){if(busy)return;if(!valid()){register();return;}const {academic,academicHist,hist}=outstanding();if(academic&&typeof window.showSend==="function"){window.showSend();return;}if(academic&&!hist.length&&!academicHist.length){location.href="./player.html#submit";return;}const examType=hist.length?"practical":"academic",history=hist.length?hist:academicHist;if(!history.length)return;busy=true;const btn=bar.querySelector(".member-alert button");btn.disabled=true;btn.textContent="提出中…";
+    const p=read(KEY),sentAt=new Date().toISOString(),total=history.reduce((s,r)=>s+r.total,0),correct=history.reduce((s,r)=>s+r.correct,0);const record={id:crypto.randomUUID(),playerNo:p.playerNo,name:p.name,site:p.site,examType,total,correct,academicSnapshot:0,progressEpoch:p.progressEpoch||0,historyIds:history.map(r=>r.id),pastYearHistory:history,sentAt,cats:{},alerts:[],studyMetricsV12:window.SKIMARU_TIME?.snapshot(),elapsedSeconds:history.reduce((s,r)=>s+(Number(r.elapsedSeconds)||0),0)};
+    const c=window.SKIMARU_SUPABASE||{},row={submission_id:record.id,player_no:p.playerNo,user_name:p.name,score:correct,total_questions:total,correct_count:correct,correct_rate:Math.round(correct/total*100),elapsed_seconds:Number(record.elapsedSeconds)||0,exam_version:"13.0",submitted_at:sentAt,streak:0,mastered_count:0,wrong_count:total-correct,category_results:{},weak_questions:[],raw_result:record};
+    try{if(!c.url)throw Error();const r=await fetch(`${c.url}/rest/v1/${encodeURIComponent(c.table||"exam_results")}`,{method:"POST",headers:{apikey:c.publishableKey,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(row)});if(!r.ok)throw Error();alert((examType==="practical"?"実技":"学科過去問")+"の成績を提出しました。");}catch{try{const q=read(QUEUE,[]);q.push(record);write(QUEUE,q);alert("通信できないため成績を保存しました。オンラインで再送します。");}catch{alert("保存できませんでした。通信が戻ってからもう一度提出してください。");}}finally{busy=false;btn.disabled=false;btn.textContent="成績提出へ";refresh();}
+  }
+  async function retry(){if(!valid()||busy||typeof window.retryPendingSubmissions==="function")return;const q=read(QUEUE,[]),c=window.SKIMARU_SUPABASE||{};if(!q.length||!c.url)return;busy=true;for(const record of q){try{const t=record.total||0,n=record.correct||0,r=await fetch(`${c.url}/rest/v1/${encodeURIComponent(c.table||"exam_results")}`,{method:"POST",headers:{apikey:c.publishableKey,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({submission_id:record.id,player_no:record.playerNo,user_name:record.name,score:n,total_questions:t,correct_count:n,correct_rate:t?Math.round(n/t*100):0,elapsed_seconds:Number(record.elapsedSeconds)||0,exam_version:"13.0",submitted_at:record.sentAt,streak:record.streak||0,mastered_count:record.mastered||0,wrong_count:record.wrongCount||0,category_results:record.cats||{},weak_questions:record.alerts||[],raw_result:record})});if(r.ok)write(QUEUE,read(QUEUE,[]).filter(x=>x.id!==record.id));}catch{break;}}busy=false;refresh();}
+  window.SKIMARU_MEMBER={sites:SITES,edit:()=>register(true),refresh,outstanding,valid,checkRegistration,backupRegistration:()=>read(REG),restoreRegistration:r=>{if(r?.playerNo&&r?.token)write(REG,r);},startRegistration:()=>register()};
+  function boot(){bar=document.createElement("div");bar.className="member-bar";bar.innerHTML='<div class="member-alert" role="status" aria-live="polite" hidden><span></span><br><button type="button">成績提出へ</button></div>';const home=document.querySelector("#sc-home .pad,#pt-home .pad,.wrap,main")||document.body;home.prepend(bar);bar.querySelector(".member-alert button").onclick=submit;if(!document.querySelector("#sc-home")&&!document.body.classList.contains("grade1-app")){const head=document.querySelector(".early-top,.practical-hd,header");if(head){const gear=document.createElement("button");gear.type="button";gear.className="member-gear";gear.textContent="⚙";gear.setAttribute("aria-label","登録設定");gear.onclick=()=>register(true);head.append(gear);}}sync();if(!valid())register();else{checkRegistration().catch(()=>{});}setInterval(()=>{refresh();if(!valid())register();},2000);setInterval(()=>checkRegistration(),60000);if(valid())retry();if(location.hash==="#submit"&&valid()&&typeof window.showSend==="function")window.showSend();}
+  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",boot):boot();window.addEventListener("online",async()=>{if(await checkRegistration())retry();});document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkRegistration();});window.addEventListener("storage",()=>{sync();if(!valid())register();});
+})();
