@@ -63,6 +63,14 @@
   const items=[...menu.children].filter(e=>e.classList.contains('mi'));
   items.sort((a,b)=>rank.indexOf(a.querySelector('.mi-n')?.textContent.replace(/\s/g,''))-rank.indexOf(b.querySelector('.mi-n')?.textContent.replace(/\s/g,'')));
   items.forEach((e,i)=>{if(menu.children[i]!==e)menu.insertBefore(e,menu.children[i]||null);const label=e.querySelector('.mi-n');if(label?.querySelector('br'))label.textContent=label.textContent;const badge=e.querySelector('.mi-i');const number=String(i+1).padStart(2,'0');if(badge&&badge.textContent!==number)badge.textContent=number;});
+  let footer=host.querySelector('.learning-footer');
+  if(!footer){footer=document.createElement('footer');footer.className='learning-footer';const grade1=document.body.classList.contains('grade1-app');footer.innerHTML='<a class="learning-grade-switch" href="'+(grade1?'./player.html':'./grade1.html')+'">'+(grade1?'2級':'1級')+'へ切り替える →</a><details class="learning-contact"><summary>お知らせ・お問い合わせ</summary><div data-support-host></div></details>';host.append(footer);}
+  const contact=footer.querySelector('[data-support-host]');
+  host.querySelectorAll('.support-launchers').forEach(nav=>{if(nav.parentElement!==contact)contact.append(nav);});
+  host.querySelectorAll('.rollout-tools').forEach(e=>e.remove());
+  host.querySelectorAll('a').forEach(a=>{if(a!==footer.querySelector('a')&&/切り替え|マネージャーとして/.test(a.textContent))a.remove();});
+  host.querySelectorAll(':scope > p.note').forEach(p=>{if(/課題・問題番号で移動/.test(p.textContent))p.remove();});
+  if(host.lastElementChild!==footer)host.append(footer);
   const leading=[host.querySelector('.learning-mode-switch'),host.querySelector('#coach-dashboard,#coach-practical-summary')||host.querySelector('.learning-dashboard'),quick,menu].filter(Boolean);
   leading.forEach((e,i)=>{if(host.children[i]!==e)host.insertBefore(e,host.children[i]||null);});
  }

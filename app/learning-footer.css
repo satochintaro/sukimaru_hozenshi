@@ -1,0 +1,10 @@
+.learning-footer{display:flex;flex-direction:column;gap:16px;margin:24px 0 0;padding:20px 0 max(24px,env(safe-area-inset-bottom));border-top:1px solid #dbe2df;width:100%;min-width:0}
+.learning-grade-switch{display:block;text-align:center;font-size:1rem;color:inherit;padding:12px;overflow-wrap:anywhere}
+.learning-contact{display:block!important;background:white;border:1px solid #dbe2df;border-radius:18px;overflow:hidden}
+.learning-contact>summary{padding:18px;font-size:1rem;font-weight:700;cursor:pointer;overflow-wrap:anywhere}
+.learning-contact .support-launchers{display:grid;grid-template-columns:1fr;margin:0;padding:0 14px 14px;gap:8px}
+.learning-contact .support-launchers button{width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;font-size:1rem;padding:14px}
+.learning-settings-help{display:block!important;margin:20px 0;padding:14px;border:1px solid #dbe2df;border-radius:18px;background:white}
+.learning-settings-help>summary{padding:6px;font-weight:700;cursor:pointer}
+.learning-settings-help button{display:block;width:100%;white-space:normal;overflow-wrap:anywhere;margin-top:10px;padding:14px;border:1px solid #dbe2df;border-radius:12px;background:white;color:inherit;font:inherit}
+.unified-home>.rollout-tools,.unified-home>.sts{display:none!important}
