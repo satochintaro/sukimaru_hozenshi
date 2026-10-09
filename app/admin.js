@@ -114,3 +114,5 @@ document.querySelectorAll("[data-analysis-mode]").forEach(button=>button.addEven
 checkAuth();setInterval(()=>{if(authenticated)loadRows(true);},15000);
 
 ["site-filter","manager-grade"].forEach(id=>document.getElementById(id)?.addEventListener("change",()=>{closeDetail();buildGroups();setConnection();render();}));
+
+window.SKIMARU_SUPPORT_DEVELOPER=()=>authenticated&&session?.access_token&&(session.expires_at_ms||0)>Date.now()?session.access_token:null;
