@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261008-v16-25-readable-questions";
+const CACHE="skimaru-live-20261009-v16-26-support-radar";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
