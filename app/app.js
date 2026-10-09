@@ -570,6 +570,8 @@ function showAnalysis(){
 }
 function radar(){
   const s=document.getElementById("radar");
+  if(window.SKIMARU_RADAR){const cats=Object.fromEntries(SUBJ.map(name=>{let total=0,correct=0;QUESTIONS.forEach(q=>{if(q.category===name&&U.stats[q.id]){const v=U.stats[q.id];correct+=Number(v.c)||0;total+=(Number(v.c)||0)+(Number(v.w)||0);}});return [name,{total,correct}];}));const host=s?.parentElement||document.querySelector("#sc-an .radar-card")?.parentElement;if(!host)return;host.innerHTML=window.SKIMARU_RADAR.html(cats,"科目バランス");host.style.display="block";return;}
+
   const cx=140,cy=120,R=80,n=5;
   const SH={"生産の基本":"生産の基本","設備の日常保全":"日常保全","効率化とロス":"効率化","改善・解析":"改善解析","設備保全の基礎":"保全基礎"};
   let h="";

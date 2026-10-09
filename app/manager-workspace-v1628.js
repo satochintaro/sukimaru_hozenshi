@@ -1,0 +1,53 @@
+"use strict";
+(()=>{
+ const pad=document.querySelector('.manager-pad');if(!pad)return;
+ const developer=!document.body.classList.contains('viewer-page'),report=document.getElementById(developer?'ad-rep':'viewer-report');
+ document.body.classList.add('workspace-v28');
+ const menu=developer?[['overview','概要'],['people','登録者'],['analysis','分析'],['contact','連絡'],['settings','設定']]:[['overview','概要'],['people','プレイヤー'],['comparison','拠点比較'],['contact','連絡']];
+ let view='overview',query='',page=0,analysisPart='summary',scheduled=false;
+ const nav=document.createElement('nav');nav.className='workspace-nav';nav.style.gridTemplateColumns=`repeat(${menu.length},minmax(0,1fr))`;nav.setAttribute('aria-label',developer?'開発者メニュー':'管理者メニュー');
+ for(const [key,name] of menu){const b=document.createElement('button');b.type='button';b.dataset.workspace=key;b.textContent=name;b.onclick=()=>navigate(key);nav.append(b);}
+ const heading=document.createElement('div');heading.className='workspace-heading';heading.innerHTML='<div><small></small><h1></h1></div><span class="workspace-context"></span>';
+ const contact=document.createElement('section');contact.className='workspace-contact';contact.innerHTML='<h2>連絡・お知らせ</h2>';
+ const overview=document.createElement('section');overview.className='workspace-overview';overview.innerHTML='<div class="workspace-intro"><small>DEVELOPER CONSOLE</small><h2>運用状況を、すぐ確認。</h2><p>登録状況と連絡を確認し、必要な設定へ。</p></div><div class="workspace-shortcuts"></div>';
+ const shortcuts=overview.querySelector('.workspace-shortcuts');for(const [key,title,description] of [['people','登録者を確認','拠点・名前・登録日で探す'],['contact','不具合・連絡','届いた報告とお知らせ'],['analysis','学習状況を確認','全体と個人の分析'],['settings','運用設定','管理者アカウント・試験日']]){const b=document.createElement('button');b.type='button';b.innerHTML='<strong></strong><span></span><i aria-hidden="true">→</i>';b.querySelector('strong').textContent=title;b.querySelector('span').textContent=description;b.onclick=()=>navigate(key);shortcuts.append(b);}
+ pad.prepend(nav,heading);pad.append(overview,contact);
+ const analysisNav=document.createElement('nav');analysisNav.className='workspace-analysis-nav';analysisNav.setAttribute('aria-label','分析の表示');for(const [key,label] of [['summary','要点'],['balance','科目・比較'],['history','履歴・要注意問題']]){const b=document.createElement('button');b.type='button';b.dataset.analysisPart=key;b.textContent=label;b.onclick=()=>{analysisPart=key;sync();};analysisNav.append(b);}if(developer)report.before(analysisNav);
+ const title=document.querySelector('.manager-header .hd-ttl'),subtitle=document.querySelector('.manager-header .hd-sub');if(title)title.textContent=developer?'開発者コンソール':'マネージャー';if(subtitle)subtitle.textContent='スキマル保全士';
+ function setText(el,value){if(el.textContent!==value)el.textContent=value;}
+ function hide(el,yes){if(el)el.classList.toggle('workspace-hidden',yes);}
+ function navigate(next){view=next;page=0;sync();nav.querySelector(`[data-workspace="${next}"]`)?.focus({preventScroll:true});pad.scrollIntoView({block:'start'});}
+ function directory(){if(developer)return;const section=[...report.children].find(e=>e.querySelector('[data-viewer-group]'));if(!section)return;
+  const table=section.querySelector('.player-table-wrap');if(!table||section.querySelector('.workspace-people'))return;
+  const rows=[...table.querySelectorAll('tbody tr')],headers=[...table.querySelectorAll('th')].map(e=>e.textContent);
+  const list=document.createElement('div');list.className='workspace-people';list.innerHTML='<label class="workspace-search">名前・No.で検索<input type="search" placeholder="名前・プレイヤーNo." maxlength="80"></label><p class="workspace-result"></p><div class="workspace-person-list"></div><div class="workspace-pages"><button type="button" data-prev>前へ</button><span></span><button type="button" data-next>次へ</button></div>';
+  table.before(list);table.classList.add('workspace-hidden');section.querySelector('.manager-section-head p')?.remove();
+  const input=list.querySelector('input');input.value=query;
+  function draw(){const filtered=rows.filter(r=>r.textContent.toLocaleLowerCase().includes(query.toLocaleLowerCase())),pages=Math.max(1,Math.ceil(filtered.length/6));page=Math.min(page,pages-1);list.querySelector('.workspace-result').textContent=filtered.length+'人 ／ 名前をタップして詳細';const host=list.querySelector('.workspace-person-list');host.replaceChildren();for(const row of filtered.slice(page*6,page*6+6)){const cells=[...row.cells],b=document.createElement('button');b.type='button';b.className='workspace-person';const name=document.createElement('strong'),meta=document.createElement('small'),values=document.createElement('div'),arrow=document.createElement('i');name.textContent=cells[2]?.textContent||'名前なし';meta.textContent=(cells[0]?.textContent||'')+' ／ '+(cells[1]?.textContent||'');arrow.textContent='›';arrow.setAttribute('aria-hidden','true');values.className='workspace-person-values';for(let i=3;i<Math.min(cells.length,6);i++){const span=document.createElement('span');span.textContent=headers[i]+' '+cells[i].textContent;values.append(span);}b.append(name,meta,values,arrow);b.onclick=()=>row.click();host.append(b);}if(!filtered.length)host.textContent='該当するプレイヤーはいません。';list.querySelector('.workspace-pages span').textContent=(page+1)+' / '+pages;list.querySelector('[data-prev]').disabled=page===0;list.querySelector('[data-next]').disabled=page===pages-1;}
+  input.oninput=()=>{query=input.value;page=0;draw();};list.querySelector('[data-prev]').onclick=()=>{page--;draw();};list.querySelector('[data-next]').onclick=()=>{page++;draw();};draw();
+ }
+ function foldTables(){report.querySelectorAll('.comparison .player-table-wrap').forEach((table,i)=>{if(table.parentElement.tagName==='DETAILS')return;const d=document.createElement('details'),s=document.createElement('summary');d.className='workspace-details';s.textContent=i?'拠点別の数値':'個人別の数値';table.before(d);d.append(s,table);});}
+ function refineComparison(root){if(!root||root.querySelector('.workspace-details'))return;root.dataset.workspaceReady='true';
+  const details=document.createElement('details');details.className='workspace-details';details.innerHTML='<summary>拠点ごとの数値・集計の説明</summary>';const table=root.querySelector('.comparison-table-wrap');if(table){let previous=table.previousElementSibling;if(previous?.tagName==='H3')details.append(previous);table.before(details);details.append(table);}root.querySelectorAll('.comparison-note').forEach(p=>{if(!p.classList.contains('comparison-updated'))details.append(p);});
+  const legend=root.querySelector('.comparison-legend');if(legend){const d=document.createElement('details');d.className='workspace-details';d.innerHTML='<summary>推移グラフに表示する拠点</summary>';legend.before(d);d.append(legend);}
+ }
+ function sync(){
+  nav.querySelectorAll('button').forEach(b=>{const active=b.dataset.workspace===view;b.setAttribute('aria-current',active?'page':'false');});
+  setText(heading.querySelector('small'),developer?'DEVELOPER':'MANAGER');setText(heading.querySelector('h1'),menu.find(x=>x[0]===view)[1]);setText(heading.querySelector('.workspace-context'),developer&&['overview','contact','settings'].includes(view)?'運用管理':(document.getElementById('site-filter')?.selectedOptions[0]?.textContent||'全拠点')+(view==='people'&&developer?'':' · '+(document.getElementById('manager-grade')?.value||2)+'級'));
+  hide(overview,!developer||view!=='overview');hide(contact,view!=='contact');
+  const support=pad.querySelector('.support-launchers');if(support&&support.parentElement!==contact)contact.append(support);
+  hide(document.getElementById('registered-players'),!developer||view!=='people');
+  const filters=pad.querySelector('.site-filters');hide(filters,['contact','settings'].includes(view)||(developer&&view!=='analysis'));if(!developer)hide(document.getElementById('site-filter')?.closest('label'),!!document.getElementById('site-filter')?.disabled);filters?.querySelectorAll('small').forEach(e=>hide(e,true));hide(document.getElementById('manager-grade')?.closest('label'),developer&&view==='people');
+  const analysis=developer?view==='analysis':['overview','people'].includes(view);pad.querySelectorAll('.manager-mode-tabs,.manager-scope-tabs').forEach(e=>hide(e,!analysis));
+  hide(pad.querySelector('.manager-actions'),!developer||view!=='settings');
+  hide(report,developer?view!=='analysis':!['overview','people'].includes(view));
+  hide(pad.querySelector('.manager-connection'),['contact','settings'].includes(view)||(developer&&view==='overview'));if(developer&&view==='overview'){const count=document.querySelector('.directory-sites button[data-directory-site=""]')?.textContent.match(/(\d+)人/);if(count)setText(shortcuts.querySelector('button span'),'全拠点 '+count[1]+'人 · 拠点・登録日で検索');}
+  directory();foldTables();const comparison=document.getElementById('site-comparison');refineComparison(comparison);hide(comparison,developer||view!=='comparison');
+  hide(analysisNav,!developer||view!=='analysis');analysisNav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.analysisPart===analysisPart)));
+  if(developer){let visibleCount=0;for(const el of report.children){const label=el.querySelector('summary')?.textContent||'';const part=el.classList.contains('comparison')||/グラフ/.test(label)?'balance':el.tagName==='DETAILS'?'history':'summary';const always=el.classList.contains('mgr-player-picker')||el.classList.contains('manager-empty');const show=always||part===analysisPart;hide(el,!show);if(show)visibleCount++;}let empty=report.querySelector(':scope > .workspace-analysis-empty');if(empty)hide(empty,visibleCount>1);if(!visibleCount){if(!empty){empty=document.createElement('p');empty.className='workspace-analysis-empty';empty.textContent='この条件のデータはまだありません。';report.append(empty);}hide(empty,false);}}
+  if(!developer){for(const el of report.children){const isStats=el.classList.contains('manager-stat-grid'),isComparison=el.classList.contains('comparison'),isPeople=!!el.querySelector('[data-viewer-group]'),empty=el.classList.contains('manager-empty');hide(el,view==='overview'?!(isStats||isComparison||empty):!(isPeople||empty));}report.querySelectorAll('.comparison .workspace-details,.comparison > h3,.comparison > .manager-empty-small,.comparison #metric-sort').forEach(e=>hide(e,true));report.querySelector('#metric-sort')?.closest('label')?.classList.add('workspace-hidden');}
+ }
+ new MutationObserver(()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;sync();});}}).observe(pad,{childList:true,subtree:true});
+ document.getElementById('site-filter')?.addEventListener('change',()=>{page=0;sync();});document.getElementById('manager-grade')?.addEventListener('change',()=>{page=0;sync();});
+ sync();
+})();
