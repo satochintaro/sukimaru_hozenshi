@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261009-v16-28-manager-workspace";
+const CACHE="skimaru-live-20261009-v16-29-analysis-radar";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
