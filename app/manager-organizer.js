@@ -84,11 +84,11 @@
     const improved=groups.filter(g=>g.changePrev>0).length;
 
     let h=`<div class="mgr-page-head"><div><span>OVERALL</span><h2>${label}・全体分析</h2><p>全員の傾向だけを表示します。個人の内容は「個人別分析」に分離しました。</p></div></div>`;
-    h+=`<div class="manager-stat-grid mgr-summary-grid">${stat("対象",groups.length+"人")}${stat("最新平均",A.avg+"%")}${stat("提出履歴",visibleRows().length+"件")}${stat("前回より成長",improved+"人")}</div>`;
+    h+=`<div class="manager-stat-grid mgr-summary-grid">${stat("対象",groups.length+"人")}${stat("最新平均",A.avg+"%")}${stat("提出履歴",visibleRows().filter(x=>!x.raw?.autoSynced).length+"件")}${stat("前回より成長",improved+"人")}</div>`;
 
     h+=`<div class="mgr-focus-grid">
       <section class="manager-section mgr-focus weak-focus">
-        <div class="mgr-section-title"><span>📉</span><div><h2>全体の苦手分野</h2><p>最新提出を集計した優先順位</p></div></div>
+        <div class="mgr-section-title"><span>📉</span><div><h2>全体の苦手分野</h2><p>最新成績を集計した優先順位</p></div></div>
         ${A.catData.filter(x=>x.sample>0).sort((a,b)=>a.value-b.value).slice(0,5).map(x=>simpleBar(x.label,x.value,`${x.sample}回答`)).join("")||'<p class="manager-empty-small">まだ分析できる回答がありません。</p>'}
       </section>
       <section class="manager-section mgr-focus ai-focus ${advice.tone}">
@@ -133,7 +133,7 @@
     const advice=overallAdvice(weak?.theme||"共通テーマ",weak?.rate??null,"combined",weak?.t||0);
 
     let h=`<div class="mgr-page-head"><div><span>OVERALL</span><h2>学科＋実技・全体分析</h2><p>学科と実技を共通テーマでまとめて、全体教育だけを表示します。</p></div></div>`;
-    h+=`<div class="manager-stat-grid mgr-summary-grid">${stat("対象",people.length+"人")}${stat("両方提出",both+"人")}${stat("学科平均",aAvg+"%")}${stat("実技平均",pAvg+"%")}</div>`;
+    h+=`<div class="manager-stat-grid mgr-summary-grid">${stat("対象",people.length+"人")}${stat("両方の記録",both+"人")}${stat("学科平均",aAvg+"%")}${stat("実技平均",pAvg+"%")}</div>`;
     h+=`<div class="mgr-focus-grid">
       <section class="manager-section mgr-focus weak-focus">
         <div class="mgr-section-title"><span>🎯</span><div><h2>全体の共通弱点</h2><p>学科＋実技を同じテーマで集計</p></div></div>
@@ -192,7 +192,7 @@
     if((row.alerts||[]).length){
       h+=`<details class="manager-section mgr-details"><summary>この人の要注意問題 ${row.alerts.length}件</summary><div class="weak-list">${row.alerts.slice(0,10).map((x,i)=>`<div class="weak-card"><span class="weak-rank">${i+1}</span><div><b>${safeEsc(x.text||`問題 ${x.id||""}`)}</b><p>${safeEsc(x.cat||"")}</p></div></div>`).join("")}</div></details>`;
     }
-    h+=`<details class="manager-section mgr-details"><summary>提出履歴 ${hist.length}回を見る</summary><div class="history-list">${[...hist].reverse().map(r=>`<div class="history-item"><div><b>${fmtDate(r.receivedAt||r.sentAt)}</b><span>${r.correct}/${r.total}${unit}正解</span></div><strong>${r.rate}%</strong></div>`).join("")}</div></details>`;
+    h+=`<details class="manager-section mgr-details"><summary>完了報告履歴 ${hist.filter(x=>!x.raw?.autoSynced).length}回・最新同期を見る</summary><div class="history-list">${[...hist].reverse().map(r=>`<div class="history-item"><div><b>${r.raw?.autoSynced?"自動同期":"完了報告"} ／ ${fmtDate(r.receivedAt||r.sentAt)}</b><span>${r.correct}/${r.total}${unit}正解</span></div><strong>${r.rate}%</strong></div>`).join("")}</div></details>`;
     return h;
   }
 
@@ -240,7 +240,7 @@
     }else{
       html=managerExamMode==="combined"?renderIndividualCombined():renderIndividualSingle(managerExamMode);
     }
-    B.innerHTML=(managerScope==="overall"?window.SKIMARU_METRICS.html(peopleForMode(),managerExamMode):"")+html;window.SKIMARU_METRICS.bind(B,renderManagerOrganized,key=>{selectedPlayerKey=key;managerScope="person";renderManagerOrganized();});
+    B.innerHTML=(window.SKIMARU_PROGRESS_VIEW?.html()||"")+(managerScope==="overall"?window.SKIMARU_METRICS.html(peopleForMode(),managerExamMode):"")+html;window.SKIMARU_METRICS.bind(B,renderManagerOrganized,key=>{selectedPlayerKey=key;managerScope="person";renderManagerOrganized();});
     bindReport();
     updateTopTabs();
   }

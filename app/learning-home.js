@@ -53,7 +53,7 @@
   if(!intro||!menu)return;
   const practical=menu.classList.contains('practical-tools-menu');
   if(practical){const p=intro.querySelector('p');if(p&&p.textContent!=='全課題でも、課題ごとでも学習できます。')p.textContent='全課題でも、課題ごとでも学習できます。';}
-  const rank=['科目別演習','年度別過去問','復習モード','重点マーク','学習分析','成績提出'];
+  const rank=['科目別演習','年度別過去問','復習モード','重点マーク','学習分析','成績報告'];
   const action=name=>document.body.classList.contains('grade1-app')?window.SKIMARU_HOME_ACTION?.(name):practical?window.SKIMARU_PRACTICAL_HOME?.(name):window.startQuick?.();
   if(practical)for(const [name,label] of [['subjects','科目別演習'],['years','年度別過去問']]){
    if(!menu.querySelector('[data-home-action="'+name+'"]')){const b=document.createElement('button');b.className='mi';b.dataset.homeAction=name;b.innerHTML='<span class="mi-i"></span><span class="mi-n">'+label+'</span>';b.onclick=()=>action(name);menu.append(b);}

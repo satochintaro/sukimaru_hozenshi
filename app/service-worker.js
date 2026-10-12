@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261013-v16-32-advice-follow";
+const CACHE="skimaru-live-20261013-v16-33-auto-progress";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

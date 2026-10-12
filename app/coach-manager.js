@@ -15,8 +15,8 @@
   }
   async function getRawRows(){
     const t=await token();
-    const endpoint=`${CLOUD.url}/rest/v1/${encodeURIComponent(CLOUD.table||"exam_results")}?select=*&order=created_at.desc&limit=5000`;
-    const r=await fetch(endpoint,{headers:{apikey:CLOUD.publishableKey,Authorization:`Bearer ${t}`},cache:"no-store"});
+    const endpoint=`${CLOUD.url}/rest/v1/rpc/skimaru_developer_progress_rows`;
+    const r=await fetch(endpoint,{method:'POST',body:'{}',headers:{apikey:CLOUD.publishableKey,Authorization:`Bearer ${t}`},cache:"no-store"});
     if(!r.ok)throw new Error("提出データを取得できません");
     return await r.json();
   }

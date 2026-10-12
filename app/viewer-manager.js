@@ -105,7 +105,7 @@
   }
 
   async function logout(){
-    ++loginRevision;const token=viewerSession?.token;closeDetail();saveSession(null);document.getElementById('viewer-view-site').value="";clearPassword();rows=[];groups=[];window.SKIMARU_COMPARISON?.clear();render();setConnection(false,'拠点を選択してください');nextEvent='switch';showLogin();
+    ++loginRevision;const token=viewerSession?.token;closeDetail();saveSession(null);document.getElementById('viewer-view-site').value="";clearPassword();rows=[];groups=[];window.SKIMARU_PROGRESS_VIEW?.clear();window.SKIMARU_COMPARISON?.clear();render();setConnection(false,'拠点を選択してください');nextEvent='switch';showLogin();
     if(token){try{await rpc("skimaru_manager_logout",{p_token:token});}catch(e){}}
   }
 
@@ -117,7 +117,7 @@
       const j=await rpc("skimaru_manager_rows_all",{p_token:token});
       if(viewerSession?.token!==token)return;
       if(!Array.isArray(j))throw new Error();
-      rows=j.map(normalize);setSite();await comparison();
+      rows=j.map(normalize);await window.SKIMARU_PROGRESS_VIEW?.load(name=>rpc(name,{p_token:token}),false);if(viewerSession?.token!==token)return;setSite();await comparison();
       if(viewerSession?.token!==token)return;
       buildGroups();
       setConnection(true,mode==="combined"?"総合分析":mode==="academic"?"学科分析":"実技分析");
@@ -135,7 +135,7 @@
       id:x.submission_id||x.id,
       examType:raw.examType==="practical"?"practical":"academic",
       playerNo:String(x.player_no||raw.playerNo||"").trim(),
-      name:x.user_name||raw.name||"(未記入)",site:raw.site||"四日市",
+      name:x.user_name||raw.name||"(未記入)",site:raw.site||x.location||"四日市",
       total,correct,rate:pct(correct,total)||0,
       cats:cats&&typeof cats==="object"?cats:{},
       alerts:Array.isArray(alerts)?alerts:[],
@@ -199,7 +199,7 @@
 
   function renderCombined(){
     const root=document.getElementById("viewer-report");
-    if(!groups.length){root.innerHTML=`<div class="manager-empty"><div>📭</div><b>提出データがありません</b></div>`;return;}
+    if(!groups.length){root.innerHTML=(window.SKIMARU_PROGRESS_VIEW?.html()||"")+`<div class="manager-empty"><div>📭</div><b>学習データがありません</b></div>`;return;}
     const both=groups.filter(g=>g.academic&&g.practical).length;
     const vals=groups.map(g=>g.overall).filter(v=>v!==null);
     const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0;
@@ -207,7 +207,7 @@
     h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>プレイヤー総合一覧</h2><p>学科・実技を同じPlayerNoでまとめています。</p></div></div><div class="player-table-wrap"><table class="player-table"><thead><tr><th>拠点</th><th>No.</th><th>表示名</th><th>学科</th><th>実技</th><th>総合</th><th>重点</th><th>最終</th></tr></thead><tbody>`;
     groups.forEach((g,i)=>h+=`<tr class="player-row" data-viewer-group="${i}" tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${g.academic?g.academic.rate+"%":"—"}</strong></td><td><strong>${g.practical?g.practical.rate+"%":"—"}</strong></td><td><strong>${g.overall==null?"—":g.overall+"%"}</strong></td><td>${g.weak?esc(g.weak.theme):"—"}</td><td>${fmt(g.latest?.at)}</td></tr>`);
     h+="</tbody></table></div></div>";
-    root.innerHTML=window.SKIMARU_METRICS.html(groups.filter(g=>mode==="combined"||g[mode]),mode)+h;bindRows();window.SKIMARU_METRICS.bind(root,render,key=>openDetail(groups.find(g=>g.key===key)));
+    root.innerHTML=(window.SKIMARU_PROGRESS_VIEW?.html()||"")+window.SKIMARU_METRICS.html(groups.filter(g=>mode==="combined"||g[mode]),mode)+h;bindRows();window.SKIMARU_METRICS.bind(root,render,key=>openDetail(groups.find(g=>g.key===key)));
   }
 
   function renderType(type){
@@ -215,15 +215,15 @@
     const typeGroups=groups.filter(g=>type==="academic"?g.academic:g.practical);
     const vals=typeGroups.map(g=>(type==="academic"?g.academic:g.practical).rate);
     const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0;
-    if(!typeGroups.length){root.innerHTML=`<div class="manager-empty"><div>📭</div><b>${label}の提出データがありません</b></div>`;return;}
-    let h=`<div class="manager-stat-grid">${stat(label+"対象",typeGroups.length+"人")}${stat("最新平均",avg+"%")}${stat("提出履歴",rows.filter(r=>r.examType===type&&matchesSite(r)).length+"件")}${stat("権限","閲覧のみ")}</div>`;
-    h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>${label}プレイヤー一覧</h2><p>最新提出を表示しています。</p></div></div><div class="player-table-wrap"><table class="player-table"><thead><tr><th>拠点</th><th>No.</th><th>表示名</th><th>最新</th><th>最高</th><th>回数</th><th>最終提出</th></tr></thead><tbody>`;
+    if(!typeGroups.length){root.innerHTML=(window.SKIMARU_PROGRESS_VIEW?.html()||"")+`<div class="manager-empty"><div>📭</div><b>${label}の学習データがありません</b></div>`;return;}
+    let h=`<div class="manager-stat-grid">${stat(label+"対象",typeGroups.length+"人")}${stat("最新平均",avg+"%")}${stat("提出履歴",rows.filter(r=>r.examType===type&&matchesSite(r)&&!r.raw?.autoSynced).length+"件")}${stat("権限","閲覧のみ")}</div>`;
+    h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>${label}プレイヤー一覧</h2><p>最新成績を表示しています。</p></div></div><div class="player-table-wrap"><table class="player-table"><thead><tr><th>拠点</th><th>No.</th><th>表示名</th><th>最新</th><th>最高</th><th>回数</th><th>最終更新</th></tr></thead><tbody>`;
     typeGroups.forEach(g=>{
       const hist=g.rows.filter(x=>x.examType===type),latest=hist.at(-1),best=Math.max(...hist.map(x=>x.rate)),idx=groups.indexOf(g);
-      h+=`<tr class="player-row" data-viewer-group="${idx}" tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${latest.rate}%</strong></td><td>${best}%</td><td>${hist.length}回</td><td>${fmt(latest.at)}</td></tr>`;
+      h+=`<tr class="player-row" data-viewer-group="${idx}" tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${latest.rate}%</strong></td><td>${best}%</td><td>${hist.filter(x=>!x.raw?.autoSynced).length}回</td><td>${fmt(latest.at)}</td></tr>`;
     });
     h+="</tbody></table></div></div>";
-    root.innerHTML=window.SKIMARU_METRICS.html(groups.filter(g=>mode==="combined"||g[mode]),mode)+h;bindRows();window.SKIMARU_METRICS.bind(root,render,key=>openDetail(groups.find(g=>g.key===key)));
+    root.innerHTML=(window.SKIMARU_PROGRESS_VIEW?.html()||"")+window.SKIMARU_METRICS.html(groups.filter(g=>mode==="combined"||g[mode]),mode)+h;bindRows();window.SKIMARU_METRICS.bind(root,render,key=>openDetail(groups.find(g=>g.key===key)));
   }
 
   function bindRows(){
@@ -246,12 +246,12 @@
     const body=document.getElementById("viewer-detail-body");
     if(mode==="combined"){
       body.innerHTML=`<div class="detail-head"><div><span class="detail-no">${esc(g.site)} ／ ${esc(g.playerNo)}</span><h2>${esc(g.name)}</h2><p>学科・実技 総合分析 ／ 閲覧専用</p></div><strong>${g.overall==null?"—":g.overall}<small>${g.overall==null?"":"%"}</small></strong></div>
-      <div class="detail-stat-grid">${stat("学科",g.academic?g.academic.rate+"%":"—")}${stat("実技",g.practical?g.practical.rate+"%":"—")}${stat("重点分野",g.weak?g.weak.theme:"—")}${stat("提出履歴",g.rows.length+"件")}</div>
+      <div class="detail-stat-grid">${stat("学科",g.academic?g.academic.rate+"%":"—")}${stat("実技",g.practical?g.practical.rate+"%":"—")}${stat("重点分野",g.weak?g.weak.theme:"—")}${stat("提出履歴",g.rows.filter(x=>!x.raw?.autoSynced).length+"件")}</div>
       <div class="manager-section"><h2>学科＋実技 共通テーマ</h2>${themeBars(g)}</div>
       <div class="manager-section"><h2>年度別 過去問成績</h2><div class="coach-manager-years">${yearHtml(g)}</div></div>`;
     }else{
       const row=mode==="academic"?g.academic:g.practical,history=g.rows.filter(x=>x.examType===mode);
-      body.innerHTML=`<div class="detail-head"><div><span class="detail-no">${esc(g.site)} ／ ${esc(g.playerNo)}</span><h2>${esc(g.name)}</h2><p>${mode==="academic"?"学科":"実技"}提出 ${history.length}回 ／ 閲覧専用</p></div><strong>${row?.rate??"—"}<small>${row?"%":""}</small></strong></div>
+      body.innerHTML=`<div class="detail-head"><div><span class="detail-no">${esc(g.site)} ／ ${esc(g.playerNo)}</span><h2>${esc(g.name)}</h2><p>${mode==="academic"?"学科":"実技"}提出 ${history.filter(x=>!x.raw?.autoSynced).length}回 ／ 閲覧専用</p></div><strong>${row?.rate??"—"}<small>${row?"%":""}</small></strong></div>
       <div class="manager-section"><h2>最新の分野別結果</h2>${bars(categoryRows(row,mode))}</div>
       <div class="manager-section"><h2>提出履歴</h2><div class="history-list">${[...history].reverse().map(r=>`<div class="history-item"><div><b>${fmt(r.at)}</b><span>${r.correct}/${r.total}${mode==="practical"?"問":"問"}正解</span></div><strong>${r.rate}%</strong></div>`).join("")}</div></div>`;
     }

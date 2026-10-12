@@ -12,7 +12,7 @@
 <meta content="スキマル保全士" name="apple-mobile-web-app-title"/>
 <link href="./apple-touch-icon-v14.png" rel="apple-touch-icon"/>
 
-<link href="./styles.css" rel="stylesheet"/><script src="./supabase-config.js"></script><script src="./study-time.js?v=12"></script><script src="./cloud-backup-v15.js?v=16"></script><script src="./member-profile.js?v=16.32"></script><link rel="stylesheet" href="./rollout.css?v=13"><script src="./rollout.js?v=16.30"></script><link rel="icon" href="./icon-v14-192.png"><link rel="stylesheet" href="./app-look-v14.css?v=14"><link rel="preload" as="script" href="./ui-v58.js?v=590"><link rel="preload" as="script" href="./year-mode-core.js"><link rel="preload" as="script" href="./academic-remove-practical.js"><link rel="preload" as="script" href="./year-question-data.js"><link rel="preload" as="script" href="./year-mode.js?v=16.23"><link rel="preload" as="script" href="./academic-ui-v56.js"><link rel="preload" as="script" href="./quiz-static.js?v=590"><link rel="preload" as="script" href="./coach-shared.js?v=16.26"><link rel="preload" as="script" href="./learning-home.js?v=16.30"><link rel="preload" as="script" href="./coach-player.js?v=16.10"><link rel="preload" as="script" href="./game-effects.js?v=14"><link rel="stylesheet" href="./learning-home.css?v=16.6"><link rel="stylesheet" href="./learning-layout.css?v=16.25"><script defer src="./coach-shared.js?v=16.26"></script><script defer src="./learning-home.js?v=16.30"></script><script defer src="./coach-player.js?v=16.20"></script><script src="./study-screen.js?v=16.25"></script><link rel="stylesheet" href="./support-v1626.css?v=16.26"><script src="./radar-v1626.js?v=16.27"></script><link rel="stylesheet" href="./developer-layout-v1627.css?v=16.27"><link rel="stylesheet" href="./learning-footer.css?v=16.30"></head>
+<link href="./styles.css" rel="stylesheet"/><script src="./supabase-config.js"></script><script src="./study-time.js?v=12"></script><script src="./cloud-backup-v15.js?v=16.33"></script><script src="./member-profile.js?v=16.33"></script><link rel="stylesheet" href="./rollout.css?v=13"><script src="./rollout.js?v=16.30"></script><link rel="icon" href="./icon-v14-192.png"><link rel="stylesheet" href="./app-look-v14.css?v=14"><link rel="preload" as="script" href="./ui-v58.js?v=590"><link rel="preload" as="script" href="./year-mode-core.js"><link rel="preload" as="script" href="./academic-remove-practical.js"><link rel="preload" as="script" href="./year-question-data.js"><link rel="preload" as="script" href="./year-mode.js?v=16.23"><link rel="preload" as="script" href="./academic-ui-v56.js"><link rel="preload" as="script" href="./quiz-static.js?v=590"><link rel="preload" as="script" href="./coach-shared.js?v=16.26"><link rel="preload" as="script" href="./learning-home.js?v=16.33"><link rel="preload" as="script" href="./coach-player.js?v=16.10"><link rel="preload" as="script" href="./game-effects.js?v=14"><link rel="stylesheet" href="./learning-home.css?v=16.6"><link rel="stylesheet" href="./learning-layout.css?v=16.25"><script defer src="./coach-shared.js?v=16.26"></script><script defer src="./learning-home.js?v=16.33"></script><script defer src="./coach-player.js?v=16.20"></script><script src="./study-screen.js?v=16.25"></script><link rel="stylesheet" href="./support-v1626.css?v=16.26"><script src="./radar-v1626.js?v=16.27"></script><link rel="stylesheet" href="./developer-layout-v1627.css?v=16.27"><link rel="stylesheet" href="./learning-footer.css?v=16.30"></head>
 <body class="learning-home-shell" data-learning-mode="academic">
 <!-- ============ ホーム（1画面完結） ============ -->
 <section aria-hidden="false" class="active" id="sc-home">
@@ -58,7 +58,7 @@
 <span class="mi-i">04</span><span class="mi-n">学習<br/>分析</span>
 </button>
 <button class="mi" onclick="showStats()">
-<span class="mi-i">06</span><span class="mi-n">成績<br/>提出</span>
+<span class="mi-i">06</span><span class="mi-n">成績<br/>報告</span>
 </button>
 </div>
 
@@ -275,7 +275,7 @@
 </div>
 <div class="acts">
 <button class="btn hide" id="al-rev" onclick="startAlertReview()">要注意問題を復習</button>
-<button class="btn-g" onclick="showSend()">成績を提出する</button>
+<button class="btn-g" onclick="showSend()">学習完了を報告（任意）</button>
 <button class="btn-g" onclick="goHome()">ホームへ</button>
 </div>
 </div>
@@ -284,7 +284,7 @@
 <section aria-hidden="true" id="sc-send">
 <div class="hd">
 <button aria-label="前の画面へ戻る" class="hd-back" onclick="showStats()">‹</button>
-<div class="hd-ttl">成績を提出</div>
+<div class="hd-ttl">学習完了を報告</div>
 </div>
 <div class="pad">
 <div class="scroll">
@@ -299,9 +299,9 @@
 <div class="submit-summary-row"><span>要注意問題</span><b id="sb-alert">0 問</b></div>
 </div>
 <div style="height:1px;background:var(--line);margin:10px 0"></div>
-<p class="note" style="margin:0">提出ボタンを押すと、Supabaseの集計データベースへ送信します。通信できない場合は端末に保留し、オンライン復帰時に再送します。</p>
+<p class="note" style="margin:0">成績・学習記録は自動同期します。ここでは学習完了を任意で報告できます。通信できない場合は端末に保存し、オンラインで再送します。</p>
 </div>
-<button class="btn" id="submit-btn" onclick="submitResult()" style="margin-bottom:9px">クラウドへ提出</button>
+<button class="btn" id="submit-btn" onclick="submitResult()" style="margin-bottom:9px">学習完了を報告（任意）</button>
 <div class="hide" id="sd-done">
 <div class="pn p-grn submit-done-card">
 <div class="submit-done-icon">✓</div>
@@ -370,5 +370,5 @@
 <!-- ============ 集計（隠し） ============ -->
 
 
-<div aria-atomic="true" aria-live="assertive" class="sr-only" id="sr-status"></div><script src="./questions.js"></script><script src="./supabase-config.js"></script><script src="./app.js?v=16.27"></script><script src="./mode-swipe.js?v=16.23"></script><script src="./grade-switch.js?v=16"></script><script defer src="./support-v1626.js?v=16.30"></script></body>
+<div aria-atomic="true" aria-live="assertive" class="sr-only" id="sr-status"></div><script src="./questions.js"></script><script src="./supabase-config.js"></script><script src="./app.js?v=16.33"></script><script src="./mode-swipe.js?v=16.23"></script><script src="./grade-switch.js?v=16"></script><script defer src="./support-v1626.js?v=16.30"></script></body>
 </html>
