@@ -4,7 +4,7 @@ window.SKIMARU_IMAGE_VIEWER={create({year,imagePath}){
  const viewer=document.getElementById('originalViewer'),stage=document.getElementById('originalStage'),image=document.getElementById('originalImage'),close=document.getElementById('viewerClose');
  const reset=document.createElement('button');reset.type='button';reset.textContent='全体表示';reset.className='image-fit';close.before(reset);
  viewer.querySelector('small').textContent='ピンチ・ダブルタップで拡大／指で移動';
- let open=false,previousFocus,bodyStyle,scroll={x:0,y:0},frozen=[],scale=1,x=0,y=0,w=0,h=0,gesture=null,moved=false,multi=false,tap=null,downAt=0;
+ let open=false,previousFocus,bodyStyle,scroll={x:0,y:0},frozen=[],scale=1,x=0,y=0,w=0,h=0,gesture=null,moved=false,multi=false,tap=null,downAt=0,viewGeneration=0;
  const pointers=new Map();
  function focus(el){try{el?.focus({preventScroll:true});}catch{}}
  function bounds(){return {width:stage.clientWidth,height:stage.clientHeight};}
@@ -14,7 +14,7 @@ window.SKIMARU_IMAGE_VIEWER={create({year,imagePath}){
  function viewport(){if(!open)return;const v=window.visualViewport;viewer.style.top=(v?.offsetTop||0)+'px';viewer.style.left=(v?.offsetLeft||0)+'px';viewer.style.width=(v?.width||window.innerWidth)+'px';viewer.style.height=(v?.height||window.innerHeight)+'px';fit(false);}
  function cancelPointers(){for(const id of pointers.keys()){try{stage.releasePointerCapture(id);}catch{}}pointers.clear();gesture=null;moved=false;multi=false;tap=null;}
  function openOriginal(page,trigger){
-  if(open)return;open=true;previousFocus=trigger||document.activeElement;scroll={x:window.scrollX,y:window.scrollY};bodyStyle=document.body.getAttribute('style');
+  if(open)return;open=true;viewGeneration++;previousFocus=trigger||document.activeElement;scroll={x:window.scrollX,y:window.scrollY};bodyStyle=document.body.getAttribute('style');
   frozen=[...document.body.children].filter(el=>el!==viewer&&el.tagName!=='SCRIPT'&&el.tagName!=='STYLE').map(el=>[el,el.inert]);frozen.forEach(([el])=>el.inert=true);
   Object.assign(document.body.style,{position:'fixed',top:-scroll.y+'px',left:-scroll.x+'px',width:'100%',overflow:'hidden'});
   scale=1;x=y=0;cancelPointers();image.style.visibility='hidden';viewer.hidden=false;viewport();
@@ -55,15 +55,16 @@ window.SKIMARU_IMAGE_VIEWER={create({year,imagePath}){
  stage.addEventListener('dblclick',e=>e.preventDefault());stage.addEventListener('click',e=>e.stopPropagation());
  stage.addEventListener('wheel',e=>{if(!open)return;e.preventDefault();tap=null;zoom(scale*Math.exp(-e.deltaY*.002),point(e));},{passive:false});
  // Handle touch controls directly: some browsers suppress the synthetic click after a pinch.
- function control(button,action){let start=null,lastTouch=0;
+ function control(button,action){let start=null,lastTouch=0,lastTouchGeneration=0;
   button.addEventListener('touchstart',e=>{const t=e.touches.length===1?e.touches[0]:null;start=t?{id:t.identifier,x:t.clientX,y:t.clientY,moved:false}:null;},{passive:true});
   button.addEventListener('touchmove',e=>{const t=[...e.touches].find(t=>t.identifier===start?.id);if(t&&Math.hypot(t.clientX-start.x,t.clientY-start.y)>12)start.moved=true;},{passive:true});
   button.addEventListener('touchcancel',()=>start=null,{passive:true});
-  button.addEventListener('touchend',e=>{const t=[...e.changedTouches].find(t=>t.identifier===start?.id);const tapped=t&&start&&!start.moved&&Math.hypot(t.clientX-start.x,t.clientY-start.y)<=12;start=null;if(!tapped)return;e.preventDefault();e.stopPropagation();lastTouch=performance.now();action();},{passive:false});
-  button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(lastTouch>0&&e.detail!==0&&performance.now()-lastTouch<500)return;action();});
+  button.addEventListener('touchend',e=>{const t=[...e.changedTouches].find(t=>t.identifier===start?.id);const tapped=t&&start&&!start.moved&&Math.hypot(t.clientX-start.x,t.clientY-start.y)<=12;start=null;if(!tapped)return;e.preventDefault();e.stopPropagation();lastTouch=performance.now();lastTouchGeneration=viewGeneration;action();},{passive:false});
+  button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(lastTouch>0&&lastTouchGeneration===viewGeneration&&e.detail!==0&&performance.now()-lastTouch<500)return;action();});
  }
  control(close,closeOriginal);control(reset,()=>{cancelPointers();fit();});
  document.addEventListener('keydown',e=>{if(!open)return;if(e.key==='Escape'){e.preventDefault();closeOriginal();}if(e.key==='Tab'){e.preventDefault();focus(document.activeElement===close?reset:close);}});
  window.addEventListener('resize',viewport);window.visualViewport?.addEventListener('resize',viewport);window.visualViewport?.addEventListener('scroll',viewport);
  return {open:openOriginal,close:closeOriginal};
 }};
+
