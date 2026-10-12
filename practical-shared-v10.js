@@ -1,27 +1,14 @@
 'use strict';
 (() => {
   const info = window.SKIMARU_PRACTICAL_V10;
-  const YEAR = info.year, KEY = info.key;
-  const params = new URLSearchParams(location.search);
-  const requested = params.get('task');
-  const selectedTask = info.tasks.find((t,i)=>requested===String(i+1));
-  if(requested&&!selectedTask){location.replace(location.pathname);return;}
-  const review=['wrong','marked','random'].includes(params.get('review'))?params.get('review'):null;
-  const reviewRun=review?review+':'+(params.get('run')||'latest'):null;
+  const questions = info.questions;
+  const TOTAL = info.total, YEAR = info.year;
+  const tasks = info.tasks;
+  const KEY = info.key;
   const $ = id => document.getElementById(id);
   let state;
   try { state = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch {}
   state = state && typeof state === 'object' ? state : {};
-  const fullState=state;
-  if(!requested&&!review&&params.get('mode')!=='all'){
-    showTaskMenu();return;
-  }
-  if(selectedTask){fullState.taskSessions ||= {};state=fullState.taskSessions[requested] ||= {answers:{},branch:'A',finished:false};}
-  if(review){fullState.reviewSessions ||= {};let nums;if(review==='random'){nums=info.questions.map(q=>q.number);for(let i=nums.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}nums=nums.slice(0,5);}else nums=window.SKIMARU_PRACTICAL_PROGRESS.numbers(info,review);state=fullState.reviewSessions[reviewRun] ||= {answers:{},branch:'A',finished:false,questionNumbers:nums};}
-  const questions=info.questions.filter(q=>review?state.questionNumbers.includes(q.number):!selectedTask||(q.number>=selectedTask.start&&q.number<=selectedTask.end));
-  if(!questions.length){document.querySelector('.wrap').innerHTML='<p>対象の問題はありません。</p><a href="./practical.html">実技トップへ戻る</a>';return;}
-  const tasks=info.tasks.filter(t=>questions.some(q=>q.number>=t.start&&q.number<=t.end));
-  const TOTAL=questions.length,FIRST=questions[0].number,LAST=questions.at(-1).number;
   state.answers = state.answers && typeof state.answers === 'object' ? state.answers : {};
   if (state.branch === 'B') {
     for (let n = info.branchRange[0]; n <= info.branchRange[1]; n++) delete state.answers[n];
@@ -29,7 +16,7 @@
   }
   state.branch = 'A';
   if (info.modern) state.finished = !!state.completedAt;
-  const picked = n => info.modern ? questions.find(q=>q.number===Number(n))?.options[state.answers[n]?.picked]?.letter : state.answers[n];
+  const picked = n => info.modern ? questions[n-1]?.options[state.answers[n]?.picked]?.letter : state.answers[n];
   for (const q of questions) {
     if (state.answers[q.number] && !q.options.some(o => o.letter === picked(q.number))) {
       delete state.answers[q.number]; state.finished = false; state.completedAt = null; state.synced = false;
@@ -37,18 +24,15 @@
   }
   state.startedAt ||= new Date().toISOString();
   state.version = '10.0.0';
-  let current = FIRST;
-  function startClock(){if(state.finished&&!state.measurementId)return;state.measurementId ||= crypto.randomUUID();window.SKIMARU_TIME?.start(KEY,state.measurementId,!state.finished);}
-  startClock();
-  const save = () => {if(selectedTask)fullState.taskSessions[requested]=state;localStorage.setItem(KEY, JSON.stringify(fullState));};
-  save();
+  let current = 1;
+  const save = () => localStorage.setItem(KEY, JSON.stringify(state));
   const answered = () => questions.filter(q => q.options.some(o => o.letter === picked(q.number))).length;
   const taskOf = n => tasks.findIndex(t => n >= t.start && n <= t.end);
   const progress = () => {
     $('count').textContent = `${answered()} / ${TOTAL}問`;
     $('bar').style.width = `${answered() / TOTAL * 100}%`;
   };
-  const imagePath = page => `./practical-${YEAR}-${info.imageVersion||'v10'}-p${page}.jpg`;
+  const imagePath = page => `./practical-${YEAR}-v10-p${page}.jpg`;
   function viewport(figure) {
     const [x,y,w,h] = figure.box;
     const box = document.createElement('div'); box.className = 'v9-viewport';
@@ -59,19 +43,17 @@
     box.append(img); return box;
   }
   function render() {
-    const q = questions.find(q=>q.number===current), ti = taskOf(current), t = tasks[ti], taskNumber=info.tasks.indexOf(t)+1;
+    const q = questions[current-1], ti = taskOf(current), t = tasks[ti];
     progress(); $('tabs').replaceChildren();
     tasks.forEach((task,i) => {
-      const button = document.createElement('button'); button.textContent = `課題${info.tasks.indexOf(task)+1}`;
+      const button = document.createElement('button'); button.textContent = `課題${i+1}`;
       button.className = i === ti ? 'current' : ''; button.setAttribute('aria-current', i === ti ? 'true' : 'false');
-      button.onclick = () => go(questions.find(q=>q.number>=task.start&&q.number<=task.end).number); $('tabs').append(button);
+      button.onclick = () => go(task.start); $('tabs').append(button);
     });
-    $('taskTitle').textContent = `課題${taskNumber}：${t.title}${t.branch ? '（選択A）' : ''}`;
+    $('taskTitle').textContent = `課題${ti+1}：${t.title}${t.branch ? '（選択A）' : ''}`;
     $('taskMeta').textContent = `設問 ${t.start}〜${t.end}`;
     $('reviewNote').textContent = state.finished ? '採点済み：解答を変更する場合は「最初から解く」を使用してください。' : '全問解答後にまとめて採点します。途中では正誤・正解を表示しません。';
     $('oneqNo').textContent = `問題 ${current}`;
-    let mark=$('pt-bookmark');if(!mark){mark=document.createElement('button');mark.id='pt-bookmark';mark.className='pt-bookmark';mark.type='button';$('oneqPanel').prepend(mark);}
-    const starred=!!fullState.bookmarks?.[current];mark.textContent=starred?'★ 重点マーク':'☆ 重点マーク';mark.setAttribute('aria-pressed',String(starred));mark.onclick=()=>{fullState.bookmarks ||= {};fullState.bookmarks[current]=!fullState.bookmarks[current];save();render();};
     $('oneqProgress').textContent = `${current-t.start+1} / ${t.end-t.start+1}`;
     $('oneqPrompt').textContent = q.prompt;
     $('oneqContext').textContent = q.context;
@@ -119,16 +101,15 @@
     $('questions').append(options); syncOptions();
     $('oneqDots').replaceChildren();
     for (let n=t.start; n<=t.end; n++) {
-      if(!questions.some(q=>q.number===n))continue;
       const b = document.createElement('button'); b.type = 'button'; b.textContent = n;
       b.className = n === current ? 'active' : ''; b.setAttribute('aria-label', `問題${n}へ`);
       b.setAttribute('aria-current', n === current ? 'true' : 'false');
       b.onclick = () => go(n); $('oneqDots').append(b);
     }
-    $('prev').disabled = current === FIRST;
-    $('prev').onclick = () => go(questions[questions.findIndex(q=>q.number===current)-1]?.number);
-    $('next').textContent = current === LAST ? (state.finished ? '採点結果を見る' : '採点する') : current === t.end ? '次の課題へ →' : '次へ →';
-    $('next').onclick = () => current < LAST ? go(questions[questions.findIndex(q=>q.number===current)+1].number) : finish();
+    $('prev').disabled = current === 1;
+    $('prev').onclick = () => go(current-1);
+    $('next').textContent = current === TOTAL ? (state.finished ? '採点結果を見る' : '解答状況を確認') : current === t.end ? '次の課題へ →' : '次へ →';
+    $('next').onclick = () => current < TOTAL ? go(current+1) : finish();
   }
   function syncOptions() {
     for (const b of $('questions').querySelectorAll('button')) {
@@ -137,7 +118,7 @@
     }
   }
   function go(n) {
-    if (!questions.some(q=>q.number===n)) return;
+    if (n < 1 || n > TOTAL) return;
     current = n; render(); $('oneqPanel').scrollIntoView({behavior:'auto',block:'start'});
   }
   function recordHistory() {
@@ -145,9 +126,9 @@
     try { history = JSON.parse(localStorage.getItem('skimaruExamHistory_v1') || '[]'); } catch {}
     if (!Array.isArray(history)) history = [];
     const good = questions.filter(q => picked(q.number) === info.jitugi[q.number]).length;
-    const id = state.attemptId || (state.attemptId = `${YEAR}-jitugi-${selectedTask?requested:'all'}-${crypto.randomUUID()}`);
+    const id = state.attemptId || (state.attemptId = `${YEAR}-jitugi-${Date.now()}`);
     if (!history.some(r => r.id === id)) {
-      history.push({elapsedSeconds:window.SKIMARU_TIME?.seconds(KEY,state.measurementId),timeMeasured:!!state.measurementId,id,year:YEAR,kind:'jitugi',scope:review?'review':selectedTask?'task':'year',taskNumber:selectedTask?info.tasks.indexOf(selectedTask)+1:null,title:review?`${YEAR}年度 ${review==='random'?'ランダム5問':review==='wrong'?'復習':'重点学習'}`:selectedTask?selectedTask.title:`${YEAR}年度 全課題`,total:TOTAL,correct:good,rate:Math.round(good/TOTAL*100),completedAt:state.completedAt,branch:'A',answers:info.modern ? Object.fromEntries(Object.entries(state.answers).map(([n,a])=>[n,a.picked])) : {...state.answers}});
+      history.push({id,year:YEAR,kind:'jitugi',total:TOTAL,correct:good,rate:Math.round(good/TOTAL*100),completedAt:state.completedAt,branch:'A',answers:info.modern ? Object.fromEntries(Object.entries(state.answers).map(([n,a])=>[n,a.picked])) : {...state.answers}});
       localStorage.setItem('skimaruExamHistory_v1',JSON.stringify(history)); save();
     }
   }
@@ -155,7 +136,7 @@
     if (answered() < TOTAL) { alert(`未回答が${TOTAL-answered()}問あります。全問回答するまで正解は表示されません。`); return; }
     if (!state.finished) {
       if (!confirm('全問の解答を確定し、採点結果と正解を表示しますか？')) return;
-      window.SKIMARU_TIME?.stop();state.finished = true; state.completedAt = new Date().toISOString();
+      state.finished = true; state.completedAt = new Date().toISOString();
       if(info.modern) for(const q of questions) state.answers[q.number].ok=picked(q.number)===info.jitugi[q.number];
       save();
     }
@@ -163,7 +144,7 @@
   }
 
   function syncLegacy() {
-    if(review || YEAR!==2025 || state.synced)return;
+    if(YEAR!==2025 || state.synced)return;
     try {
       const raw=JSON.parse(localStorage.getItem('skimaruPracticalDataTestV1')||'{}')||{};
       const P=Object.assign({version:'0.2-test',totalTasks:0,totalBlanks:0,correctBlanks:0,wrongTaskIds:[],attempts:{},latestRun:null},raw);
@@ -182,7 +163,7 @@
       P.totalTasks=(P.totalTasks||0)+tasks.length;
       P.totalBlanks=(P.totalBlanks||0)+TOTAL;
       P.correctBlanks=(P.correctBlanks||0)+totalCorrect;
-      P.latestRun={title:`${YEAR}年度 ${selectedTask?'課題'+(info.tasks.indexOf(selectedTask)+1):'全課題'} 実技（選択A）`,total:TOTAL,correct:totalCorrect,rate:Math.round(totalCorrect/TOTAL*100),results,completedAt:state.completedAt,year:YEAR,branch:'A'};
+      P.latestRun={title:`${YEAR}年度 実技（選択A）`,total:TOTAL,correct:totalCorrect,rate:Math.round(totalCorrect/TOTAL*100),results,completedAt:state.completedAt,year:YEAR,branch:'A'};
       localStorage.setItem('skimaruPracticalDataTestV1',JSON.stringify(P)); state.synced=true;save();
     }catch(e){console.warn('legacy sync failed',e);}
   }
@@ -201,29 +182,75 @@
   }
   $('resultBack').onclick = () => { $('results').classList.add('hidden'); $('exam').classList.remove('hidden'); render(); };
   $('reset').onclick = () => {
-    if (!confirm(review?'この復習・重点学習の回答を消去して解き直しますか？課題別と全課題の回答は残ります。':selectedTask?'この課題の回答を消去して解き直しますか？他の課題と全課題の回答は残ります。':'全課題モードの回答を消去して解き直しますか？課題別の回答と成績履歴は残ります。')) return;
-    const taskSessions=fullState.taskSessions;
-    state={answers:{},branch:'A',finished:false,completedAt:null,synced:false,version:'16.9',startedAt:new Date().toISOString()};
-    if(!selectedTask&&!review){const bookmarks=fullState.bookmarks,reviewSessions=fullState.reviewSessions;Object.keys(fullState).forEach(k=>delete fullState[k]);Object.assign(fullState,state);fullState.taskSessions=taskSessions;fullState.bookmarks=bookmarks;fullState.reviewSessions=reviewSessions;state=fullState;}
-    if(review){state.questionNumbers=questions.map(q=>q.number);fullState.reviewSessions[reviewRun]=state;}
-    startClock(); save(); current=FIRST;
+    if (!confirm('この年度の回答をすべて消去しますか？')) return;
+    state={answers:{},branch:'A',finished:false,completedAt:null,synced:false,version:'10.0.0',startedAt:new Date().toISOString()}; save(); current=1;
     $('results').classList.add('hidden'); $('exam').classList.remove('hidden'); render();
   };
-  const originalViewer=window.SKIMARU_IMAGE_VIEWER.create({year:YEAR,imagePath});
-  const openOriginal=(page,trigger)=>originalViewer.open(page,trigger);
-  const back=document.createElement('a');back.className='pt-task-back';back.href=review?(review==='random'?'./practical.html':'./practical.html#'+(review==='wrong'?'review':'bookmark')):location.pathname;back.textContent=review?'‹ 実技トップへ戻る':'‹ 課題選択へ戻る';document.querySelector('.wrap').prepend(back);
-  $('reset').textContent=review?'この演習を解き直す':selectedTask?'この課題を解き直す':'全課題を解き直す';
+  // A dedicated viewer uses the complete page image. The inline window never alters image bytes.
+  const viewer = $('originalViewer'), stage = $('originalStage'), image = $('originalImage');
+  let previousFocus, scale=1, tx=0, ty=0, gesture=null, moved=false, multi=false, lastTap=0;
+  const pointers = new Map();
+  function transform() { image.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`; stage.dataset.scale=String(scale); }
+  function distance() { const p=[...pointers.values()]; return Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y); }
+  function midpoint() { const p=[...pointers.values()]; return {x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2}; }
+  function rebase() {
+    const p=[...pointers.values()];
+    gesture = p.length >= 2 ? {distance:distance(),mid:midpoint(),scale,tx,ty} : p.length ? {x:p[0].x,y:p[0].y,tx,ty} : null;
+  }
+  function openOriginal(page,trigger) {
+    previousFocus=trigger; image.src=imagePath(page); image.alt=`${YEAR}年度 実技 原本PDF ${page}ページ`;
+    $('originalPageLabel').textContent=`原本PDF ${page}ページ`;
+    scale=1;tx=0;ty=0;lastTap=0;pointers.clear();transform();
+    viewer.hidden=false; document.body.style.overflow='hidden'; $('viewerClose').focus();
+  }
+  function closeOriginal() {
+    viewer.hidden=true; document.body.style.overflow=''; pointers.clear();gesture=null;lastTap=0;
+    previousFocus?.focus({preventScroll:true});
+  }
+  $('viewerClose').onclick=closeOriginal;
+  stage.addEventListener('pointerdown',e => {
+    if(e.button!==0) return;
+    if(!pointers.size){moved=false;multi=false;}
+    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY}); try { stage.setPointerCapture(e.pointerId); } catch {}
+    if(pointers.size>1){multi=true;lastTap=0;} rebase();
+  });
+  stage.addEventListener('pointermove',e => {
+    if(!pointers.has(e.pointerId)||!gesture)return;
+    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.size>=2 && gesture.distance){
+      const mid=midpoint(),rect=image.getBoundingClientRect();
+      const next=Math.min(6,Math.max(1,gesture.scale*distance()/Math.max(1,gesture.distance)));
+      const ratio=next/gesture.scale;
+      const originX=rect.left-tx, originY=rect.top-ty;
+      tx=mid.x-originX-(gesture.mid.x-originX-gesture.tx)*ratio;
+      ty=mid.y-originY-(gesture.mid.y-originY-gesture.ty)*ratio;scale=next;moved=true;
+    } else if(pointers.size===1){
+      const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
+      if(Math.abs(dx)+Math.abs(dy)>8)moved=true;
+      tx=gesture.tx+dx;ty=gesture.ty+dy;
+    }
+    transform();
+  });
+  function pointerEnd(e){
+    if(!pointers.has(e.pointerId))return;
+    pointers.delete(e.pointerId);
+    if(!pointers.size && !moved && !multi && e.type!=='pointercancel'){
+      const now=Date.now(); if(lastTap && now-lastTap<330){closeOriginal();return;} lastTap=now;
+    }
+    rebase();
+  }
+  stage.addEventListener('pointerup',pointerEnd);stage.addEventListener('pointercancel',pointerEnd);
+  stage.addEventListener('dblclick',e=>{e.preventDefault();closeOriginal();});
+  stage.addEventListener('wheel',e=>{
+    e.preventDefault();const old=scale;scale=Math.min(6,Math.max(1,scale*Math.exp(-e.deltaY*.002)));
+    const r=image.getBoundingClientRect(),ratio=scale/old;
+    tx-=(e.clientX-r.left)*(ratio-1);ty-=(e.clientY-r.top)*(ratio-1);transform();
+  },{passive:false});
+  document.addEventListener('keydown',e=>{
+    if(viewer.hidden)return;
+    if(e.key==='Escape'){e.preventDefault();closeOriginal();}
+    if(e.key==='Tab'){e.preventDefault();$('viewerClose').focus();}
+  });
   save();render();
   if(state.finished && answered()===TOTAL){recordHistory();syncLegacy();showResults();}
-  function showTaskMenu(){
-    const wrap=document.querySelector('.wrap');wrap.replaceChildren();
-    const section=document.createElement('section');section.className='pt-task-menu';
-    const heading=document.createElement('h2');heading.textContent='学習する課題を選ぶ';section.append(heading);
-    const note=document.createElement('p');note.className='pt-task-menu-note';note.textContent='全課題を通して解くか、課題ごとに学習できます。採点は選んだ範囲の回答後に行います。';section.append(note);
-    const all=document.createElement('a');all.className='pt-all-start';all.href=location.pathname+'?mode=all';all.textContent=`全課題をはじめる ／ ${info.total}問`;section.append(all);
-    if(Object.keys(fullState.answers||{}).length){const n=document.createElement('p');n.className='pt-task-menu-note';n.textContent='全課題モードには以前の回答が保存されています。そのまま続きから利用できます。';section.append(n);}
-    const list=document.createElement('div');list.className='pt-task-list';
-    info.tasks.forEach((t,i)=>{const a=document.createElement('a');a.href=location.pathname+'?task='+(i+1);a.className='pt-task-card';const title=document.createElement('b');title.textContent=`課題${i+1}：${t.title}`;const meta=document.createElement('span');const session=fullState.taskSessions?.[i+1];meta.textContent=`${t.end-t.start+1}問${t.branch?' ／ 選択A':''}${session?.finished?' ／ 採点済み':Object.keys(session?.answers||{}).length?' ／ 続きから':''}`;a.append(title,meta);list.append(a);});
-    section.append(list);wrap.append(section);
-  }
 })();

@@ -1,1 +1,89 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'"><title>スキマル保全士</title><script src="./route-v1621.js" data-target="./app/admin.html"></script></head><body><p>画面を開いています。</p><a href="./app/admin.html">画面へ進む</a></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>スキマル保全士 Manager Ver 5.7.0 QUEST UI</title>
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./coach.css">
+<link rel="stylesheet" href="./viewer-manager.css">
+<link rel="stylesheet" href="./manager-ui-v55.css">
+<link rel="stylesheet" href="./theme-v57.css">
+<meta name="theme-color" content="#172431">
+<link rel="stylesheet" href="./member-manager.css?v=11"></head>
+<body class="manager-body quest-v57">
+<main class="admin-main">
+<header class="hd manager-header">
+  <a class="hd-back role-home-link" href="./index.html" aria-label="役割選択へ戻る">‹</a>
+  <div class="manager-header-title">
+    <div class="hd-ttl">スキマル保全士</div>
+    <div class="hd-sub">MANAGER / QUEST UI / 全体・個人分析</div>
+  </div>
+  <span class="manager-role-badge">管理者</span>
+  <button class="manager-logout" id="logout" aria-label="マネージャーからログアウト">退出</button>
+  <button class="manager-refresh" id="refresh" aria-label="提出データを更新">↻</button>
+</header>
+
+<div class="pad manager-pad">
+  <div class="manager-connection">
+    <span class="connection-dot" id="connection-dot"></span>
+    <span id="connection-text">認証を確認中</span>
+    <b id="submission-count">0件</b>
+  </div>
+  <div class="manager-mode-tabs" role="tablist" aria-label="分析する試験区分">
+    <button class="active" type="button" role="tab" data-analysis-mode="academic">学科分析</button>
+    <button type="button" role="tab" data-analysis-mode="practical">実技分析</button>
+  </div>
+  <div class="acts manager-actions">
+    <button class="btn-g" id="csv-learners">提出一覧CSV</button>
+    <button class="btn-g" id="clear">提出データを削除</button>
+  </div>
+  <div class="site-filters"><label>拠点<select id="site-filter"><option value="">全拠点</option><option>四日市</option><option>石岡</option><option>足利</option><option>水戸</option><option>真岡</option><option>門真</option><option>北九州</option></select></label><label>メンバー検索<input id="member-search" type="search" placeholder="名前・プレイヤーNo."></label><small>拠点情報のない従来データは四日市として表示します。</small></div><div id="ad-rep" class="scroll manager-report"></div>
+
+  <div class="player-detail" id="player-detail" aria-hidden="true">
+    <div class="player-detail-card">
+      <button class="player-detail-close" id="player-detail-close" aria-label="閉じる">×</button>
+      <div id="player-detail-body"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+</main>
+
+<div class="manager-login" id="manager-login" role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <div class="manager-login-card">
+    <a class="manager-login-back" href="./index.html">‹ モード選択へ戻る</a>
+    <div class="manager-login-icon">🔐</div>
+    <h1 id="login-title">マネージャー認証</h1>
+    <p>管理者はSupabase Authでログインしてください。</p>
+    <label for="manager-email">メールアドレス</label>
+    <input id="manager-email" type="email" inputmode="email" autocomplete="username" placeholder="manager@example.com">
+    <label for="manager-password">パスワード</label>
+    <input id="manager-password" type="password" autocomplete="current-password" placeholder="パスワード">
+    <button class="btn" id="login-btn">管理者としてログイン</button>
+    <a class="btn-g viewer-login-link" href="./viewer.html">👁️ 閲覧用パスワードで見る</a>
+    <div class="manager-login-message" id="login-message"></div>
+    <small>管理者は設定変更・メッセージ送信・削除が可能です。</small>
+  </div>
+</div>
+
+<div class="player-detail" id="manager-viewer-settings" aria-hidden="true">
+  <div class="player-detail-card viewer-settings-card">
+    <button class="player-detail-close" id="manager-viewer-set-close" aria-label="閉じる">×</button>
+    <div class="manager-section-head"><div><h2>閲覧用パスワード</h2><p>成績と分析だけを見せる共通パスワードです。</p></div></div>
+    <label class="viewer-set-label" for="manager-viewer-set-input">新しい閲覧用パスワード</label>
+    <input id="manager-viewer-set-input" type="password" minlength="8" maxlength="64" placeholder="8文字以上">
+    <button class="btn" id="manager-viewer-set-save">設定・変更する</button>
+    <p class="note viewer-set-note">変更すると、すでに閲覧中の人は自動的にログアウトされます。</p>
+  </div>
+</div>
+
+<script src="./supabase-config.js"></script>
+<script src="./admin.js"></script>
+<script src="./coach-shared.js"></script>
+<script src="./coach-manager.js"></script>
+<script src="./manager-viewer-admin.js"></script>
+<script src="./manager-organizer.js"></script>
+<script src="./ui-v57.js"></script>
+</body>
+</html>
