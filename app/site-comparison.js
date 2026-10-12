@@ -48,3 +48,4 @@
  function mount(){let root=document.getElementById('site-comparison');if(!root){root=document.createElement('div');root.id='site-comparison';root.className='site-comparison pn';document.getElementById('viewer-report').before(root);}return root;}
  window.SKIMARU_COMPARISON={load,clear};
 })();
+

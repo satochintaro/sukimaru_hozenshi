@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261009-v16-30-simple-footer";
+const CACHE="skimaru-live-20261012-v16-31-usage-fixes";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });

@@ -172,7 +172,7 @@
     const weak=weakestCategories(row,type);
     const advice=individualAdvice(row);
     const label=type==="academic"?"学科":"実技";
-    const unit=type==="academic"?"問":"空欄";
+    const unit=type==="academic"?"問":"問";
 
     let h=playerPicker(people);
     h+=`<div class="mgr-page-head person"><div><span>PERSONAL</span><h2>${safeEsc(p.name)}・${label}</h2><p>${safeEsc(p.site)} ／ ${safeEsc(p.playerNo)} ／ 最終 ${fmtDate(row.receivedAt||row.sentAt)}</p></div></div>`;
@@ -319,3 +319,4 @@
   // 認証済み・既存データがある場合はすぐ描画。
   requestAnimationFrame(()=>{try{if(authenticated)renderManagerOrganized();}catch(e){console.error(e);}});
 })();
+

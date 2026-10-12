@@ -66,7 +66,7 @@
     document.getElementById("viewer-login-message").textContent="";
     document.getElementById("viewer-password").value="";
     document.getElementById("viewer-password").blur();
-    document.getElementById("viewer-logout").focus();
+    document.getElementById("viewer-logout").focus({preventScroll:true});
   }
 
   async function valid(){
@@ -253,7 +253,7 @@
       const row=mode==="academic"?g.academic:g.practical,history=g.rows.filter(x=>x.examType===mode);
       body.innerHTML=`<div class="detail-head"><div><span class="detail-no">${esc(g.site)} ／ ${esc(g.playerNo)}</span><h2>${esc(g.name)}</h2><p>${mode==="academic"?"学科":"実技"}提出 ${history.length}回 ／ 閲覧専用</p></div><strong>${row?.rate??"—"}<small>${row?"%":""}</small></strong></div>
       <div class="manager-section"><h2>最新の分野別結果</h2>${bars(categoryRows(row,mode))}</div>
-      <div class="manager-section"><h2>提出履歴</h2><div class="history-list">${[...history].reverse().map(r=>`<div class="history-item"><div><b>${fmt(r.at)}</b><span>${r.correct}/${r.total}${mode==="practical"?"空欄":"問"}正解</span></div><strong>${r.rate}%</strong></div>`).join("")}</div></div>`;
+      <div class="manager-section"><h2>提出履歴</h2><div class="history-list">${[...history].reverse().map(r=>`<div class="history-item"><div><b>${fmt(r.at)}</b><span>${r.correct}/${r.total}${mode==="practical"?"問":"問"}正解</span></div><strong>${r.rate}%</strong></div>`).join("")}</div></div>`;
     }
     const modal=document.getElementById("viewer-detail");modal.classList.add("show");modal.setAttribute("aria-hidden","false");
   }
@@ -288,3 +288,4 @@
 
   if(!configured())showLogin("Supabase接続設定がありません。");else showLogin();
 })();
+
