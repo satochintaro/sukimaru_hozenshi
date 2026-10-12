@@ -128,7 +128,7 @@
 })();
 
 
-if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.34';document.head.append(usage);}
+if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.35';document.head.append(usage);}
 
 
 if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-follow-v1632.js"]')){const follow=document.createElement("script");follow.src="./player-follow-v1632.js?v=16.32";document.head.append(follow);}

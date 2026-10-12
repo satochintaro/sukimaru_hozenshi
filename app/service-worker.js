@@ -1,4 +1,4 @@
-const CACHE="skimaru-live-20261013-v16-34-title-home";
+const CACHE="skimaru-live-20261013-v16-35-scroll";
 self.addEventListener("install",event=>{
   self.skipWaiting();
 });
