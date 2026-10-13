@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.40",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.42",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -76,6 +76,8 @@ let currentSubject=null;window.SKIMARU_TIME?.start("core","core",true);
 function save(){
   try{
     const current=localStorage.getItem(KEY);
+    // A separate challenge tab may have saved newer progress while this page was open.
+    if(current){try{const fresh=JSON.parse(current);if(fresh.playerNo===U.playerNo&&Number(fresh.suddenDeath?.revision||0)>Number(U.suddenDeath?.revision||0))U.suddenDeath=fresh.suddenDeath;}catch{}}
     if(current) localStorage.setItem(AUTO_BACKUP_KEY,current);
     U.schemaVersion=APP.schema; U.updatedAt=new Date().toISOString();
     localStorage.setItem(KEY,JSON.stringify(U));
