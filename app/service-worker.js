@@ -1,4 +1,4 @@
-const RELEASE='1643',CACHE='skimaru-live-20261014-v16-43-chain-demo';
+const RELEASE='1644',CACHE='skimaru-live-20261014-v16-44-developer-demo-fx';
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
 function isHome(url){return [ROOT.pathname,home.pathname,new URL('app/',ROOT).pathname,appHome.pathname].includes(url.pathname);}

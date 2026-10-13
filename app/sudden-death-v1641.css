@@ -29,3 +29,33 @@ body.sd-app{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Hir
 .sd-app .member-gear{display:none}
 @media(max-width:360px){.learning-dashboard .sd-home-entry .sd-card-copy strong{font-size:14px}.learning-dashboard .sd-home-entry .sd-card-copy small{font-size:10px}.learning-dashboard .sd-home-lock{width:31px;height:37px}}
 @media(max-height:650px){.sd-game .sd-lane{height:55px}}
+
+/* Feedback becomes more celebratory while the question layout stays quiet. */
+.sd-game{position:relative;isolation:isolate;overflow:clip}.sd-game .sd-traveler{z-index:2}
+.sd-game .sd-question,.sd-game .sd-progress{transition:box-shadow .3s ease,border-color .3s ease}
+.sd-walking .sd-robot-art{animation:sd-jump .8s cubic-bezier(.2,.7,.3,1)}
+.sd-walking .sd-leg.left,.sd-walking .sd-leg.right{animation-duration:.15s;animation-iteration-count:5}
+.sd-sparks{position:absolute;left:50%;top:40%;width:0;height:0;pointer-events:none;z-index:4}
+.sd-sparks i{position:absolute;width:6px;height:10px;border-radius:2px;background:#c7a24e;opacity:0;animation:sd-spark-flight .85s var(--delay) ease-out forwards}
+.sd-sparks i:nth-child(3n){background:var(--sd-tier,#175c46)}.sd-sparks i:nth-child(4n){border-radius:50%;width:5px;height:5px;background:#e8d393}
+.sd-success .sd-question{box-shadow:0 0 0 3px color-mix(in srgb,var(--sd-tier) 14%,transparent),0 8px 28px #b49a5030}
+.sd-success .sd-feedback{color:var(--sd-tier,#175c46);text-shadow:0 2px 12px #d8bc7160}
+.sd-count-pop{display:inline-block;animation:sd-count-rise .45s ease}
+.sd-new-best .sd-question{animation:sd-best-glow .85s ease}
+.sd-stage-banner{position:absolute;top:43%;left:50%;transform:translate(-50%,-50%);max-width:calc(100% - 36px);min-width:235px;padding:18px 26px;border:1px solid #c8a75b;border-radius:19px;background:linear-gradient(135deg,#fff9e9,#f4e4b7);color:#175c46;text-align:center;box-shadow:0 12px 45px #173d3140;pointer-events:none;z-index:6;animation:sd-stage-reveal 1.45s ease both}
+.sd-stage-banner small{display:block;font-size:14px;color:#8a6c31}.sd-stage-banner b{display:block;font-size:32px;line-height:1.4;margin-top:4px}
+.sd-stage-clear .sd-question{box-shadow:0 0 0 5px #c8ac5840,0 0 45px #d1b25640}
+.sd-failure::before{content:'';position:absolute;inset:0;background:#b6504010;pointer-events:none;z-index:-1;border-radius:22px;animation:sd-end-tint .65s ease both}
+.sd-failure .sd-feedback{color:#a74636}.sd-failure .sd-question{border-color:#b65040;box-shadow:0 0 0 3px #b6504020}
+.sd-result-art{position:relative}.sd-celebrate .sd-result-art .sd-robot-art{animation:sd-victory .9s ease both}.sd-celebrate h2{animation:sd-score-reveal .6s ease both}
+.sd-result-medal{display:inline-block!important;padding:7px 16px;border:1px solid #c7a14e;border-radius:30px;background:#fcf2d4;color:#846229;font-size:14px!important;font-weight:750;margin:8px 0 0!important}
+@keyframes sd-jump{0%,100%{transform:translateY(0)}35%{transform:translateY(-24px) rotate(10deg)}65%{transform:translateY(3px) rotate(-4deg)}80%{transform:translateY(-5px)}}
+@keyframes sd-spark-flight{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}100%{opacity:0;transform:translate(var(--sx),var(--sy)) rotate(var(--spin)) scale(.5)}}
+@keyframes sd-count-rise{0%,100%{transform:scale(1)}45%{transform:scale(1.4) translateY(-3px)}}
+@keyframes sd-best-glow{50%{box-shadow:0 0 0 5px #c8ab5850,0 0 35px #d6bb6c60}}
+@keyframes sd-stage-reveal{0%{opacity:0;transform:translate(-50%,-35%) scale(.7)}18%,72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-65%) scale(1.05)}}
+@keyframes sd-end-tint{from{opacity:0}to{opacity:1}}
+@keyframes sd-victory{0%,100%{transform:translateY(0)}40%{transform:translateY(-20px) rotate(-8deg)}70%{transform:translateY(-6px) rotate(8deg)}}
+@keyframes sd-score-reveal{from{opacity:0;transform:scale(.65)}to{opacity:1;transform:scale(1)}}
+.sd-reduced .sd-sparks{display:none}.sd-reduced .sd-stage-banner{animation:none;opacity:1}
+@media(prefers-reduced-motion:reduce){.sd-sparks{display:none}.sd-stage-banner{animation:none;opacity:1}}
