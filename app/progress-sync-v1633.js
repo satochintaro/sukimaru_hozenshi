@@ -7,7 +7,9 @@
  const put=(k,v)=>originalSet.call(localStorage,k,JSON.stringify(v));
  const n=(v,max=1000000)=>Math.min(max,Math.max(0,Math.round(Number(v)||0)));
  const allowed=k=>window.SKIMARU_BACKUP?.allowed(k)??(['skimaru-grade1-v16','skimaruData','skimaruDataAutoBackup','skimaru-submitted-v11','skimaru-pending-submissions-v1','skimaruExamHistory_v1','skimaru-study-time-v12','skimaru-cloud-backup-v15'].includes(k)||/^skimaru(Early_|Practical)/.test(k));
- let capturing=false,busy=false,timer=null,timerDue=0,lastAttempt=0,error='',paused=false;
+ let capturing=false,busy=false,timer=null,timerDue=0,lastAttempt=0,error='',paused=false,departing=false,departureHandled=false;
+ function diagnostic(e,stage){try{window.SKIMARU_USAGE?.reportError?.(e,{stage,handled:true,departing});}catch{}}
+ function preparationFailed(e,stage){error='自動同期の準備を完了できませんでした。学習記録は端末に残っており、次に開いたときに再送します。';diagnostic(e,stage);try{notify();}catch{}}
  const pageDevice=crypto.randomUUID(),locked=!!navigator.locks;
  const reg=()=>read(REG),key=()=>PREFIX+reg().playerNo;
  const withLock=fn=>locked?navigator.locks.request('skimaru-progress-v1633',fn):Promise.resolve().then(fn);
@@ -61,8 +63,8 @@
  const fingerprint=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(b.entries))))).map(x=>x.toString(16).padStart(2,'0')).join('');
  function regressed(old,fresh){return old.metrics.some(m=>!fresh.metrics.some(x=>x.grade===m.grade&&x.examType===m.examType&&x.total>=m.total))||Object.keys(old.backup.entries).some(k=>!Object.hasOwn(fresh.backup.entries,k));}
  async function capture(){
-  const r=reg();if(paused||!r.confirmed||!r.playerNo||!r.token)return;
-  await withLock(async()=>{if(paused||reg().playerNo!==r.playerNo)return;capturing=true;try{
+  const r=reg();if(paused||departing||!r.confirmed||!r.playerNo||!r.token)return;
+  try{await withLock(async()=>{if(paused||departing||reg().playerNo!==r.playerNo)return;capturing=true;try{
    const b=backup(),f=await fingerprint(b),s=state();if(f===s.fingerprint)return;const normalized=JSON.parse(JSON.stringify(b));delete normalized.entries['skimaru-study-time-v12'];delete normalized.entries['skimaru-cloud-backup-v15'];if(normalized.entries['skimaru-grade1-v16']){const g=JSON.parse(normalized.entries['skimaru-grade1-v16']);for(const v of Object.values(g.stats||{}))delete v.seconds;if(g.current)delete g.current.seconds;normalized.entries['skimaru-grade1-v16']=JSON.stringify(g);}const contentFingerprint=await fingerprint(normalized);if(contentFingerprint===s.contentFingerprint&&!s.queue?.length&&Date.now()-new Date(s.savedAt||0).getTime()<120000)return;
    if(new TextEncoder().encode(JSON.stringify(b)).length>2000000)throw Error('backup_large');
    if(!r.recoveryCode){r.recoveryCode=Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');put(REG,r);}
@@ -71,7 +73,7 @@
    const queue=s.queue||[],previous=queue.at(-1);
    if(previous&&!regressed(previous,snap))queue.pop();
    queue.push(snap);persist({...s,sequence,device,fingerprint:f,contentFingerprint,queue});error='';
-  }catch(e){error=e.message==='backup_large'?'データが大きく自動同期できません。端末の記録は残っています。設定から学習データをファイル保存してください。':'自動同期の準備を保存できません。端末の記録は残っています。空き容量と保存設定を確認してください。';}finally{capturing=false;notify();}});
+  }catch(e){error=e.message==='backup_large'?'データが大きく自動同期できません。端末の記録は残っています。設定から学習データをファイル保存してください。':'自動同期の準備を保存できません。端末の記録は残っています。空き容量と保存設定を確認してください。';diagnostic(e,'capture');}finally{capturing=false;notify();}});}catch(e){preparationFailed(e,'capture_lock');}
  }
  async function send(){
   if(paused||busy||!reg().confirmed||!navigator.onLine)return;
@@ -84,10 +86,10 @@
    const j=await res.json();if(!res.ok||!['saved','stale'].includes(j.state)||j.id!==snap.id)throw Error(j.message||j.error||'sync_failed');
    await withLock(()=>{const s=read(storageKey);s.queue=(s.queue||[]).filter(x=>x.id!==snap.id);s.savedAt=j.savedAt;s.ackedId=snap.id;put(storageKey,s);});
    error='';
-  }catch(e){error=/authentication|registration/.test(e.message)?'登録情報を確認できません。設定から復旧コードで復元してください。端末の記録は残っています。':'通信できません。端末に保存済みのデータは、オンラインでアプリを開くと再送します。';}
+  }catch(e){error=/authentication|registration/.test(e.message)?'登録情報を確認できません。設定から復旧コードで復元してください。端末の記録は残っています。':'通信できません。端末に保存済みのデータは、オンラインでアプリを開くと再送します。';diagnostic(e,'send');}
   finally{clearTimeout(timeout);busy=false;notify();if(state().queue?.length)schedule(error?30000:6500);}
  }
- function schedule(ms=800){if(paused)return;const due=Date.now()+ms;if(timer&&timerDue<=due)return;clearTimeout(timer);timerDue=due;timer=setTimeout(async()=>{timer=null;await capture();await send();},ms);}
+ function schedule(ms=800){if(paused||departing)return;const due=Date.now()+ms;if(timer&&timerDue<=due)return;clearTimeout(timer);timerDue=due;timer=setTimeout(async()=>{timer=null;try{await capture();await send();}catch(e){preparationFailed(e,'scheduled');}},ms);}
  function status(){const s=state(),pending=s.queue?.length||0;return {savedAt:s.savedAt||null,pending,error,busy,text:error||(!navigator.onLine?'オフラインです。学習記録は端末に保存し、通信が戻ると自動同期します。':pending?(busy?'学習データを自動同期中…':'学習データを端末に保存しました。まもなく自動同期します。'):s.savedAt?'学習データは自動同期済みです。完了報告は任意です。':'学習データは自動同期します。完了報告は任意です。')};}
  function notify(){window.SKIMARU_MEMBER?.refresh();window.dispatchEvent(new CustomEvent('skimaru-sync-status',{detail:status()}));}
  Storage.prototype.setItem=function(k,v){const result=originalSet.call(this,k,v);if(this===localStorage&&!capturing&&(allowed(String(k))||k===REG))schedule(k==='skimaru-study-time-v12'?30000:800);return result;};
@@ -96,8 +98,13 @@
  window.addEventListener('online',()=>{error='';schedule();notify();});window.addEventListener('offline',notify);
  window.addEventListener('storage',e=>{if(allowed(e.key||''))schedule();else if(e.key?.startsWith(PREFIX))notify();});
  window.addEventListener('skimaru-registered',()=>schedule());
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();else window.SKIMARU_SYNC.flush();});
- window.addEventListener('pagehide',()=>window.SKIMARU_SYNC.flush());
+ // Do not start a new Web Lock or digest while the document is being deactivated.
+ // Answers are already in localStorage; queued snapshots remain until acknowledged.
+ function departure(){if(departureHandled)return;departureHandled=true;departing=true;clearTimeout(timer);timer=null;try{window.SKIMARU_TIME?.exportData();}catch(e){diagnostic(e,'departure');}try{send().catch(e=>preparationFailed(e,'departure'));}catch(e){preparationFailed(e,'departure');}}
+ function resumePage(){departing=false;departureHandled=false;schedule(0);}
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)resumePage();else departure();});
+ window.addEventListener('pagehide',departure);
+ window.addEventListener('pageshow',resumePage);
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>schedule());else schedule();
  setInterval(()=>{if(!document.hidden)schedule(800);},30000);notify();
 })();

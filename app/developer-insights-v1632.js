@@ -2,7 +2,7 @@
 ((root)=>{
  const num=x=>Math.max(0,Number(x)||0),names={'sc-home':'学科ホーム','pt-home':'実技ホーム','sc-quiz':'問題回答','exam':'年度別問題','sc-stats':'学習分析','tool:analysis':'学習分析','sc-send':'完了報告','tool:submit':'完了報告','results':'採点結果','tool:review':'復習'};
  function analyze(data={}){
-  const s=data.summary||{},pages=data.pages||[],buttons=data.buttons||[],days=data.daily||[],errors=data.errors||[];
+  const s=data.summary||{},pages=data.pages||[],buttons=data.buttons||[],days=data.daily||[],errors=(data.errors||[]).filter(r=>r.action!=='sync_deferred');
   const players=num(s.players),views=num(s.views),recordedDays=new Set(days.map(x=>x.day)).size,enough=players>=5&&views>=100&&recordedDays>=7;
   const evidence={players,views,recordedDays,provisional:!enough};let cards=[];
   const card=(id,priority,title,basis,action,measure,caution)=>({id,priority,title,basis,action,measure,caution,provisional:!enough});
