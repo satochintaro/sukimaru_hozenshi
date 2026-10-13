@@ -1,4 +1,7 @@
 :root{color-scheme:light;--title-green:#135644;--title-ink:#17352f;--title-gold:#bd9650;--title-cream:#fff8e7}
+body.game-title:not(.keyboard-navigation) .grade-content h2:focus{outline:none;box-shadow:none}
+body.game-title.keyboard-navigation .grade-content h2:focus{outline:3px solid #187765;outline-offset:4px}
+#game-title-view{cursor:pointer}
 *{box-sizing:border-box}html{min-height:100%;background:#e9f2de}body.game-title{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;color:var(--title-ink);background:#f6f5f0;min-height:100svh}
 button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}button,a{touch-action:manipulation}a{color:inherit;text-decoration:none}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #187765;outline-offset:4px}[hidden]{display:none!important}
 .premium-icon{display:block;width:24px;height:24px;flex:none}.title-shell{position:relative;max-width:560px;margin:0 auto;min-height:100svh}.game-title-view{position:relative;min-height:100svh;overflow:hidden;background:#d2eff5}.title-art{position:absolute;inset:0;background-image:url("./title-world-v1634.webp");background-size:cover;background-position:center center;animation:title-breathe 12s ease-in-out infinite;transform-origin:50% 45%}

@@ -18,7 +18,15 @@
  function close(d){if(d.open)d.close();}
  for(const d of [menu,settings,manager]){d.addEventListener('close',()=>opener?.isConnected&&opener.focus({preventScroll:true}));d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close(d);});}
  function choose(){try{localStorage.setItem('skimaru-role','player');}catch{}if(location.hash!=='#grades')history.pushState({titleView:'grades'},'',location.pathname+location.search+'#grades');view();}
- document.getElementById('title-start').onclick=choose;
+ // Keep keyboard focus available, but avoid Safari's programmatic focus ring after a tap.
+ document.addEventListener('keydown',e=>{if(e.key==='Tab')document.body.classList.add('keyboard-navigation');});
+ document.addEventListener('pointerdown',()=>document.body.classList.remove('keyboard-navigation'),{passive:true});
+ document.addEventListener('touchstart',()=>document.body.classList.remove('keyboard-navigation'),{passive:true});
+ const titleSurface=document.getElementById('game-title-view');
+ titleSurface.addEventListener('click',e=>{
+  if(titleSurface.hidden||e.target.closest('#title-menu-open'))return;
+  choose();
+ });
  document.getElementById('grade-back').onclick=()=>{history.pushState({titleView:'title'},'',location.pathname+location.search);view();document.getElementById('title-start').focus({preventScroll:true});};
  document.getElementById('title-menu-open').onclick=()=>open(menu);document.getElementById('grade-menu').onclick=()=>open(menu);
  document.getElementById('grade-manager').onclick=()=>open(manager);
@@ -32,7 +40,7 @@
  document.querySelectorAll('[data-manager-link]').forEach(a=>a.onclick=()=>{try{localStorage.setItem('skimaru-role','manager');}catch{}});
  window.addEventListener('popstate',view);window.addEventListener('hashchange',view);
  window.addEventListener('pageshow',()=>{leaving=false;document.getElementById('title-loading').hidden=true;view();applyMotion();});
- if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=16.37',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=16.38',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
  view();applyMotion();const recovery=document.getElementById('startup-recovery');if(recovery)recovery.hidden=true;
  window.SKIMARU_TITLE_READY=true;
 })();
