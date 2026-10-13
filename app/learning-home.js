@@ -13,7 +13,9 @@
   const big=days==null?'未設定':days<0?'終了':days===0?'本日':`あと ${days}日`;
   const sub=days==null?'':days<0?'試験日を過ぎています':days<=7?'仕上げ期間です':'毎日少しずつ積み上げよう';
   const practical=mode==='practical', rate=practical?s.practicalRate:s.academicRate??(s.academicTotal?Math.round((s.academicCorrect||0)/s.academicTotal*100):null);
-  const sdGrade=document.body.classList.contains('grade1-app')?1:2,sdUnlocked=window.SKIMARU_LIMIT_UNLOCK.observe(record,sdGrade,persist),sdActive=['question','correct'].includes(record.suddenDeath?.current?.phase),sdEntry=practical?'':sdUnlocked?`<a class="sd-home-entry" href="./sudden-death.html?grade=${sdGrade}" data-usage-action="sd_open"><span><strong>限界チャレンジ</strong><small>${sdActive?'途中の挑戦から再開できます':'1ミスで終了。'+(sdGrade===1?400:1000)+'問の道へ'}</small></span><span aria-hidden="true">→</span></a>`:`<button type="button" class="sd-home-entry sd-locked" disabled aria-label="限界チャレンジ、超越者に到達すると解放"><span class="sd-home-lock" aria-hidden="true">${window.SKIMARU_LIMIT_UNLOCK.lockIcon}</span><span><strong>限界チャレンジ</strong><small>超越者に到達すると解放</small></span></button>`;
+  const sdGrade=document.body.classList.contains('grade1-app')?1:2,sdUnlocked=window.SKIMARU_LIMIT_UNLOCK.observe(record,sdGrade,persist),sdActive=['question','correct'].includes(record.suddenDeath?.current?.phase);
+  const sdEntry=practical?'':window.SKIMARU_LIMIT_CARD.html(sdGrade,sdUnlocked,sdActive,record.suddenDeath?.best);
+
   const history=(practical?s.practicalYearHistory:s.yearHistory)||[],best=practical?window.SKIMARU_COACH.bestPastScore(history):s.bestPast;
   const icon=name=>window.SKIMARU_ICONS?.svg(name)||'';
   const metrics=`<div class="learning-metrics"><div><span>${icon('target')}正答率</span><b>${rate==null?'—':rate+'%'}</b></div><div><span>${icon('file')}回答数</span><b>${practical?s.practicalTotal:s.academicTotal}<small>問</small></b></div><div><span>${icon('calendar')}連続学習</span><b>${s.streak||0}<small>日</small></b></div></div>`;
