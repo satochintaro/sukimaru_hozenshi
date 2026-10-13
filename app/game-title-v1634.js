@@ -1,5 +1,6 @@
 "use strict";
 (() => {
+ const appBase=new URL('./',document.currentScript.src);
  const read=(key,f={})=>{try{return JSON.parse(localStorage.getItem(key)||'null')||f;}catch{return f;}};
  const set=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
  const icons=window.SKIMARU_ICONS,menu=document.getElementById('game-menu-dialog'),settings=document.getElementById('title-settings-dialog'),manager=document.getElementById('manager-choice-dialog');
@@ -22,7 +23,7 @@
  document.getElementById('title-menu-open').onclick=()=>open(menu);document.getElementById('grade-menu').onclick=()=>open(menu);
  document.getElementById('grade-manager').onclick=()=>open(manager);
  document.querySelector('[data-close-menu]').onclick=()=>close(menu);document.querySelector('[data-close-settings]').onclick=()=>close(settings);document.querySelector('[data-close-manager]').onclick=()=>close(manager);
- function settingsView(){const p=read('skimaruData');document.getElementById('title-profile-summary').textContent=p.name?p.site+' ／ '+p.name+' ／ '+(p.playerNo||''):'まだ登録されていません。級を選んで登録できます。';const grade=read('skimaru-last-grade-v1634',2);document.getElementById('title-profile-settings').href=grade===1?'./app/grade1.html#settings':'./app/player.html#settings';document.getElementById('title-reduce-motion').checked=read('skimaru-title-preferences-v1634').reducedMotion===true;open(settings);}
+ function settingsView(){const p=read('skimaruData');document.getElementById('title-profile-summary').textContent=p.name?p.site+' ／ '+p.name+' ／ '+(p.playerNo||''):'まだ登録されていません。級を選んで登録できます。';const grade=read('skimaru-last-grade-v1634',2);document.getElementById('title-profile-settings').href=new URL(grade===1?'grade1.html#settings':'player.html#settings',appBase).href;document.getElementById('title-reduce-motion').checked=read('skimaru-title-preferences-v1634').reducedMotion===true;open(settings);}
  document.getElementById('title-reduce-motion').onchange=e=>{set('skimaru-title-preferences-v1634',{...read('skimaru-title-preferences-v1634'),reducedMotion:e.target.checked});applyMotion();};
  document.getElementById('title-recovery-code').onclick=()=>{close(settings);const r=read('skimaru-registration-v13');if(!r.playerNo||!r.token){window.SKIMARU_ROLLOUT?.guide('player');return;}window.SKIMARU_BACKUP?.showCode();};
  document.querySelectorAll('[data-title-action]').forEach(b=>b.onclick=()=>{const action=b.dataset.titleAction;close(menu);if(action!=='settings')close(settings);if(action==='manager')open(manager);if(action==='settings')settingsView();if(action==='install')window.SKIMARU_ROLLOUT?.install();if(action==='guide')window.SKIMARU_ROLLOUT?.guide('player');if(action==='restore')window.SKIMARU_BACKUP?.restore();if(action==='mail')window.SKIMARU_SUPPORT?.mailbox();if(action==='report')window.SKIMARU_SUPPORT?.report();if(action==='reports')window.SKIMARU_SUPPORT?.reports();});
@@ -31,6 +32,7 @@
  document.querySelectorAll('[data-manager-link]').forEach(a=>a.onclick=()=>{try{localStorage.setItem('skimaru-role','manager');}catch{}});
  window.addEventListener('popstate',view);window.addEventListener('hashchange',view);
  window.addEventListener('pageshow',()=>{leaving=false;document.getElementById('title-loading').hidden=true;view();applyMotion();});
- if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=16.36',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
- view();applyMotion();
+ if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=16.37',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ view();applyMotion();const recovery=document.getElementById('startup-recovery');if(recovery)recovery.hidden=true;
+ window.SKIMARU_TITLE_READY=true;
 })();
