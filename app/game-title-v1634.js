@@ -35,12 +35,12 @@
  document.getElementById('title-reduce-motion').onchange=e=>{set('skimaru-title-preferences-v1634',{...read('skimaru-title-preferences-v1634'),reducedMotion:e.target.checked});applyMotion();};
  document.getElementById('title-recovery-code').onclick=()=>{close(settings);const r=read('skimaru-registration-v13');if(!r.playerNo||!r.token){window.SKIMARU_ROLLOUT?.guide('player');return;}window.SKIMARU_BACKUP?.showCode();};
  document.querySelectorAll('[data-title-action]').forEach(b=>b.onclick=()=>{const action=b.dataset.titleAction;close(menu);if(action!=='settings')close(settings);if(action==='manager')open(manager);if(action==='settings')settingsView();if(action==='install')window.SKIMARU_ROLLOUT?.install();if(action==='guide')window.SKIMARU_ROLLOUT?.guide('player');if(action==='restore')window.SKIMARU_BACKUP?.restore();if(action==='mail')window.SKIMARU_SUPPORT?.mailbox();if(action==='report')window.SKIMARU_SUPPORT?.report();if(action==='reports')window.SKIMARU_SUPPORT?.reports();});
- function navigate(a){if(leaving)return;leaving=true;document.getElementById('title-loading').hidden=false;requestAnimationFrame(()=>location.assign(a.href));}
+ function navigate(a){if(leaving)return;leaving=true;if(window.SKIMARU_PAGE_LOADING){window.SKIMARU_PAGE_LOADING.navigate(a.href);return;}document.getElementById('title-loading').hidden=false;requestAnimationFrame(()=>location.assign(a.href));}
  document.querySelectorAll('[data-learning-link]').forEach(a=>a.addEventListener('click',e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();set('skimaru-last-grade-v1634',Number(a.dataset.grade));try{localStorage.setItem('skimaru-role','player');}catch{}navigate(a);}));
  document.querySelectorAll('[data-manager-link]').forEach(a=>a.onclick=()=>{try{localStorage.setItem('skimaru-role','manager');}catch{}});
  window.addEventListener('popstate',view);window.addEventListener('hashchange',view);
  window.addEventListener('pageshow',()=>{leaving=false;document.getElementById('title-loading').hidden=true;view();applyMotion();});
- if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=16.50',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=16.51',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
  view();applyMotion();const recovery=document.getElementById('startup-recovery');if(recovery)recovery.hidden=true;
  window.SKIMARU_TITLE_READY=true;
 })();
