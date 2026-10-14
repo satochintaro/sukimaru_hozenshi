@@ -128,9 +128,9 @@
 })();
 
 
-if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.46';document.head.append(usage);}
+if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.47';document.head.append(usage);}
 
 
 if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-follow-v1632.js"]')){const follow=document.createElement("script");follow.src="./player-follow-v1632.js?v=16.32";document.head.append(follow);}
-if(!window.SKIMARU_SYNC){const meta=document.createElement('script');meta.src='./progress-metadata-v1633.js?v=16.33';meta.onload=()=>{const sync=document.createElement('script');sync.src='./progress-sync-v1633.js?v=16.46';document.head.append(sync);};document.head.append(meta);}
+if(!window.SKIMARU_SYNC){const meta=document.createElement('script');meta.src='./progress-metadata-v1633.js?v=16.33';meta.onload=()=>{const sync=document.createElement('script');sync.src='./progress-sync-v1633.js?v=16.47';document.head.append(sync);};document.head.append(meta);}
 
