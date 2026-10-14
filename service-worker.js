@@ -1,4 +1,4 @@
-const RELEASE='1651',CACHE='skimaru-live-20261014-v16-51-animated-loading';
+const RELEASE='1652',CACHE='skimaru-live-20261014-v16-52-loading-motion-fix';
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
 function isHome(url){return [ROOT.pathname,home.pathname,new URL('app/',ROOT).pathname,appHome.pathname].includes(url.pathname);}
