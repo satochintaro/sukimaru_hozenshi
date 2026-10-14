@@ -114,7 +114,17 @@
   function outstanding(){const p=read(KEY),l=read(LEDGER),q=read(QUEUE,[]);const academic=Math.max(0,(Number(p.total)||0)-Math.max(Number(l.academic)||0,...q.filter(r=>r.examType!=="practical"&&(r.progressEpoch||0)===(p.progressEpoch||0)).map(r=>Number(r.academicSnapshot??r.total)||0)));const covered=new Set([...(l.practical||[]),...q.flatMap(r=>r.historyIds||[])]);const hist=read("skimaruExamHistory_v1",[]).filter(r=>r.kind==="jitugi"&&r.completedAt&&!covered.has(r.id));const aCovered=new Set([...(l.academicHistory||[]),...q.filter(r=>r.examType!=="practical").flatMap(r=>r.historyIds||[])]),academicHist=read("skimaruExamHistory_v1",[]).filter(r=>r.kind==="gakka"&&r.completedAt&&!aCovered.has(r.id));return {academic,academicHist,hist,pending:q.length};}
   let bar;
   function setText(el,value){if(!el)return;if(el.textContent!==value)el.textContent=value;}
-  function refresh(){if(!bar)return;if(!bar.isConnected){const home=document.querySelector("#sc-home .pad,#pt-home .pad,.wrap,main")||document.body;home.prepend(bar);}const p=read(KEY);const settings=document.getElementById("st-name");if(settings)settings.textContent=`${p.site||"未登録"} ／ ${p.name||"名前未登録"}`;const box=bar.querySelector(".member-alert"),status=window.SKIMARU_SYNC?.status();box.hidden=false;bar.hidden=false;box.dataset.syncState=status?.error?'error':!navigator.onLine?'offline':status?.pending?'pending':'saved';setText(box.querySelector("span"),status?.text||"学習データは自動同期します。完了報告は任意です。");const btn=box.querySelector("button");btn.hidden=!(status?.pending||status?.error);btn.textContent="同期を再試行";btn.onclick=()=>window.SKIMARU_SYNC?.flush();}
+  function refresh(){
+    if(!bar)return;
+    if(!bar.isConnected){const home=document.querySelector("#sc-home .pad,#pt-home .pad,.wrap,main")||document.body;home.prepend(bar);}
+    const p=read(KEY),settings=document.getElementById("st-name");if(settings)settings.textContent=`${p.site||"未登録"} ／ ${p.name||"名前未登録"}`;
+    const box=bar.querySelector(".member-alert"),status=window.SKIMARU_SYNC?.status(),loader=window.SKIMARU_SYNC_LOADER?.status();
+    box.hidden=false;bar.hidden=false;
+    box.dataset.syncState=!navigator.onLine?'offline':status?.error?'error':!status?(loader?.state==='failed'?'error':'pending'):status.pending?'pending':status.savedAt?'saved':'pending';
+    setText(box.querySelector("span"),status?.text||loader?.text||'同期を準備しています。学習記録は端末に保存されています。');
+    const btn=box.querySelector("button");btn.hidden=!(status?.pending||status?.error||loader?.state==='failed');btn.disabled=!!status?.busy;btn.textContent=status?.busy?'同期中…':'同期を再試行';
+    btn.onclick=()=>{Promise.resolve(window.SKIMARU_SYNC?window.SKIMARU_SYNC.flush():window.SKIMARU_SYNC_LOADER?.retry()).catch(()=>{refresh();});};
+  }
 
   async function submit(){if(busy)return;if(!valid()){register();return;}const {academic,academicHist,hist}=outstanding();if(academic&&typeof window.showSend==="function"){window.showSend();return;}if(academic&&!hist.length&&!academicHist.length){location.href="./player.html#submit";return;}const examType=hist.length?"practical":"academic",history=hist.length?hist:academicHist;if(!history.length)return;busy=true;const btn=bar.querySelector(".member-alert button");btn.disabled=true;btn.textContent="提出中…";
     const p=read(KEY),sentAt=new Date().toISOString(),total=history.reduce((s,r)=>s+r.total,0),correct=history.reduce((s,r)=>s+r.correct,0);const record={id:crypto.randomUUID(),playerNo:p.playerNo,name:p.name,site:p.site,examType,total,correct,academicSnapshot:0,progressEpoch:p.progressEpoch||0,historyIds:history.map(r=>r.id),pastYearHistory:history,sentAt,cats:{},alerts:[],studyMetricsV12:window.SKIMARU_TIME?.snapshot(),elapsedSeconds:history.reduce((s,r)=>s+(Number(r.elapsedSeconds)||0),0)};
@@ -128,9 +138,50 @@
 })();
 
 
-if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.48';document.head.append(usage);}
+if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.50';document.head.append(usage);}
 
 
 if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-follow-v1632.js"]')){const follow=document.createElement("script");follow.src="./player-follow-v1632.js?v=16.32";document.head.append(follow);}
-if(!window.SKIMARU_SYNC){const meta=document.createElement('script');meta.src='./progress-metadata-v1633.js?v=16.33';meta.onload=()=>{const sync=document.createElement('script');sync.src='./progress-sync-v1633.js?v=16.48';document.head.append(sync);};document.head.append(meta);}
+// Metadata must be ready before a snapshot is made. Never label a failed bootstrap as synced.
+(() => {
+ if(window.SKIMARU_SYNC_LOADER)return;
+ const base=new URL('./',document.currentScript?.src||location.href);
+ let state='loading',attempt=0,running=false,timer=null;
+ const notify=()=>{window.SKIMARU_MEMBER?.refresh();window.dispatchEvent(new CustomEvent('skimaru-sync-loader'));};
+ const status=()=>({state,attempt,text:state==='offline'?'オフラインです。学習記録は端末に保存されています。通信が戻ると同期を準備します。':state==='failed'?'同期の準備に失敗しました。学習記録は端末に残っています。「同期を再試行」を押してください。':'同期を準備しています。学習記録は端末に保存されています。'});
+ function load(file,ready){
+  if(ready())return Promise.resolve();
+  return new Promise((resolve,reject)=>{
+   const script=document.createElement('script');let done=false;
+   const finish=error=>{if(done)return;done=true;clearTimeout(timeout);script.onload=script.onerror=null;if(error){script.remove();reject(error);}else resolve();};
+   const timeout=setTimeout(()=>finish(new DOMException('script timeout','TimeoutError')),20000);
+   script.src=new URL(file+'?v=16.50'+(attempt>1?'&retry='+attempt:''),base).href;
+   script.onload=()=>finish(ready()?null:new Error('script_not_ready'));script.onerror=()=>finish(new Error('script_load_failed'));
+   document.head.append(script);
+  });
+ }
+ async function start(reset=false){
+  if(window.SKIMARU_SYNC){state='ready';notify();return;}
+  if(running)return;
+  if(reset){attempt=0;clearTimeout(timer);timer=null;}
+  if(!navigator.onLine){state='offline';notify();return;}
+  if(attempt>=3){state='failed';notify();return;}
+  running=true;state='loading';attempt++;notify();
+  let file='progress-metadata-v1633.js';
+  try{
+   await load(file,()=>!!window.SKIMARU_PROGRESS_META);
+   file='progress-sync-v1633.js';await load(file,()=>!!window.SKIMARU_SYNC);
+   state='ready';
+  }catch(e){
+   state=navigator.onLine?'failed':'offline';
+   try{window.SKIMARU_USAGE?.reportError?.(e,{stage:'script_load',filename:new URL(file,base).href,handled:true});}catch{}
+   if(navigator.onLine&&attempt<3)timer=setTimeout(()=>{timer=null;start();},attempt===1?1500:4000);
+  }finally{running=false;notify();}
+ }
+ window.SKIMARU_SYNC_LOADER={status,retry:()=>start(true)};
+ window.addEventListener('online',()=>start(true));
+ window.addEventListener('pageshow',e=>{if(e.persisted&&(state==='failed'||state==='offline'))start(true);});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(state==='failed'||state==='offline'))start(true);});
+ start();
+})();
 

@@ -205,7 +205,7 @@
     const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0;
     let h=`<div class="manager-stat-grid">${stat("総合対象",groups.length+"人")}${stat("学科＋実技",both+"人")}${stat("総合平均",avg+"%")}${stat("権限","閲覧のみ")}</div>`;
     h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>プレイヤー総合一覧</h2><p>学科・実技を同じPlayerNoでまとめています。</p></div></div><div class="player-table-wrap"><table class="player-table"><thead><tr><th>拠点</th><th>No.</th><th>表示名</th><th>学科</th><th>実技</th><th>総合</th><th>重点</th><th>最終</th></tr></thead><tbody>`;
-    groups.forEach((g,i)=>h+=`<tr class="player-row" data-viewer-group="${i}" tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${g.academic?g.academic.rate+"%":"—"}</strong></td><td><strong>${g.practical?g.practical.rate+"%":"—"}</strong></td><td><strong>${g.overall==null?"—":g.overall+"%"}</strong></td><td>${g.weak?esc(g.weak.theme):"—"}</td><td>${fmt(g.latest?.at)}</td></tr>`);
+    groups.forEach((g,i)=>h+=`<tr class="player-row" data-viewer-group="${i}" ${cardMetrics(g,"combined")} tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${g.academic?g.academic.rate+"%":"—"}</strong></td><td><strong>${g.practical?g.practical.rate+"%":"—"}</strong></td><td><strong>${g.overall==null?"—":g.overall+"%"}</strong></td><td>${g.weak?esc(g.weak.theme):"—"}</td><td>${fmt(g.latest?.at)}</td></tr>`);
     h+="</tbody></table></div></div>";
     root.innerHTML=(window.SKIMARU_PROGRESS_VIEW?.html()||"")+window.SKIMARU_METRICS.html(groups.filter(g=>mode==="combined"||g[mode]),mode)+h;bindRows();window.SKIMARU_METRICS.bind(root,render,key=>openDetail(groups.find(g=>g.key===key)));
   }
@@ -220,11 +220,13 @@
     h+=`<div class="manager-section"><div class="manager-section-head"><div><h2>${label}プレイヤー一覧</h2><p>最新成績を表示しています。</p></div></div><div class="player-table-wrap"><table class="player-table"><thead><tr><th>拠点</th><th>No.</th><th>表示名</th><th>最新</th><th>最高</th><th>回数</th><th>最終更新</th></tr></thead><tbody>`;
     typeGroups.forEach(g=>{
       const hist=g.rows.filter(x=>x.examType===type),latest=hist.at(-1),best=Math.max(...hist.map(x=>x.rate)),idx=groups.indexOf(g);
-      h+=`<tr class="player-row" data-viewer-group="${idx}" tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${latest.rate}%</strong></td><td>${best}%</td><td>${hist.filter(x=>!x.raw?.autoSynced).length}回</td><td>${fmt(latest.at)}</td></tr>`;
+      h+=`<tr class="player-row" data-viewer-group="${idx}" ${cardMetrics(g,type)} tabindex="0"><td>${esc(g.site)}</td><td><b>${esc(g.playerNo)}</b></td><td>${esc(g.name)}</td><td><strong>${latest.rate}%</strong></td><td>${best}%</td><td>${hist.filter(x=>!x.raw?.autoSynced).length}回</td><td>${fmt(latest.at)}</td></tr>`;
     });
     h+="</tbody></table></div></div>";
     root.innerHTML=(window.SKIMARU_PROGRESS_VIEW?.html()||"")+window.SKIMARU_METRICS.html(groups.filter(g=>mode==="combined"||g[mode]),mode)+h;bindRows();window.SKIMARU_METRICS.bind(root,render,key=>openDetail(groups.find(g=>g.key===key)));
   }
+
+  function cardMetrics(g,type){const m=window.SKIMARU_METRICS.metrics(g,type),list=g.rows.filter(r=>type==='combined'||r.examType===type),count=list.filter(r=>!r.raw?.autoSynced).length,time=Math.max(0,...list.map(r=>Date.parse(r.at)||0));return 'data-card-total="'+m.total+'" data-card-rate="'+(m.rate??-1)+'" data-card-submissions="'+count+'" data-card-updated="'+time+'"';}
 
   function bindRows(){
     document.querySelectorAll("[data-viewer-group]").forEach(el=>{

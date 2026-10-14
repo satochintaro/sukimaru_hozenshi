@@ -1,7 +1,7 @@
 "use strict";
 (()=>{
  if(/\/(admin|viewer|index)\.html$/.test(location.pathname)||window.SKIMARU_USAGE)return;
- const VERSION='16.48',KEY='skimaru-usage-queue-v1631',SESSION='skimaru-usage-session-v1631';
+ const VERSION='16.50',KEY='skimaru-usage-queue-v1631',SESSION='skimaru-usage-session-v1631';
  const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch{return f;}},save=q=>{try{localStorage.setItem(KEY,JSON.stringify(q.slice(-1000)));}catch{}};
  let session;try{const previous=JSON.parse(sessionStorage.getItem(SESSION)||'null');session=previous&&Date.now()-previous.at<1800000?previous.id:crypto.randomUUID();sessionStorage.setItem(SESSION,JSON.stringify({id:session,at:Date.now()}));}catch{session=crypto.randomUUID();}
  let pageKey='',lastInteraction=Date.now(),lastBeat=Date.now(),sending=false,stopped=false;
@@ -20,9 +20,10 @@
  // Never send raw messages, URLs, query strings or stacks: they may contain input or tokens.
  function reportError(reason,options={}){try{
   const name=errorNames.has(reason?.name)?reason.name:'Unknown',message=String(reason?.message||'').slice(0,1000);let code='unknown';
-  if(/not fully active|document.*inactive|context.*destroyed/i.test(message))code='document_inactive';else if(name==='AbortError')code='aborted';else if(name==='QuotaExceededError')code='storage_full';else if(name==='SecurityError')code='storage_restricted';else if(/backup_large/.test(message))code='backup_large';else if(/authentication|registration/.test(message))code='registration';else if(/Failed to fetch|Load failed|NetworkError|network|sync_failed/i.test(message))code='network';else if(name==='ReferenceError')code='reference';else if(name==='SyntaxError')code='syntax';else if(name==='TypeError')code='type';
+  if(/not fully active|document.*inactive|context.*destroyed/i.test(message))code='document_inactive';else if(name==='AbortError'||name==='TimeoutError')code='aborted';else if(name==='QuotaExceededError')code='storage_full';else if(name==='SecurityError')code='storage_restricted';else if(/backup_large/.test(message))code='backup_large';else if(/authentication|registration/.test(message))code='registration';else if(/Failed to fetch|Load failed|NetworkError|network|sync_failed/i.test(message))code='network';else if(name==='ReferenceError')code='reference';else if(name==='SyntaxError')code='syntax';else if(name==='TypeError')code='type';
   const stage=stages.has(options.stage)?options.stage:'unhandled',info=locationInfo(options.filename,options.line,options.column),frames=[];if(stage==='image_load'||stage==='script_load')code='resource';const resource=resourceName(options.resource);
-  for(const value of String(reason?.stack||'').slice(0,12000).split('\n').slice(0,12)){const match=value.match(/(https?:\/\/[^\s()]+):(\d+):(\d+)\)?$/);if(!match)continue;const frame=locationInfo(match[1],match[2],match[3]);if(frame.source){frames.push(frame);if(frames.length===4)break;}}
+  for(const value of String(reason?.stack||'').slice(0,12000).split('\n').slice(0,12)){const match=value.match(/(https?:\/\/[^\s()]+?):(\d+)(?::(\d+))?\)?$/);if(!match)continue;const frame=locationInfo(match[1],match[2],match[3]||0);if(frame.source){frames.push(frame);if(frames.length===4)break;}}
+  if(!frames.length&&reason?.sourceURL){const frame=locationInfo(reason.sourceURL,reason.line,reason.column);if(frame.source)frames.push(frame);}
   const handled=options.handled===true,expected=handled&&options.departing===true&&['aborted','document_inactive'].includes(code),key=[page(),screen(),stage,code,info.source||frames[0]?.source||resource||''].join('|'),now=Date.now();
   if(now-(seenErrors.get(key)||0)<30000)return;seenErrors.set(key,now);if(seenErrors.size>100)seenErrors.delete(seenErrors.keys().next().value);
   add('error',expected?'sync_deferred':handled?'sync_handled':options.action||'promise_rejection',0,undefined,{name,code,stage,handled,expected,online:navigator.onLine===true,state:document.hidden?'hidden':'visible',...info,...(resource?{resource}:{}),frames});
