@@ -40,7 +40,7 @@
  document.querySelectorAll('[data-manager-link]').forEach(a=>a.onclick=()=>{try{localStorage.setItem('skimaru-role','manager');}catch{}});
  window.addEventListener('popstate',view);window.addEventListener('hashchange',view);
  window.addEventListener('pageshow',()=>{leaving=false;document.getElementById('title-loading').hidden=true;view();applyMotion();});
- if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=16.60',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js?v=16.61',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
  view();applyMotion();const recovery=document.getElementById('startup-recovery');if(recovery)recovery.hidden=true;
  window.SKIMARU_TITLE_READY=true;
 })();
