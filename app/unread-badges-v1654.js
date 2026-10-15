@@ -12,7 +12,7 @@
  function paint(){
   for(const el of document.querySelectorAll('.support-launchers [data-mail],[data-title-action="mail"]'))paintOne(el,mail);
   for(const el of document.querySelectorAll('.support-launchers [data-reports],[data-title-action="reports"]'))paintOne(el,reports);
-  for(const el of document.querySelectorAll('#title-menu-open,#grade-menu,.learning-contact > summary,[data-workspace="contact"]'))paintOne(el,mail+reports);
+  for(const el of document.querySelectorAll('#title-menu-open,#grade-menu,[data-shared-menu-open],#settings,#sc-home .hd-ico,.practical-hd .member-gear,.learning-contact > summary,[data-workspace="contact"]'))paintOne(el,mail+reports);
  }
  function queuePaint(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;paint();});}
  function osBadge(){
@@ -37,7 +37,7 @@
   d.querySelector('[data-close]').onclick=()=>d.close();d.addEventListener('close',()=>d.remove());document.body.append(d);status();d.showModal();
  }
  function mountSettings(){
-  for(const host of document.querySelectorAll('.support-launchers,#game-menu-dialog .game-menu-grid'))if(!host.querySelector('[data-badge-settings]')){const b=document.createElement('button');b.type='button';b.dataset.badgeSettings='';window.SKIMARU_CONTACT_UI?.button(b,'通知設定','settings');b.onclick=()=>{document.getElementById('game-menu-dialog')?.close();settings();};host.append(b);}
+  for(const host of document.querySelectorAll('.support-launchers,#game-menu-dialog .game-menu-grid'))if(!host.hasAttribute('data-shared-menu-grid')&&!host.querySelector('[data-badge-settings]')){const b=document.createElement('button');b.type='button';b.dataset.badgeSettings='';window.SKIMARU_CONTACT_UI?.button(b,'通知設定','settings');b.onclick=()=>{document.getElementById('game-menu-dialog')?.close();settings();};host.append(b);}
  }
 
  function init(){mountSettings();paint();new MutationObserver(()=>{mountSettings();queuePaint();}).observe(document.body,{childList:true,subtree:true});}

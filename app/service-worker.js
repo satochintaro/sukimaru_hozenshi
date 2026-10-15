@@ -1,4 +1,4 @@
-const RELEASE='1655',CACHE='skimaru-live-20261014-v16-55-common-ui';
+const RELEASE='1656',CACHE='skimaru-live-20261014-v16-56-shared-menu';
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
 function isHome(url){return [ROOT.pathname,home.pathname,new URL('app/',ROOT).pathname,appHome.pathname].includes(url.pathname);}
@@ -26,6 +26,7 @@ self.addEventListener('fetch',event=>{
    try{const hit=await cachedPage(event.request);if(hit)return hit;}catch{}return recoveryPage();
   })());return;
  }
+ if(url.pathname.endsWith('.webmanifest')){event.respondWith(fetch(event.request,{cache:'no-store'}).then(async response=>{if(!response.ok)throw Error('Manifest unavailable');await remember(event.request,response);return response;}).catch(()=>caches.match(event.request).then(hit=>hit||new Response('Unavailable offline',{status:503}))));return;}
  if(/\.(?:js|css|webmanifest)$/.test(url.pathname)){
   const update=fetch(event.request,{cache:'no-cache'}).then(async response=>{if(await usable(response)){await remember(event.request,response);return response;}throw Error('Empty or unavailable asset');});
   event.waitUntil(update.then(()=>{}).catch(()=>{}));

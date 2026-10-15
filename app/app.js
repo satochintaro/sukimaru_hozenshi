@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.55",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.56",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -679,14 +679,9 @@ function ensurePlayerNo(){
   if(!U.playerNo){U.playerNo=generatePlayerNo();save();}
   return U.playerNo;
 }
-function showSettings(){
-  document.getElementById("st-name").textContent=(U.site?U.site+" ／ ":"")+(U.name||"名前を入力");
-  const pn=document.getElementById("st-player-no");if(pn)pn.textContent=ensurePlayerNo();
-  setSwitch("sw-warn",U.showWarn); setSwitch("sw-srs",U.useSRS);
-  setSwitch("sw-large",U.largeText); setSwitch("sw-contrast",U.highContrast);
-  document.getElementById("st-qn").textContent=QUESTIONS.length;
-  updateStorageStatus(); show("sc-set");
-}
+function showSettings(){window.SKIMARU_MENU?.open();}
+window.SKIMARU_MENU_PREFERENCES={get:()=>({...U}),set:(key,value)=>{if(!['showWarn','useSRS','largeText','highContrast'].includes(key))return false;U[key]=value;const ok=save();applyPreferences();return ok;}};
+
 function editName(){window.SKIMARU_MEMBER?.edit();}
 function toggleWarn(){U.showWarn=!U.showWarn;save();setSwitch("sw-warn",U.showWarn);}
 function toggleSRS(){U.useSRS=!U.useSRS;save();setSwitch("sw-srs",U.useSRS);}
