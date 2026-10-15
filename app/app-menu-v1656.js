@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.56';
+ const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.58';
  const read=(k,f={})=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch{return f;}};
  const grade=()=>document.body.classList.contains('grade1-app')?1:/player|practical/.test(location.pathname)?2:Number(read('skimaru-last-grade-v1634',2));
  const svg=key=>key==='close'?(window.SKIMARU_CONTACT_UI?.svg(key)||''):window.SKIMARU_ICONS?.svg(key)||window.SKIMARU_CONTACT_UI?.svg(key)||'';
@@ -22,7 +22,7 @@
   document.querySelectorAll('.hd-ico,.member-gear').forEach(b=>{b.onclick=()=>open();b.dataset.sharedMenuOpen='';b.setAttribute('aria-label','メニュー');b.innerHTML=svg('menu')||svg('gear');});
   document.querySelectorAll('.rollout-tools').forEach(el=>el.remove());
   document.getElementById('grade-manager')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();open('manager');},true);
-  if(!document.querySelector('link[rel="apple-touch-icon"]')){const link=document.createElement('link');link.rel='apple-touch-icon';link.href=new URL('apple-touch-icon-v1656.png',base);document.head.append(link);}
+  if(!document.querySelector('link[rel="apple-touch-icon"]')){const link=document.createElement('link');link.rel='apple-touch-icon';link.href=new URL('apple-touch-icon-v1657.png',base);document.head.append(link);}
   if(location.hash==='#settings')open();
  }
  function open(next='menu'){
@@ -72,7 +72,7 @@
  }
  function manager(body){for(const [label,file,key] of [['管理者','viewer.html','people'],['開発者','admin.html','chart']])body.append(action(label,key,()=>{try{localStorage.setItem('skimaru-role','manager');}catch{}if(window.SKIMARU_PAGE_LOADING)window.SKIMARU_PAGE_LOADING.navigate(new URL(file,base).href);else location.assign(new URL(file,base).href);}));}
  function update(body){
-  const image=document.createElement('img');image.src=new URL('icon-v1656-192.png',base);image.alt='スキマル保全士のアイコン';image.className='um-app-icon';body.append(image,paragraph('使用中：Ver '+VERSION));
+  const image=document.createElement('img');image.src=new URL('icon-v1657-192.png',base);image.alt='スキマル保全士のアイコン';image.className='um-app-icon';body.append(image,paragraph('使用中：Ver '+VERSION));
   const state=paragraph('アプリやサイトデータを削除せずに更新できます。');state.setAttribute('role','status');body.append(state);
   const check=action('更新を確認','restore',async()=>{
    if(checking)return;checking=true;check.disabled=true;state.textContent='更新を確認中…';const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
@@ -82,11 +82,11 @@
     const html=await fetch(new URL('index.html',root),{cache:'no-store',signal:controller.signal});if(!html.ok||!/<html\b/i.test(await html.text()))throw Error();
     const icon=new URL(manifest.icons[0].src,root);if(icon.origin!==location.origin)throw Error();image.src=icon.href;
     if('serviceWorker'in navigator){const registrations=await navigator.serviceWorker.getRegistrations();await Promise.race([Promise.all(registrations.filter(reg=>reg.scope.startsWith(root.href)).map(reg=>reg.update())),new Promise((_,reject)=>setTimeout(()=>reject(Error('Update timeout')),8000))]);}
-    state.textContent=latest==='1656'?'このアプリは最新版です。':'新しいバージョンがあります。';
+    state.textContent=latest===VERSION.replace('.','')?'このアプリは最新版です。':'新しいバージョンがあります。';
     check.querySelector('span:last-child').textContent='更新して開き直す';check.onclick=async()=>{check.disabled=true;try{await window.SKIMARU_SYNC?.capture();if(/同期の準備|大きく自動同期/.test(window.SKIMARU_SYNC?.status()?.error||''))throw Error('Capture failed');const url=new URL(location.href);url.searchParams.set('_update',Date.now());location.replace(url.href);}catch{state.textContent='学習記録の保存を確認できなかったため、開き直しを中止しました。';check.disabled=false;}};
    }catch{state.textContent='通信できませんでした。学習記録は端末に残っています。通信が戻ってから再度お試しください。';}finally{clearTimeout(timer);checking=false;check.disabled=false;}
-  });body.append(check,paragraph('ホーム画面アイコンの反映時期は端末によって異なります。Androidではブラウザ側の更新確認が表示される場合があります。iPhoneでは追加済みアイコンをアプリから強制変更できるとは限りません。'));
-  body.append(action('ホーム画面に追加','plus',()=>external(()=>window.SKIMARU_ROLLOUT?.install())));
+  });body.append(check,paragraph('ホーム画面アイコンの反映時期は端末によって異なります。Androidではブラウザ側の更新確認が表示される場合があります。iPhoneの追加済みアイコンは、この更新ボタンでは変更できません。Safariで最新版を開き、ホーム画面に追加し直して確認してください。先に「データ・復元」から復旧コードを控えてください。'));
+  body.append(action('新しいアイコンをホーム画面に追加','plus',()=>external(()=>window.SKIMARU_ROLLOUT?.install())));
  }
  document.addEventListener('click',e=>{const b=e.target.closest('#title-menu-open,#grade-menu,#settings,#sc-home .hd-ico,.practical-hd .member-gear');if(!b)return;e.preventDefault();e.stopImmediatePropagation();open();},true);
  window.SKIMARU_MENU={open,close,version:VERSION};

@@ -1,0 +1,56 @@
+'use strict';
+(()=>{
+ const read=(k,f={})=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch{return f;}},num=v=>Math.min(1000,Math.max(0,Math.floor(Number(v)||0)));
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const crown='<svg viewBox="0 0 48 36" aria-hidden="true"><path d="M7 28 3 8l12 8L24 3l9 13 12-8-4 20z" fill="currentColor"/><path d="M8 33h32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>';
+ let context=null,tab='ranking',scope='all',revision=0,controller=null,lastSync='',refreshTimer=null;
+ const date=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?'―':d.toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});};
+ function mounted(){return context&&document.getElementById('sd-entry')?.classList.contains('cl-lobby');}
+ function history(l){const h=Array.isArray(l.history)?l.history:[];return h.filter(x=>x&&typeof x==='object');}
+ function mount(c){
+  controller?.abort();revision++;context=c;tab='ranking';scope='all';document.body.classList.add('sd-lobby-view');
+  const l=c.ledger,active=c.active,p=read('skimaruData'),best=num(l.best),attempts=Math.max(Number(l.attempts)||0,history(l).length+(active?1:0));
+  c.root.innerHTML=c.header+'<section class="cl-lobby screen active" id="sd-entry"><div class="cl-hero"><div class="cl-hero-orbit" aria-hidden="true"></div><p class="cl-eyebrow">1000 QUESTION CHALLENGE</p><div class="cl-hero-main"><div><span class="cl-grade">'+c.grade+'級・学科限定</span><h2>限界<br>チャレンジ</h2><p class="cl-hero-copy">一問ずつ、その先へ。</p></div><img class="cl-hero-mascot" src="./icon-v1657-512.png" alt="○と×の札を持つ保全士ロボット"></div><p class="cl-rules-line">○×ランダム出題 <i></i> 1ミスで終了</p>'+(c.unlocked?'<button class="cl-start" id="'+(active?'sd-resume':'sd-new')+'" data-usage-action="'+(active?'sd_resume':'sd_start')+'">'+(active?num(c.current.index)+'問の続きから':'スタート')+'<span aria-hidden="true">→</span></button>':'<p class="cl-locked">超越者で解放されます</p>')+(active?'<button class="cl-new" id="sd-new" data-usage-action="sd_new">新しく挑戦する</button>':'')+'</div><div class="cl-personal-strip"><div><small>自己ベスト</small><strong>'+best+'<em>問連続正解</em></strong></div><div><small>あなたの順位</small><strong data-my-rank>―<em>位</em></strong></div></div><p class="cl-player">'+esc((p.site||'拠点未登録')+' ／ '+(p.name||'未登録'))+'</p><div class="cl-tabs" role="tablist" aria-label="限界チャレンジの情報"><button id="cl-ranking-tab" role="tab" aria-selected="true" aria-controls="cl-panel" data-tab="ranking">ランキング</button><button id="cl-record-tab" role="tab" aria-selected="false" aria-controls="cl-panel" data-tab="record">自分の成績</button></div><div id="cl-panel" role="tabpanel" aria-labelledby="cl-ranking-tab"></div><details class="cl-rules"><summary>ルール・記録について</summary><p>1000問を目指す○×チャレンジです。1回の不正解で終了。正解するたびに進み、10問ごとに色が変わります。10・20・30問目…は、あなたが過去に間違えた収録○×問題から出題します。誤答履歴がなければ通常ランダムです。</p><p>収録数が1000問未満の級も再出題して1000問を目指します。中断しても失敗にならず、同じ問題から再開できます。通常学習の成績・解放実績とは別に保存します。</p><p>ランキングは1級・2級で別集計。同期済みの最高連続正解数で並べ、同じ記録は同順位です。名前と拠点を登録メンバー間で表示します。0問・未同期の記録・過去のデモ記録は載りません。端末の学習記録に基づくランキングで、不正防止を保証するものではありません。</p></details></section>';
+  c.root.querySelector('#sd-resume')?.addEventListener('click',c.resume);c.root.querySelector('#sd-new')?.addEventListener('click',()=>c.start(active));
+  c.root.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{if(tab===b.dataset.tab)return;tab=b.dataset.tab;renderPanel();});
+  renderPanel();
+  if(attempts&&window.SKIMARU_SYNC)window.SKIMARU_SYNC.flush().catch(()=>{});
+ }
+ function renderPanel(){
+  if(!mounted())return;const panel=document.getElementById('cl-panel');context.root.querySelectorAll('[data-tab]').forEach(b=>{const selected=b.dataset.tab===tab;b.setAttribute('aria-selected',selected);b.tabIndex=selected?0:-1;});panel.setAttribute('aria-labelledby',tab==='record'?'cl-record-tab':'cl-ranking-tab');
+  if(tab==='record'){controller?.abort();revision++;renderRecord(panel);return;}
+  panel.innerHTML='<div class="cl-ranking-toolbar"><h3>最高連続正解ランキング</h3><select aria-label="ランキングの範囲" id="cl-scope"><option value="all">全拠点</option><option value="site">自分の拠点</option></select></div><p class="cl-network" role="status">ランキングを読み込み中…</p><div class="cl-ranking-content"></div><button class="cl-refresh" type="button">ランキングを更新</button><p class="cl-footnote">同期済み記録・上位100人まで。同じ記録は同順位。</p>';
+  panel.querySelector('#cl-scope').value=scope;panel.querySelector('#cl-scope').onchange=e=>{scope=e.target.value;fetchRanking();};panel.querySelector('.cl-refresh').onclick=()=>fetchRanking(true);fetchRanking();
+ }
+ function renderRecord(panel){
+  const l=context.ledger,h=history(l),attempts=Math.max(Number(l.attempts)||0,h.length+(context.active?1:0)),correct=Math.max(0,Number(l.correctAnswers)||0),answered=Math.max(0,Number(l.totalAnswers)||0);
+  panel.innerHTML='<div class="cl-record-heading"><span>'+crown+'</span><div><h3>積み重ねたチャレンジ</h3><p>自己ベストは '+num(l.best)+'問連続正解</p></div></div><div class="cl-record-stats"><div><span>挑戦回数</span><strong>'+attempts+'<small>回</small></strong></div><div><span>累計正解</span><strong>'+correct.toLocaleString('ja-JP')+'<small>問</small></strong></div><div><span>累計回答</span><strong>'+answered.toLocaleString('ja-JP')+'<small>問</small></strong></div></div>'+(context.active?'<p class="cl-active-record">現在の挑戦：'+num(context.current.index)+'問まで到達・再開できます</p>':'')+'<h3 class="cl-history-title">最近のチャレンジ</h3>'+(h.length?'<ol class="cl-history">'+h.slice(-10).reverse().map(x=>'<li><div><strong>'+num(x.score)+'<small>問連続正解</small></strong><span>'+esc(x.reason==='complete'?'1000問達成':x.reason==='interrupted'?'新しい挑戦へ切替':'挑戦終了')+'</span></div><time>'+esc(date(x.completedAt))+'</time></li>').join('')+'</ol>':'<p class="cl-empty">ここから、最初の記録を。</p>')+'<p class="cl-footnote">この端末に保存されている成績です。オンライン時に自動同期します。</p>';
+  if(context.current&&['failed','complete'].includes(context.current.phase)){const last=document.createElement('button');last.type='button';last.className='cl-refresh';last.id='sd-last';last.textContent='前回の結果・間違えた問題を確認';last.onclick=context.result;panel.append(last);}
+ }
+ async function fetchRanking(flush=false){
+  if(!mounted()||tab!=='ranking')return;const id=++revision,grade=context.grade,currentScope=scope,panel=document.getElementById('cl-panel'),state=panel.querySelector('.cl-network'),button=panel.querySelector('.cl-refresh'),content=panel.querySelector('.cl-ranking-content'),r=read('skimaru-registration-v13'),profileNo=read('skimaruData').playerNo;
+  controller?.abort();controller=new AbortController();const signal=controller.signal,timer=setTimeout(()=>controller?.signal===signal&&controller.abort(),10000);button.disabled=true;state.textContent='ランキングを読み込み中…';content.replaceChildren();const rankPreview=document.querySelector('[data-my-rank]');if(rankPreview){rankPreview.innerHTML='―<em>位</em>';rankPreview.previousElementSibling.textContent=currentScope==='site'?'拠点内の順位':'全拠点の順位';}
+  try{
+   if(flush&&window.SKIMARU_SYNC)await Promise.race([window.SKIMARU_SYNC.flush(),new Promise(resolve=>setTimeout(resolve,1800))]);
+   if(id!==revision||signal.aborted)return;
+   const cloud=window.SKIMARU_SUPABASE;if(!cloud?.url||!cloud.publishableKey)throw Error('ランキング接続を準備できません。');
+   const headers={apikey:cloud.publishableKey,'Content-Type':'application/json'},body={p_grade:grade,p_scope:currentScope};
+   if(r.playerNo&&r.token&&r.playerNo===profileNo){body.p_player_no=r.playerNo;body.p_token=r.token;}
+   else if(context.developerMode){const session=(()=>{try{return JSON.parse(sessionStorage.getItem('skimaru-supabase-manager-session-v1')||'null');}catch{return null;}})();if(!session?.access_token)throw Error('開発者としてログインし直してください。');headers.Authorization='Bearer '+session.access_token;}
+   else throw Error('拠点と名前を登録するとランキングを確認できます。');
+   const response=await fetch(cloud.url+'/rest/v1/rpc/skimaru_challenge_leaderboard',{method:'POST',headers,body:JSON.stringify(body),cache:'no-store',signal});const data=await response.json();
+   if(!response.ok||!Array.isArray(data.rows))throw Error('ランキングを取得できませんでした。');
+   if(id!==revision||!mounted()||tab!=='ranking'||read('skimaruData').playerNo!==profileNo)return;
+   const rows=data.rows.filter(x=>Number.isInteger(x.rank)&&x.rank>0&&num(x.best)>0).slice(0,100);
+   const mine=data.mine&&Number.isInteger(data.mine.rank)?data.mine:null,rank=document.querySelector('[data-my-rank]');if(rank)rank.innerHTML=mine?String(mine.rank)+'<em>位</em>':'―<em>未記録</em>';
+   const top=rows.slice(0,3),rest=rows.slice(3);content.innerHTML=(top.length?'<div class="cl-podium">'+top.map((x,i)=>'<article class="cl-podium-card cl-medal-'+Math.min(x.rank,4)+' cl-place-'+i+' '+(x.isSelf?'is-self':'')+'"><span class="cl-crown">'+crown+'</span><strong class="cl-rank">'+x.rank+'<small>位</small></strong><p class="cl-ranker-name">'+esc(x.name)+(x.isSelf?'<span>あなた</span>':'')+'</p><small class="cl-site">'+esc(x.site)+'</small><p class="cl-ranker-score">'+num(x.best)+'<small>問連続正解</small></p></article>').join('')+'</div>':'<p class="cl-empty">まだ同期済みの記録がありません。<br>最初のランカーを目指そう。</p>')+(rest.length?'<ol class="cl-rank-list">'+rest.map(x=>rankRow(x)).join('')+'</ol>':'')+(mine&&!rows.some(x=>x.isSelf)?'<div class="cl-outside"><p>あなたの順位</p>'+rankRow(mine)+'</div>':'');
+   const pending=mine?num(context.ledger.best)>num(mine.best):num(context.ledger.best)>0;state.textContent=(currentScope==='site'?'拠点内':'全拠点')+' '+Number(data.total||rows.length)+'人'+(pending?' ／ この端末の最新ベストは反映待ちです。':' ／ '+date(data.generatedAt)+' 更新');
+  }catch(e){if(id===revision&&mounted()&&tab==='ranking'){state.textContent=e.message?.includes('登録')||e.message?.includes('ログイン')?e.message:'通信できませんでした。ランキングを更新して再度お試しください。端末の成績は残っています。';}}
+  finally{clearTimeout(timer);if(id===revision&&button.isConnected)button.disabled=false;}
+ }
+ function rankRow(x){return '<li class="cl-rank-row '+(x.isSelf?'is-self':'')+' '+(x.rank<=3?'cl-high-ranker':'')+'"><strong>'+x.rank+'<small>位</small></strong><div><b>'+esc(x.name)+(x.isSelf?' <em>あなた</em>':'')+'</b><small>'+esc(x.site)+'</small></div><p>'+num(x.best)+'<small>問連続正解</small></p></li>';}
+ document.addEventListener('keydown',e=>{if(!mounted()||!e.target.matches('.cl-tabs [role="tab"]')||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();tab=tab==='record'?'ranking':'record';renderPanel();document.querySelector('.cl-tabs [aria-selected="true"]').focus();});
+ window.addEventListener('skimaru-sync-status',()=>{if(!mounted()||tab!=='ranking')return;const s=window.SKIMARU_SYNC?.status();if(!s?.savedAt||s.pending||s.savedAt===lastSync)return;lastSync=s.savedAt;clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>fetchRanking(),500);});
+ window.addEventListener('pagehide',()=>{controller?.abort();clearTimeout(refreshTimer);});
+ window.SKIMARU_CHALLENGE_LOBBY={mount,leave:()=>{revision++;controller?.abort();clearTimeout(refreshTimer);document.body.classList.remove('sd-lobby-view');},refresh:()=>fetchRanking(true)};
+})();
