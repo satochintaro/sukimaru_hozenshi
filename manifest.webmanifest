@@ -1,11 +1,11 @@
 {
-  "id": "../",
+  "id": "./",
   "name": "スキマル保全士",
   "short_name": "スキマル",
   "description": "自主保全士1級・2級の学科・実技学習と拠点別の教育フォロー",
   "lang": "ja",
-  "start_url": "../index.html?launch=home&v=1657",
-  "scope": "../",
+  "start_url": "./index.html?launch=home&v=1657",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f4f3ee",
   "theme_color": "#103e32",
@@ -33,11 +33,11 @@
   "shortcuts": [
     {
       "name": "プレイヤー",
-      "url": "./player.html"
+      "url": "./app/player.html"
     },
     {
       "name": "マネージャー",
-      "url": "./admin.html"
+      "url": "./app/admin.html"
     }
   ]
 }
