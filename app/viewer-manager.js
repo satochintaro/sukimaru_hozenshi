@@ -44,15 +44,13 @@
   function signed(n){return `${n>0?"+":""}${n}pt`;}
   function configured(){return /^https:\/\//.test(CLOUD.url||"")&&String(CLOUD.publishableKey||"").startsWith("sb_publishable_");}
 
+  function authFailure(e){return e?.status===401||e?.status===403||/manager_authentication_required|invalid_session|session_expired/.test(e?.message||'');}
   async function rpc(name,body){
-    const r=await fetch(`${CLOUD.url}/rest/v1/rpc/${name}`,{
-      method:"POST",
-      headers:{apikey:CLOUD.publishableKey,"Content-Type":"application/json"},
-      body:JSON.stringify(body||{}),
-      cache:"no-store"
-    });
-    if(!r.ok)throw new Error(await r.text().catch(()=>"通信エラー"));
-    return await r.json().catch(()=>null);
+    const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),20000);
+    try{const r=await fetch(`${CLOUD.url}/rest/v1/rpc/${name}`,{method:"POST",headers:{apikey:CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify(body||{}),cache:"no-store",signal:ctl.signal});
+      if(!r.ok){const text=await r.text().catch(()=>''),e=new Error(text||'通信エラー');e.status=r.status;throw e;}
+      return await r.json();
+    }finally{clearTimeout(timer);}
   }
 
   function showLogin(message=""){
@@ -72,7 +70,7 @@
   async function valid(){
     if(!viewerSession?.token)return false;
     try{return Array.isArray(await rpc("skimaru_manager_rows",{p_token:viewerSession.token}));}
-    catch(e){return false;}
+    catch(e){return authFailure(e)?false:null;}
   }
 
   async function login(){
@@ -92,7 +90,7 @@
       if(!row?.token)throw new Error(row?.error||"login_failed");
       if(attempt!==loginRevision||document.hidden){await rpc('skimaru_manager_logout',{p_token:row.token});return;}
       identity={token:identity.token,manager_no:row.manager_no,name:row.name,home_site:row.home_site};
-      localStorage.setItem(IDENTITY_KEY,JSON.stringify(identity));localStorage.setItem('skimaru-role','manager');showIdentity();
+      localStorage.setItem(IDENTITY_KEY,JSON.stringify(identity));localStorage.setItem('skimaru-role','manager');showIdentity();window.dispatchEvent(new Event('skimaru-profile'));
       lastActivity=Date.now();saveSession({token:row.token,expires_at:row.expires_at,site:row.site,account:row.account});setSite();
       const vaultIdentity=identity.token,vaultSite=site;
       let passwordSaved=false;
@@ -124,7 +122,12 @@
       render();
     }catch(e){
       if(viewerSession?.token!==token)return;
-      closeDetail();window.SKIMARU_COMPARISON?.clear();saveSession(null);rows=[];groups=[];setConnection(false,"認証切れ");render();showLogin("閲覧セッションの有効期限が切れました。");
+      if(authFailure(e)){
+        closeDetail();window.SKIMARU_COMPARISON?.clear();saveSession(null);rows=[];groups=[];setConnection(false,"認証切れ");render();showLogin("閲覧セッションの有効期限が切れました。");
+      }else{
+        setConnection(false,"取得できませんでした。最後に取得した記録を表示しています");
+        notify("通信を確認し、右上の更新ボタンから再試行してください。");
+      }
     }
   }
 
@@ -280,7 +283,7 @@
   document.getElementById('viewer-login-form').addEventListener('submit',e=>{e.preventDefault();login();});
   window.addEventListener('storage',e=>{if(e.key===KEY&&!e.newValue&&viewerSession){viewerSession=null;rows=[];groups=[];window.SKIMARU_COMPARISON?.clear();closeDetail();render();showLogin('別の画面でログアウトしました。');}});
 
-  setInterval(async()=>{if(viewerSession&&(Date.now()-lastActivity>30*60*1000||!(await valid())))logout();},60000);
+  setInterval(async()=>{if(viewerSession&&(Date.now()-lastActivity>30*60*1000||(await valid())===false))logout();},60000);
   
   document.getElementById("viewer-logout").addEventListener("click",logout);
   document.getElementById("viewer-refresh").addEventListener("click",load);

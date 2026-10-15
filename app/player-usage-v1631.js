@@ -1,7 +1,7 @@
 "use strict";
 (()=>{
  if(/\/(admin|viewer|index)\.html$/.test(location.pathname)||window.SKIMARU_USAGE)return;
- const VERSION='16.54',KEY='skimaru-usage-queue-v1631',SESSION='skimaru-usage-session-v1631';
+ const VERSION='16.55',KEY='skimaru-usage-queue-v1631',SESSION='skimaru-usage-session-v1631';
  const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch{return f;}},save=q=>{try{localStorage.setItem(KEY,JSON.stringify(q.slice(-1000)));}catch{}};
  let session;try{const previous=JSON.parse(sessionStorage.getItem(SESSION)||'null');session=previous&&Date.now()-previous.at<1800000?previous.id:crypto.randomUUID();sessionStorage.setItem(SESSION,JSON.stringify({id:session,at:Date.now()}));}catch{session=crypto.randomUUID();}
  let pageKey='',lastInteraction=Date.now(),lastBeat=Date.now(),sending=false,stopped=false;

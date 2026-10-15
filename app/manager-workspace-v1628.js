@@ -8,7 +8,7 @@
  const nav=document.createElement('nav');nav.className='workspace-nav';nav.style.gridTemplateColumns=`repeat(${menu.length},minmax(0,1fr))`;nav.setAttribute('aria-label',developer?'開発者メニュー':'管理者メニュー');
  for(const [key,name] of menu){const b=document.createElement('button');b.type='button';b.dataset.workspace=key;b.textContent=name;b.onclick=()=>navigate(key);nav.append(b);}
  const heading=document.createElement('div');heading.className='workspace-heading';heading.innerHTML='<div><small></small><h1></h1></div><span class="workspace-context"></span>';
- const contact=document.createElement('section');contact.className='workspace-contact';contact.innerHTML='<h2>連絡・お知らせ</h2>';
+ const contact=document.createElement('section');contact.className='workspace-contact';contact.setAttribute('aria-label','連絡');
  const overview=document.createElement('section');overview.className='workspace-overview';overview.innerHTML='<div class="workspace-intro"><small>DEVELOPER CONSOLE</small><h2>運用状況を、すぐ確認。</h2><p>登録状況と連絡を確認し、必要な設定へ。</p></div><div class="workspace-shortcuts"></div>';
  const shortcuts=overview.querySelector('.workspace-shortcuts');for(const [key,title,description] of [['people','登録者を確認','拠点・名前・登録日で探す'],['contact','不具合・連絡','届いた報告とお知らせ'],['analysis','学習状況を確認','全体と個人の分析'],['settings','運用設定','管理者アカウント・試験日']]){const b=document.createElement('button');b.type='button';b.innerHTML='<strong></strong><span></span><i aria-hidden="true">→</i>';b.querySelector('strong').textContent=title;b.querySelector('span').textContent=description;b.onclick=()=>navigate(key);shortcuts.append(b);}
  const usage=document.createElement('div');usage.id='developer-usage';if(developer)pad.append(usage);pad.prepend(nav,heading);pad.append(overview,contact);
