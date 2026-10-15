@@ -22,6 +22,7 @@
   const PRACTICAL=["安全・環境","TPM・5S","自主保全","改善・解析","設備保全","図面・測定","効率化とロス"];
   let lastActivity=Date.now();
   for(const event of ["pointerdown","keydown","touchstart"])document.addEventListener(event,()=>lastActivity=Date.now(),{passive:true});
+  let scoreRoster=null;
   let viewerSession=null,rows=[],mode="combined",groups=[],toastTimer=null;
 
   function setSite(){const select=document.getElementById("site-filter");if(select&&viewerSession?.site){select.replaceChildren(new Option(viewerSession.site,viewerSession.site));select.value=viewerSession.site;select.disabled=true;}}
@@ -112,10 +113,10 @@
     const token=viewerSession.token;
     setConnection(false,"読み込み中…");
     try{
-      const j=await rpc("skimaru_manager_rows_all",{p_token:token});
+      const [j,registry]=await Promise.all([rpc("skimaru_manager_rows_all",{p_token:token}),rpc("skimaru_manager_score_roster",{p_token:token}).catch(()=>null)]);
       if(viewerSession?.token!==token)return;
       if(!Array.isArray(j))throw new Error();
-      rows=j.map(normalize);await window.SKIMARU_PROGRESS_VIEW?.load(name=>rpc(name,{p_token:token}),false);if(viewerSession?.token!==token)return;setSite();await comparison();
+      scoreRoster=Array.isArray(registry)?registry:null;rows=j.map(normalize);await window.SKIMARU_PROGRESS_VIEW?.load(name=>rpc(name,{p_token:token}),false);if(viewerSession?.token!==token)return;setSite();
       if(viewerSession?.token!==token)return;
       buildGroups();
       setConnection(true,mode==="combined"?"総合分析":mode==="academic"?"学科分析":"実技分析");
@@ -197,7 +198,7 @@
 
   function render(){
     document.querySelectorAll("[data-viewer-mode]").forEach(b=>b.classList.toggle("active",b.dataset.viewerMode===mode));
-    if(mode==="combined")renderCombined();else renderType(mode);
+    if(mode==="combined")renderCombined();else renderType(mode);document.dispatchEvent(new Event("skimaru-score-data"));
   }
 
   function renderCombined(){
@@ -264,6 +265,7 @@
   }
   function closeDetail(){const m=document.getElementById("viewer-detail");m.classList.remove("show");m.setAttribute("aria-hidden","true");}
 
+  window.SKIMARU_SCORE_SOURCE={read:()=>({authenticated:!!viewerSession?.token,rows,roster:scoreRoster,scope:viewerSession?.site||'',excluded:[]})};
   for(const id of ['viewer-home-site','viewer-view-site']){const select=document.getElementById(id);select.add(new Option('拠点を選択',''));SITES.forEach(s=>select.add(new Option(s,s)));}
   let player={};try{player=JSON.parse(localStorage.getItem('skimaruData')||'{}');}catch{}
   document.getElementById('viewer-home-site').value=identity?.home_site||player.site||'';
