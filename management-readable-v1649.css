@@ -1,0 +1,82 @@
+/* Shared administrator/developer readability; excludes player screens. */
+.workspace-v28.management-readable{font-size:16px;line-height:1.65;color:#203c32}
+.management-readable .manager-pad{gap:18px;padding-top:18px;max-width:1100px}
+.management-readable .workspace-heading small,.management-readable .workspace-intro>small{display:none}
+.management-readable .workspace-heading h1{font-size:26px}.management-readable .workspace-context{font-size:14px}
+.management-readable .workspace-nav{gap:8px;padding:6px;border-radius:16px}
+.management-readable .workspace-nav button{font-size:16px;line-height:1.4;min-height:48px;padding:12px 8px;word-break:keep-all;overflow-wrap:normal}
+.management-readable .workspace-nav button[aria-current=page]{font-weight:800;box-shadow:0 2px 6px #173d3014}
+.management-readable .manager-connection,.management-readable .manager-connection b{font-size:14px}
+.management-readable .site-filters label,.management-readable .workspace-search,.management-readable .directory-controls label,.management-readable .usage-controls label,.management-readable .follow-controls label{font-size:14px;color:#50675a}
+.management-readable select,.management-readable input[type=search]{font-size:16px;line-height:1.5;min-height:48px}
+.management-readable .workspace-search select{display:block;width:100%;padding:10px;border:1px solid #cbd9d0;border-radius:12px;background:#fff;color:#203c32;margin-top:6px;box-sizing:border-box}
+.management-readable .workspace-people{display:grid;grid-template-columns:1fr 1fr;gap:14px}.management-readable .workspace-people>.workspace-result,.management-readable .workspace-people>.workspace-person-list,.management-readable .workspace-people>.workspace-pages{grid-column:1/-1}
+.management-readable .workspace-result,.management-readable .workspace-pages{font-size:14px}
+.management-readable .workspace-person{padding:18px;border-radius:16px;gap:8px;box-shadow:0 2px 8px #163e3010;overflow-wrap:anywhere}
+.management-readable .workspace-person strong{font-size:20px;padding-right:22px;line-height:1.5}
+.management-readable .workspace-person>small{font-size:14px;color:#50675a;line-height:1.6}
+.management-readable .workspace-person-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px;margin-top:4px}
+.management-readable .workspace-person-values span{padding:8px 6px;min-width:0;background:#edf4ee;display:flex;flex-direction:column;gap:2px;border-radius:10px}
+.management-readable .workspace-person-values small{font-size:13px;color:#536b5b;white-space:nowrap}
+.management-readable .workspace-person-values b{font-size:21px;color:#195b45;line-height:1.4;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.management-readable .workspace-person-updated{margin-top:2px}
+.management-readable .workspace-shortcuts strong{font-size:18px}.management-readable .workspace-shortcuts span{font-size:14px;line-height:1.65}
+.management-readable .workspace-intro p{font-size:16px}.management-readable .workspace-shortcuts button{padding:18px 35px 18px 18px;min-height:115px}
+.management-readable .manager-mode-tabs button,.management-readable .manager-scope-tabs button,.management-readable .workspace-analysis-nav button{font-size:16px;min-height:48px;padding:10px 12px}
+.management-readable .manager-stat-card span{font-size:14px}.management-readable .manager-stat-card b{font-size:30px!important}
+.management-readable .manager-section h2,.management-readable .usage-head h2,.management-readable .follow-head h2{font-size:21px;line-height:1.5}
+.management-readable .manager-section-head p,.management-readable .usage-head p,.management-readable .usage-note,.management-readable .advice-coverage p,.management-readable .follow-head p{font-size:14px;line-height:1.75}
+.management-readable .directory-row summary b{font-size:20px}.management-readable .directory-row summary small,.management-readable .directory-row small,.management-readable .directory-row summary span,.management-readable .directory-row .directory-detail{font-size:14px}
+.management-readable .directory-sites button{font-size:14px;min-height:44px}
+.management-readable .usage-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:8px 0}
+.management-readable .usage-controls label{min-width:0}.management-readable .usage-controls button{font-size:15px;grid-column:auto}
+.management-readable .usage-controls #usage-export{grid-column:2/-1}
+.management-readable .usage-view-select{display:grid;gap:6px;margin:14px 0;font-size:14px;font-weight:700;color:#50675a}
+.management-readable .usage-view-select select{padding:12px;border:1px solid #b7cabe;border-radius:12px;background:#fff;color:#195b45;font-weight:700;font-size:17px;width:100%}
+.management-readable .usage-tabs{display:none}
+.management-readable .advice-cards h3,.management-readable .developer-next-action h3{font-size:20px;line-height:1.5}
+.management-readable .advice-explanation{padding:10px 12px;background:#f5f8f4;border-radius:10px;margin:12px 0}
+.management-readable .advice-explanation summary{font-size:15px;font-weight:700;cursor:pointer;min-height:32px}
+.management-readable .advice-cards dt{font-size:14px}.management-readable .advice-cards dd{font-size:16px;line-height:1.75}.management-readable .advice-caution{font-size:14px}
+.management-readable .advice-cards small,.management-readable .developer-next-action p,.management-readable .advice-next,.management-readable .follow-list small,.management-readable .follow-reason{font-size:14px;line-height:1.7}
+.management-readable .readable-note{margin:12px 0;background:#f0f4f0;border:1px solid #d6e1d7;border-radius:12px;padding:12px 14px}
+.management-readable .readable-note summary{cursor:pointer;font-size:15px;font-weight:700;min-height:30px}
+.management-readable .readable-note p{font-size:14px;line-height:1.8;margin-bottom:0}
+.management-readable .readable-table{font-size:15px}
+.management-readable .readable-table td,.management-readable .readable-table th{padding:12px;line-height:1.65}
+.management-readable .mgr-page-head p,.management-readable .mgr-section-title p,.management-readable .mgr-ai-main p,.management-readable .mgr-simple-bar{font-size:14px!important;line-height:1.7}
+.management-readable .mgr-section-title h2{font-size:18px!important}.management-readable .mgr-ai-main strong{font-size:20px!important}
+.management-readable .player-detail-card{font-size:16px;line-height:1.7}.management-readable .player-detail-card h2{font-size:22px}.management-readable .player-detail-card small{font-size:14px}
+.management-readable .player-detail-close{min-width:44px;min-height:44px}
+.management-readable.viewer-page .manager-report{display:flex;flex-direction:column;gap:12px}
+.management-readable.viewer-page .manager-stat-grid{order:-1}
+.management-readable .readable-sync-detail[open]>.player-table-wrap{margin-top:14px}
+.management-readable .achievement-person summary small,.management-readable .achievement-person li small,.management-readable .challenge-history li small{font-size:14px}
+.management-readable .achievement-person summary strong{font-size:20px}
+.management-readable .achievement-person summary b{font-size:24px}
+.management-readable .achievement-person summary{flex-wrap:wrap}
+.management-readable .manager-report>.manager-section{margin-top:0}
+@media(max-width:700px){
+.management-readable .workspace-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;position:sticky;top:env(safe-area-inset-top,0px);z-index:8;border:1px solid #d7e0d9}
+.management-readable .workspace-nav:has([data-workspace=usage]){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.management-readable .workspace-person-list{grid-template-columns:1fr}
+.management-readable .workspace-person-values b{font-size:23px}
+.management-readable .workspace-heading h1{font-size:25px}.management-readable .workspace-context{max-width:48%;font-size:14px}
+.management-readable .manager-pad{padding:16px 14px 28px;gap:16px}
+.management-readable .manager-header .hd-ttl{font-size:19px}.management-readable .manager-header .hd-sub{font-size:13px}
+.management-readable .workspace-shortcuts{grid-template-columns:1fr}.management-readable .workspace-shortcuts button{min-height:94px}
+.management-readable .manager-report .manager-section,.management-readable .registered-panel{padding:16px}
+.management-readable .usage-table-wrap,.management-readable .comparison-table-wrap{overflow:visible;background:none;border:0;border-radius:0}
+.management-readable .readable-table{display:block;width:100%;min-width:0!important;max-width:100%;background:none;border:0}
+.management-readable .readable-table thead{display:none}
+.management-readable .readable-table tbody{display:grid;gap:12px;width:100%}
+.management-readable .readable-table tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:#fff;border:1px solid #d5e0d7;border-radius:14px;padding:14px;max-width:100%;min-width:0;text-align:left}
+.management-readable .readable-table td{display:block;width:auto!important;max-width:100%;min-width:0;white-space:normal!important;padding:0!important;border:0!important;overflow-wrap:anywhere;color:#203c32;font-size:16px;line-height:1.65}
+.management-readable .readable-table td:first-child{grid-column:1/-1;font-weight:700}
+.management-readable .readable-table td::before{content:attr(data-label);display:block;font-size:13px;font-weight:600;color:#607666;line-height:1.6;margin-bottom:2px}
+.management-readable .readable-table td small{display:block;font-size:13px;color:#607666;overflow-wrap:anywhere}
+.management-readable .usage-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.management-readable .usage-controls select{width:100%;padding:8px;font-size:16px}
+.management-readable .workspace-analysis-nav{display:grid;grid-template-columns:1fr 1fr}.management-readable .workspace-analysis-nav button:last-child{grid-column:1/-1}
+.management-readable .advice-cards article{padding:16px}
+}
+@media(max-width:360px){.management-readable .workspace-people{grid-template-columns:1fr}.management-readable .workspace-person-values{gap:6px}.management-readable .workspace-person-values b{font-size:20px}.management-readable .workspace-person-values small{font-size:12px}.management-readable .workspace-nav button{font-size:15px;padding:10px 4px}.management-readable .manager-header .hd-ttl{font-size:17px}}

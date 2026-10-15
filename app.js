@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"5.2.0-test",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.57",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -60,7 +60,16 @@ function readStored(key){
 }
 function load(){
   const primary=readStored(KEY);
-  if(primary) return primary;
+  if(primary){
+    // A zeroed shell must not hide a valid same-player, same-epoch backup.
+    const backup=readStored(AUTO_BACKUP_KEY);
+    if(backup&&primary.playerNo&&backup.playerNo===primary.playerNo&&
+       (primary.progressEpoch||0)===(backup.progressEpoch||0)&&primary.total===0&&
+       !Object.values(primary.stats).some(s=>s.c>0||s.w>0)&&backup.total>0){
+      loadMessage="同じ登録の学習記録を端末内バックアップから復旧しました";return backup;
+    }
+    return primary;
+  }
   const auto=readStored(AUTO_BACKUP_KEY);
   if(auto){loadMessage="保存データを自動バックアップから復旧しました";return auto;}
   for(const key of LEGACY_KEYS){const legacy=readStored(key);if(legacy){loadMessage="旧版の学習履歴を移行しました";return legacy;}}
@@ -71,11 +80,13 @@ let U=load();
 if(!U.playerNo){U.playerNo=generatePlayerNo();save();}
 let S={mode:"normal",subject:null,queue:[],i:0,ok:0,wrong:[],answered:false,
        conf:null,sure:false,everOK:false,q:null,isMock:false};
-let currentSubject=null;
+let currentSubject=null;window.SKIMARU_TIME?.start("core","core",true);
 
 function save(){
   try{
     const current=localStorage.getItem(KEY);
+    // A separate challenge tab may have saved newer progress while this page was open.
+    if(current){try{const fresh=JSON.parse(current);if(fresh.playerNo===U.playerNo&&Number(fresh.suddenDeath?.revision||0)>Number(U.suddenDeath?.revision||0))U.suddenDeath=fresh.suddenDeath;}catch{}}
     if(current) localStorage.setItem(AUTO_BACKUP_KEY,current);
     U.schemaVersion=APP.schema; U.updatedAt=new Date().toISOString();
     localStorage.setItem(KEY,JSON.stringify(U));
@@ -216,6 +227,8 @@ function renderHome(){
   const bm=bookmarks().length, bb=document.getElementById("m-bm");
   bb.classList.toggle("hide",bm===0); bb.textContent=bm;
 
+  const count=Number(U.daily[today()])||0,goal=document.getElementById("quick-goal");
+  if(goal){goal.textContent=count>=5?"今日のミッション達成！":`今日のミッション　${count} / 5問`;document.getElementById("quick-progress").style.width=Math.min(100,count/5*100)+"%";document.getElementById("quick-card").classList.toggle("complete",count>=5);}
   show("sc-home");
 }
 function renderHomeSubjects(){
@@ -283,9 +296,13 @@ function rec(qs){
   U.recentIds=r; save();
 }
 function launch(queue,title,isMock){
-  S.queue=queue; S.i=0; S.ok=0; S.wrong=[]; S.isMock=!!isMock;
+  S.quick=false; S.queue=queue; S.i=0; S.ok=0; S.wrong=[]; S.isMock=!!isMock;
   document.getElementById("q-ttl").textContent=title;
   renderQ(); show("sc-quiz");
+}
+function startQuick(){
+  if(!window.SKIMARU_MEMBER?.valid()){window.SKIMARU_MEMBER?.startRegistration?.();return;}
+  const q=balancedPick(QUESTIONS,5);S.mode="normal";S.subject=null;rec(q);launch(q,"サクッと5問");S.quick=true;
 }
 function startQuiz(mode,subject,setIdx){
   let q,t;
@@ -338,26 +355,9 @@ function acc(sub){
   return t>0?Math.round(c/t*100):null;
 }
 function showSubjects(){
-  const L=document.getElementById("subj-list");
-  L.innerHTML="";
-  const m=acc(null);
-  L.innerHTML+=`<button class="pn row" onclick="startQuiz('normal')" style="margin-bottom:8px">
-    <span class="row-i">🎲</span>
-    <span class="row-b"><span class="row-t">全科目ミックス</span>
-      <span class="row-d">全${QUESTIONS.length}問からランダム10問</span>
-      <span class="bar"><i style="width:${m||0}%"></i></span></span>
-    <span class="row-v">${m!==null?m+"%":"–"}</span></button>`;
-  SUBJ.forEach(s=>{
-    const n=QUESTIONS.filter(q=>q.category===s).length;
-    const a=acc(s);
-    L.innerHTML+=`<button class="pn row" onclick="showSets('${s}')" style="margin-bottom:8px">
-      <span class="row-b"><span class="row-t">${s}</span>
-        <span class="row-d">${n} 問</span>
-        <span class="bar"><i style="width:${a||0}%"></i></span></span>
-      <span class="row-v">${a!==null?a+"%":"–"}</span>
-      <span class="row-go">›</span></button>`;
-  });
-  show("sc-subj");
+ const rows=[{title:'全科目ミックス',detail:`全${QUESTIONS.length}問からランダム10問`,rate:acc(null),category:null},...SUBJ.map(category=>({title:category,detail:`${QUESTIONS.filter(q=>q.category===category).length} 問`,rate:acc(category),category}))];
+ window.SKIMARU_STUDY_SCREEN.subjects(document.getElementById('subj-list'),rows,row=>row.category?showSets(row.category):startQuiz('normal'));
+ show('sc-subj');
 }
 function showSets(sub){
   currentSubject=sub;
@@ -395,7 +395,7 @@ function renderQ(){
   const q=S.queue[S.i];
   S.answered=false; S.conf=null; S.q=q;
   document.getElementById("q-cat").textContent=q.category;
-  document.getElementById("q-txt").textContent=q.text;
+  document.getElementById("q-txt").innerHTML=window.SKIMARU_STUDY_SCREEN.text(q.text);
   document.getElementById("q-no").textContent=`${S.i+1} / ${S.queue.length}`;
   document.getElementById("q-prog").style.width=((S.i+1)/S.queue.length*100)+"%";
   document.getElementById("q-prog-wrap").setAttribute("aria-valuenow",String(S.i+1));
@@ -524,7 +524,7 @@ function quitQuiz(){ if(confirm("中断しますか？ここまでの回答は�
    ============================================================ */
 function result(){
   const t=S.queue.length, c=S.ok, p=Math.round(c/t*100);
-  document.getElementById("res-ttl").textContent=S.isMock?"模擬試験 結果":"結果";
+  document.getElementById("res-ttl").textContent=S.quick?"5問クリア！":S.isMock?"模擬試験 結果":"結果";
   document.getElementById("res-c").textContent=c;
   document.getElementById("res-t").textContent=t;
   document.getElementById("res-p").textContent=`正答率 ${p}%`;
@@ -554,10 +554,10 @@ function result(){
   }
   const ag=document.getElementById("res-ag");
   ag.classList.toggle("hide", S.mode!=="normal");
-  ag.textContent=S.subject?`「${S.subject}」でもう10問`:"もう10問";
+  ag.textContent=S.quick?"もう5問チャレンジ":S.subject?`「${S.subject}」でもう10問`:"もう10問";
   show("sc-res");
 }
-function again(){ startQuiz("normal", S.subject||undefined); }
+function again(){ if(S.quick)startQuick();else startQuiz("normal", S.subject||undefined); }
 
 /* ============================================================
    分析
@@ -581,6 +581,8 @@ function showAnalysis(){
 }
 function radar(){
   const s=document.getElementById("radar");
+  if(window.SKIMARU_RADAR){const cats=Object.fromEntries(SUBJ.map(name=>{let total=0,correct=0;QUESTIONS.forEach(q=>{if(q.category===name&&U.stats[q.id]){const v=U.stats[q.id];correct+=Number(v.c)||0;total+=(Number(v.c)||0)+(Number(v.w)||0);}});return [name,{total,correct}];}));const host=s?.parentElement||document.querySelector("#sc-an .radar-card")?.parentElement;if(!host)return;host.innerHTML=window.SKIMARU_RADAR.html(cats,"科目バランス");host.style.display="block";return;}
+
   const cx=140,cy=120,R=80,n=5;
   const SH={"生産の基本":"生産の基本","設備の日常保全":"日常保全","効率化とロス":"効率化","改善・解析":"改善解析","設備保全の基礎":"保全基礎"};
   let h="";
@@ -677,14 +679,9 @@ function ensurePlayerNo(){
   if(!U.playerNo){U.playerNo=generatePlayerNo();save();}
   return U.playerNo;
 }
-function showSettings(){
-  document.getElementById("st-name").textContent=(U.site?U.site+" ／ ":"")+(U.name||"名前を入力");
-  const pn=document.getElementById("st-player-no");if(pn)pn.textContent=ensurePlayerNo();
-  setSwitch("sw-warn",U.showWarn); setSwitch("sw-srs",U.useSRS);
-  setSwitch("sw-large",U.largeText); setSwitch("sw-contrast",U.highContrast);
-  document.getElementById("st-qn").textContent=QUESTIONS.length;
-  updateStorageStatus(); show("sc-set");
-}
+function showSettings(){window.SKIMARU_MENU?.open();}
+window.SKIMARU_MENU_PREFERENCES={get:()=>({...U}),set:(key,value)=>{if(!['showWarn','useSRS','largeText','highContrast'].includes(key))return false;U[key]=value;const ok=save();applyPreferences();return ok;}};
+
 function editName(){window.SKIMARU_MEMBER?.edit();}
 function toggleWarn(){U.showWarn=!U.showWarn;save();setSwitch("sw-warn",U.showWarn);}
 function toggleSRS(){U.useSRS=!U.useSRS;save();setSwitch("sw-srs",U.useSRS);}
@@ -706,7 +703,7 @@ function resetData(){
   const nm=U.name, site=U.site, playerNo=ensurePlayerNo();
   localStorage.removeItem(KEY); localStorage.removeItem(AUTO_BACKUP_KEY);
   try{const ledger=JSON.parse(localStorage.getItem("skimaru-submitted-v11")||"{}");ledger.academic=0;localStorage.setItem("skimaru-submitted-v11",JSON.stringify(ledger));}catch{}
-  U=baseData(); U.progressEpoch=Date.now(); U.name=nm; U.site=site; U.playerNo=playerNo; save();
+  window.SKIMARU_TIME?.resetCore();U=baseData(); U.progressEpoch=Date.now(); U.name=nm; U.site=site; U.playerNo=playerNo; save();
   alert("リセットしました。");
   goHome();
 }
@@ -729,7 +726,7 @@ function build(){
     return {id:q.id,cat:q.category,text:q.text,rate:t>0?Math.round(s.c/t*100):0,
             guess:s.guess||0,relapse:(s.w>0&&s.everOK)?1:0};
   });
-  return {v:7,playerNo:ensurePlayerNo(),name:U.name||"(未記入)",site:U.site||"四日市",academicSnapshot:U.total,progressEpoch:U.progressEpoch||0,historyIds:academicYearHistory().map(r=>r.id),pastYearHistory:academicYearHistory(),date:today(),total:U.total,correct:U.correct,
+  return {v:7,playerNo:ensurePlayerNo(),name:U.name||"(未記入)",site:U.site||"四日市",academicSnapshot:U.total,progressEpoch:U.progressEpoch||0,studyMetricsV12:window.SKIMARU_TIME?.snapshot(),elapsedSeconds:window.SKIMARU_TIME?.seconds("core"),historyIds:academicYearHistory().map(r=>r.id),pastYearHistory:academicYearHistory(),date:today(),total:U.total,correct:U.correct,
           streak:U.streak,cats,wrongCount:U.wrongIds.length,mastered:masteredCount(),alerts:al};
 }
 function checksum(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16).padStart(8,"0");}
@@ -772,7 +769,7 @@ function cloudRow(record){
     total_questions:total,
     correct_count:correct,
     correct_rate:total?Math.round(correct/total*100):0,
-    elapsed_seconds:0,
+    elapsed_seconds:Number(record.elapsedSeconds)||0,
     exam_version:APP.version,
     submitted_at:record.sentAt,
     streak:Number(record.streak)||0,
@@ -842,8 +839,8 @@ async function submitResult(){
   document.getElementById("sd-title").textContent=serverSaved?"クラウドへ提出しました":"通信待ちとして端末に保存しました";
   const dt=new Date(receivedAt);
   const when=dt.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-  document.getElementById("sd-message").textContent=`プレイヤーNo.：${ensurePlayerNo()} ／ 提出者：${U.name} ／ 提出日時：${when}${serverSaved?" ／ Supabaseへ保存済み":"。オンライン復帰時に自動再送します。"}`;
-  notify(serverSaved?"クラウド提出が完了しました":"通信待ちとして保存しました");
+  document.getElementById("sd-message").textContent=`プレイヤーNo.：${ensurePlayerNo()} ／ 提出者：${U.name} ／ 提出日時：${when}${serverSaved?" ／ 成績・復旧用バックアップを自動保存済み":"。オンライン復帰時に自動再送します。"}`;
+  notify(serverSaved?"提出・自動バックアップが完了しました":"通信待ちとして保存しました");
   btn.disabled=false;btn.textContent="もう一度送付";
 }
 function dlJson(){
@@ -853,6 +850,7 @@ function dlJson(){
   a.click(); URL.revokeObjectURL(u);
 }
 function exportBackup(){
+  U.studyTimeV12=window.SKIMARU_TIME?.exportData();U.registrationV13=window.SKIMARU_MEMBER?.backupRegistration();
   const raw=JSON.stringify(U);
   const payload={app:APP.id,version:APP.version,schema:APP.schema,exportedAt:new Date().toISOString(),checksum:checksum(raw),data:U};
   const b=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
@@ -872,7 +870,7 @@ function importBackup(event){
       if(payload.checksum&&payload.checksum!==checksum(JSON.stringify(candidate)))throw new Error("checksum");
       const data=normalizeData(candidate);if(!data||!plainObject(data.stats))throw new Error("data");
       if(!confirm("現在の学習履歴を、選択したバックアップで置き換えますか？"))return;
-      U=data;if(!save())throw new Error("save");
+      U=data;if(!save())throw new Error("save");window.SKIMARU_TIME?.importData(data.studyTimeV12);window.SKIMARU_MEMBER?.restoreRegistration(data.registrationV13);
       notify("学習履歴を復元しました");setTimeout(()=>location.reload(),700);
     }catch(e){notify(e.message==="checksum"?"バックアップが破損しています":"バックアップを読み込めませんでした");}
     finally{input.value="";}
