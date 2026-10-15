@@ -13,7 +13,11 @@
     let p=current;
     if(!String(p.name||'').trim()){
       const fallback=[read('skimaruDataAutoBackup'),read('quizAppData')].find(x=>String(x.name||'').trim());
-      if(fallback){const raw=localStorage.getItem(KEY);const saved=raw&&current&&typeof current==='object'&&!Array.isArray(current);p=saved?{...fallback,...current,name:fallback.name,playerNo:current.playerNo||fallback.playerNo,site:current.site||fallback.site}:fallback;}
+      if(fallback){const raw=localStorage.getItem(KEY);const saved=raw&&current&&typeof current==='object'&&!Array.isArray(current);const empty=!Number(current.total)&&!Object.values(current.stats||{}).some(s=>Number(s.c)||Number(s.w));
+        const bound=!r.playerNo||r.playerNo===fallback.playerNo;
+        if(empty&&bound)p={...fallback,name:fallback.name,playerNo:fallback.playerNo||current.playerNo,site:fallback.site||current.site};
+        else if(current.playerNo===fallback.playerNo)p={...fallback,...current,name:fallback.name};
+        else return false;}
       else if(String(r.name||'').trim())p={...current,name:r.name,playerNo:current.playerNo||r.playerNo,site:current.site||r.site};
     }
     if(!String(p.name||'').trim())return false;
@@ -138,7 +142,7 @@
 })();
 
 
-if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.52';document.head.append(usage);}
+if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.53';document.head.append(usage);}
 
 
 if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-follow-v1632.js"]')){const follow=document.createElement("script");follow.src="./player-follow-v1632.js?v=16.32";document.head.append(follow);}
@@ -155,7 +159,7 @@ if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-f
    const script=document.createElement('script');let done=false;
    const finish=error=>{if(done)return;done=true;clearTimeout(timeout);script.onload=script.onerror=null;if(error){script.remove();reject(error);}else resolve();};
    const timeout=setTimeout(()=>finish(new DOMException('script timeout','TimeoutError')),20000);
-   script.src=new URL(file+'?v=16.52'+(attempt>1?'&retry='+attempt:''),base).href;
+   script.src=new URL(file+'?v=16.53'+(attempt>1?'&retry='+attempt:''),base).href;
    script.onload=()=>finish(ready()?null:new Error('script_not_ready'));script.onerror=()=>finish(new Error('script_load_failed'));
    document.head.append(script);
   });

@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.52",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.53",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -60,7 +60,16 @@ function readStored(key){
 }
 function load(){
   const primary=readStored(KEY);
-  if(primary) return primary;
+  if(primary){
+    // A zeroed shell must not hide a valid same-player, same-epoch backup.
+    const backup=readStored(AUTO_BACKUP_KEY);
+    if(backup&&primary.playerNo&&backup.playerNo===primary.playerNo&&
+       (primary.progressEpoch||0)===(backup.progressEpoch||0)&&primary.total===0&&
+       !Object.values(primary.stats).some(s=>s.c>0||s.w>0)&&backup.total>0){
+      loadMessage="同じ登録の学習記録を端末内バックアップから復旧しました";return backup;
+    }
+    return primary;
+  }
   const auto=readStored(AUTO_BACKUP_KEY);
   if(auto){loadMessage="保存データを自動バックアップから復旧しました";return auto;}
   for(const key of LEGACY_KEYS){const legacy=readStored(key);if(legacy){loadMessage="旧版の学習履歴を移行しました";return legacy;}}
