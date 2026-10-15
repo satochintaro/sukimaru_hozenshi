@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.61';
+ const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.62';
  const read=(k,f={})=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch{return f;}};
  const grade=()=>document.body.classList.contains('grade1-app')?1:/player|practical/.test(location.pathname)?2:Number(read('skimaru-last-grade-v1634',2));
  const svg=key=>key==='close'?(window.SKIMARU_CONTACT_UI?.svg(key)||''):window.SKIMARU_ICONS?.svg(key)||window.SKIMARU_CONTACT_UI?.svg(key)||'';
@@ -73,7 +73,7 @@
  function manager(body){for(const [label,file,key] of [['管理者','viewer.html','people'],['開発者','admin.html','chart']])body.append(action(label,key,()=>{try{localStorage.setItem('skimaru-role','manager');}catch{}if(window.SKIMARU_PAGE_LOADING)window.SKIMARU_PAGE_LOADING.navigate(new URL(file,base).href);else location.assign(new URL(file,base).href);}));}
  function update(body){
   const image=document.createElement('img');image.src=new URL('icon-v1657-192.png',base);image.alt='スキマル保全士のアイコン';image.className='um-app-icon';body.append(image,paragraph('使用中：Ver '+VERSION));
-  const state=paragraph('アプリやサイトデータを削除せずに更新できます。');state.setAttribute('role','status');body.append(state);
+  const state=paragraph('この操作で更新するのはアプリの内容です。ホーム画面のアイコンを強制変更する操作ではありません。');state.setAttribute('role','status');body.append(state);
   const check=action('更新を確認','restore',async()=>{
    if(checking)return;checking=true;check.disabled=true;state.textContent='更新を確認中…';const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
    try{
@@ -82,10 +82,12 @@
     const html=await fetch(new URL('index.html',root),{cache:'no-store',signal:controller.signal});if(!html.ok||!/<html\b/i.test(await html.text()))throw Error();
     const icon=new URL(manifest.icons[0].src,root);if(icon.origin!==location.origin)throw Error();image.src=icon.href;
     if('serviceWorker'in navigator){const registrations=await navigator.serviceWorker.getRegistrations();await Promise.race([Promise.all(registrations.filter(reg=>reg.scope.startsWith(root.href)).map(reg=>reg.update())),new Promise((_,reject)=>setTimeout(()=>reject(Error('Update timeout')),8000))]);}
-    state.textContent=latest===VERSION.replace('.','')?'このアプリは最新版です。':'新しいバージョンがあります。';
+    state.textContent=latest===VERSION.replace('.','')?'アプリ内容は最新版です。ホーム画面アイコンの変更とは別です。':'新しいアプリ内容があります。';
     check.querySelector('span:last-child').textContent='更新して開き直す';check.onclick=async()=>{check.disabled=true;try{await window.SKIMARU_SYNC?.capture();if(/同期の準備|大きく自動同期/.test(window.SKIMARU_SYNC?.status()?.error||''))throw Error('Capture failed');const url=new URL(location.href);url.searchParams.set('_update',Date.now());location.replace(url.href);}catch{state.textContent='学習記録の保存を確認できなかったため、開き直しを中止しました。';check.disabled=false;}};
    }catch{state.textContent='通信できませんでした。学習記録は端末に残っています。通信が戻ってから再度お試しください。';}finally{clearTimeout(timer);checking=false;check.disabled=false;}
-  });body.append(check,paragraph('ホーム画面アイコンの反映時期は端末によって異なります。Androidではブラウザ側の更新確認が表示される場合があります。iPhoneの追加済みアイコンは、この更新ボタンでは変更できません。Safariで最新版を開き、ホーム画面に追加し直して確認してください。先に「データ・復元」から復旧コードを控えてください。'));
+  });body.append(check,paragraph('iPhoneの追加済みアイコンは、Webアプリから強制変更できません。AndroidはChromeが更新を管理するため、即時反映は保証できません。古いアイコン・アプリ・サイトデータは先に削除しないでください。'));
+  body.append(action('先に復旧コード・バックアップを確認','clipboard',()=>open('data')));
+  const iconGuide=document.createElement('details');iconGuide.innerHTML='<summary>iPhoneで新しいアイコンを追加する手順</summary><ol><li>今のアプリで復旧コードを控え、学習データをファイル保存します。</li><li>Safariで最新版を開き、共有 → ホーム画面に追加を選びます。</li><li>新しいアイコンから開き、プレイヤーNo.と学習成績を確認します。</li><li>新規登録画面や0問が出たら登録し直さず、元のアイコンに戻ってください。必要に応じて復旧コードで復元します。</li></ol><p>新しい入口で記録を確認するまで、古いアイコンは残してください。</p>';body.append(iconGuide);
   body.append(action('新しいアイコンをホーム画面に追加','plus',()=>external(()=>window.SKIMARU_ROLLOUT?.install())));
  }
  document.addEventListener('click',e=>{const b=e.target.closest('#title-menu-open,#grade-menu,#settings,#sc-home .hd-ico,.practical-hd .member-gear');if(!b)return;e.preventDefault();e.stopImmediatePropagation();open();},true);
