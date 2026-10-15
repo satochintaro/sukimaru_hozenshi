@@ -82,3 +82,5 @@
 @media(max-width:360px){.management-readable .workspace-people{grid-template-columns:1fr}.management-readable .workspace-person-values{gap:6px}.management-readable .workspace-person-values b{font-size:20px}.management-readable .workspace-person-values small{font-size:12px}.management-readable .workspace-nav button{font-size:15px;padding:10px 4px}.management-readable .manager-header .hd-ttl{font-size:17px}}
 
 .developer-challenge-entry{padding:16px;margin:14px 0 20px;border:1px solid #c2aa70;border-radius:16px;background:#fff9e8}.developer-challenge-entry h3{margin:0 0 12px}.developer-challenge-entry .challenge-demo-controls{display:flex;flex-wrap:wrap;gap:10px}.developer-challenge-entry button{min-height:48px;flex:1 1 150px;border:1px solid #b89b55;border-radius:12px;background:#174e3d;color:#fff8e7;padding:12px;font:inherit;font-weight:700}.developer-challenge-entry [data-play-status]{flex-basis:100%;margin:0}
+
+#developer-challenge-entry,.developer-challenge-entry{display:block;height:auto;min-height:0;flex:none}
