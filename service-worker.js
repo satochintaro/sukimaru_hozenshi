@@ -1,4 +1,4 @@
-const RELEASE='1669',CACHE='skimaru-live-20261016-v16-69-confidence-glossary';
+const RELEASE='1670',CACHE='skimaru-live-20261016-v16-70-smooth-challenge';
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
 function isHome(url){return [ROOT.pathname,home.pathname,new URL('app/',ROOT).pathname,appHome.pathname].includes(url.pathname);}
