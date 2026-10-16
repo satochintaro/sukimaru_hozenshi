@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.69",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.70",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -580,6 +580,7 @@ function showAnalysis(){
   });
   if(!any) W.innerHTML=`<p class="none">まだ記録がありません。</p>`;
   show("sc-an");
+  document.querySelector('#sc-an .scroll')?.scrollTo({top:0});
 }
 function radar(){
   const s=document.getElementById("radar");
