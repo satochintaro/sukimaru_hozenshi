@@ -60,7 +60,7 @@ body.sd-app{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Hir
 .sd-reduced .sd-sparks{display:none}.sd-reduced .sd-stage-banner{animation:none;opacity:1}
 @media(prefers-reduced-motion:reduce){.sd-sparks{display:none}.sd-stage-banner{animation:none;opacity:1}}
 
-/* v16.68: quiet reading surface, expressive mascot and milestone feedback. */
+/* v16.69: quiet reading surface, expressive mascot and milestone feedback. */
 .learning-dashboard .sd-home-entry.sd-locked .sd-card-copy{width:100%;text-align:center;align-items:center;z-index:2;pointer-events:none}
 .learning-dashboard .sd-home-entry.sd-locked{padding:4px 16px!important}
 .learning-dashboard .sd-home-entry.sd-locked .sd-card-copy strong{font-size:16px;line-height:1.15;letter-spacing:.06em;background:#e8ebe9e8;padding:0 8px;border-radius:8px}
@@ -131,3 +131,7 @@ body.sd-app{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Hir
 @media(orientation:landscape) and (max-height:500px){.sd-game{height:auto;grid-template-columns:minmax(0,1fr) 180px;grid-template-rows:auto minmax(130px,1fr) auto}.sd-progress{grid-column:1/-1}.sd-game .sd-lane{height:60px}.sd-game .sd-answers button{min-height:90px}.sd-stage-banner{top:56%}}
 .sd-reduced .sd-motion-trail{display:none}.sd-reduced .sd-stage-mascot::before,.sd-reduced .sd-stage-mascot::after{display:none}
 @media(prefers-reduced-motion:reduce){.sd-motion-trail,.sd-stage-mascot::before,.sd-stage-mascot::after{display:none}}
+
+.sd-confidence{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 12px}.sd-confidence button{border:1px solid #bdcfc1;border-radius:14px;background:#fffefa;color:#29563f;padding:14px 8px;font:inherit;font-weight:700;cursor:pointer}.sd-confidence button[aria-pressed=true]{color:#fff;background:#216347;border-color:#216347}.sd-answers button:disabled{opacity:.42;cursor:default}.sd-answer-note{margin:18px 0;padding:20px;background:#edf5e9;border:1px solid #cbdcc8;border-radius:18px;color:#234b37}.sd-answer-note h2{font-size:21px;margin:0 0 12px}.sd-answer-note h2 span{display:block;font-size:14px;margin-top:8px}.sd-answer-note p{font-size:16px;line-height:1.9;margin:0;white-space:pre-line;overflow-wrap:anywhere}.sd-answer-note+#sd-next{width:100%;margin:12px 0 24px}
+.sd-game{height:auto;min-height:calc(100dvh - 80px);max-height:none;grid-template-rows:auto minmax(180px,1fr) auto auto auto auto}.sd-game.sd-explained{grid-template-rows:auto auto auto auto;align-content:start}.sd-explained .sd-question{min-height:0;padding:24px 20px}.sd-explained .sd-answer-note{margin:8px 0;min-width:0}.sd-explained #sd-next{margin-top:6px}.sd-confidence{margin:4px 0}.sd-game .sd-feedback:empty{display:none}
+.sd-game{grid-template-columns:minmax(0,1fr)}.sd-game>*{grid-column:1;grid-row:auto}
