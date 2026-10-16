@@ -15,7 +15,7 @@
   panel.hidden=!tool;
   host.scrollTop=tool?0:homeScroll;
  }
- function data(){const build=async()=>{await script('./practical-progress.js?v=16.65');const out={};for(const year of [2022,2023,2024,2025]){if(year===2023){await script('./official-2022-2023-data.js');await script('./practical-2023-v9-data.js?v=16.9');await script('./practical-2023-adapter.js?v=16.9');}else await script(`./practical-${year}-v10-data.js?v=16.9`);out[year]=window.SKIMARU_PRACTICAL_V10;}return out;};return promise ||= (window.SKIMARU_PAGE_LOADING?window.SKIMARU_PAGE_LOADING.task(build):build()).catch(e=>{promise=null;throw e;});}
+ function data(){const build=async()=>{await script('./practical-progress.js?v=16.66');const out={};for(const year of [2022,2023,2024,2025]){if(year===2023){await script('./official-2022-2023-data.js');await script('./practical-2023-v9-data.js?v=16.9');await script('./practical-2023-adapter.js?v=16.9');}else await script(`./practical-${year}-v10-data.js?v=16.9`);out[year]=window.SKIMARU_PRACTICAL_V10;}return out;};return promise ||= (window.SKIMARU_PAGE_LOADING?window.SKIMARU_PAGE_LOADING.task(build):build()).catch(e=>{promise=null;throw e;});}
  const histories=()=>read('skimaruExamHistory_v1',[]).filter(h=>h.kind==='jitugi'&&h.completedAt);
  function header(title){panel.innerHTML=`<button type="button" id="pt-tools-back">‹ 実技トップへ</button><h2>${title}</h2>`;panel.querySelector('#pt-tools-back').onclick=close;}
  function close(){screen(null);active=null;history.replaceState(null,'',location.pathname);}

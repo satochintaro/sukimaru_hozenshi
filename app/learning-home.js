@@ -43,7 +43,7 @@
   if(!intro||!menu)return;
   const practical=menu.classList.contains('practical-tools-menu');
   if(practical){const p=intro.querySelector('p');if(p&&p.textContent!=='全課題でも、課題ごとでも学習できます。')p.textContent='全課題でも、課題ごとでも学習できます。';}
-  const rank=['科目別演習','年度別過去問','復習モード','重点マーク','学習分析','成績報告'];
+  const rank=['科目別演習','年度別過去問','復習モード','重点マーク','苦手克服','学習分析','成績報告'];
   const action=name=>document.body.classList.contains('grade1-app')?window.SKIMARU_HOME_ACTION?.(name):practical?window.SKIMARU_PRACTICAL_HOME?.(name):window.startQuick?.();
   if(practical)for(const [name,label] of [['subjects','科目別演習'],['years','年度別過去問']]){
    if(!menu.querySelector('[data-home-action="'+name+'"]')){const b=document.createElement('button');b.className='mi';b.dataset.homeAction=name;b.innerHTML='<span class="mi-i"></span><span class="mi-n">'+label+'</span>';b.onclick=()=>action(name);menu.append(b);}
@@ -57,7 +57,7 @@
   const items=[...menu.children].filter(e=>e.classList.contains('mi'));
   const order=e=>{const label=(e.querySelector('.mi-n')?.textContent||'').replace(/\s/g,'').replace('提出','報告'),index=rank.indexOf(label);return index<0?99:index;};
   items.sort((a,b)=>order(a)-order(b));
-  items.forEach((e,i)=>{if(menu.children[i]!==e)menu.insertBefore(e,menu.children[i]||null);const label=e.querySelector('.mi-n');if(label?.querySelector('br'))label.textContent=label.textContent;const badge=e.querySelector('.mi-i');const iconNames=['book','file','repeat','focus','chart','clipboard'],iconName=iconNames[order(e)]||iconNames[i]||'book';if(badge&&badge.dataset.iconName!==iconName){badge.dataset.iconName=iconName;badge.innerHTML=window.SKIMARU_ICONS?.svg(iconName)||String(i+1).padStart(2,'0');}if(label&&/成績.*提出/.test(label.textContent))label.textContent='成績報告';if(label&&order(e)===5&&!e.querySelector('.menu-optional')){const sub=document.createElement('small');sub.className='menu-optional';sub.textContent='完了報告は任意';e.append(sub);}});
+  items.forEach((e,i)=>{if(menu.children[i]!==e)menu.insertBefore(e,menu.children[i]||null);const label=e.querySelector('.mi-n');if(label?.querySelector('br'))label.textContent=label.textContent;const badge=e.querySelector('.mi-i');const iconNames=['book','file','repeat','focus','target','chart','clipboard'],iconName=iconNames[order(e)]||iconNames[i]||'book';if(badge&&badge.dataset.iconName!==iconName){badge.dataset.iconName=iconName;badge.innerHTML=window.SKIMARU_ICONS?.svg(iconName)||String(i+1).padStart(2,'0');}if(label&&/成績.*提出/.test(label.textContent))label.textContent='成績報告';if(label&&order(e)===6&&!e.querySelector('.menu-optional')){const sub=document.createElement('small');sub.className='menu-optional';sub.textContent='完了報告は任意';e.append(sub);}});
   let footer=host.querySelector('.learning-footer');
   if(!footer){footer=document.createElement('footer');footer.className='learning-footer';const grade1=document.body.classList.contains('grade1-app');footer.innerHTML='<a class="learning-grade-switch" href="../index.html#grades">級を選び直す →</a><details class="learning-contact"><summary>連絡</summary><div data-support-host></div></details>';host.append(footer);}
   const contact=footer.querySelector('[data-support-host]');
