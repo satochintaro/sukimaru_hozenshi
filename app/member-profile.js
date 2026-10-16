@@ -142,7 +142,7 @@
 })();
 
 
-if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.67';document.head.append(usage);}
+if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.68';document.head.append(usage);}
 
 
 if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-follow-v1632.js"]')){const follow=document.createElement("script");follow.src="./player-follow-v1632.js?v=16.32";document.head.append(follow);}
@@ -159,7 +159,7 @@ if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-f
    const script=document.createElement('script');let done=false;
    const finish=error=>{if(done)return;done=true;clearTimeout(timeout);script.onload=script.onerror=null;if(error){script.remove();reject(error);}else resolve();};
    const timeout=setTimeout(()=>finish(new DOMException('script timeout','TimeoutError')),20000);
-   script.src=new URL(file+'?v=16.67'+(attempt>1?'&retry='+attempt:''),base).href;
+   script.src=new URL(file+'?v=16.68'+(attempt>1?'&retry='+attempt:''),base).href;
    script.onload=()=>finish(ready()?null:new Error('script_not_ready'));script.onerror=()=>finish(new Error('script_load_failed'));
    document.head.append(script);
   });
