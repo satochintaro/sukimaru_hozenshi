@@ -1,0 +1,35 @@
+body.sd-playing{height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
+.sd-playing #sd-root{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.sd-playing .sd-header{flex:none;padding-top:max(4px,env(safe-area-inset-top));padding-bottom:4px;min-height:54px}
+.sd-playing .sd-header h1{font-size:16px}.sd-playing .sd-header h1 small{font-size:10px}
+.sd-playing #sd-play{flex:1;min-height:0;max-height:none;height:auto;overflow:hidden;padding:8px 12px max(8px,env(safe-area-inset-bottom));gap:8px;grid-template-columns:minmax(0,1fr);grid-template-rows:42px minmax(0,1fr) 44px 64px;align-content:stretch}
+.sd-playing #sd-play>*{min-width:0;grid-column:1;grid-row:auto}
+.sd-playing #sd-play .sd-progress{padding:0 4px;overflow:hidden}
+.sd-playing #sd-play .sd-progress-meta{line-height:1.2;font-size:11px}.sd-playing #sd-play .sd-progress-meta b{font-size:24px}.sd-playing #sd-play .sd-progress-meta em{font-size:11px}.sd-playing #sd-play .sd-progress-meta small{font-size:10px}.sd-playing #sd-play .sd-tier-label{display:none}
+.sd-playing #sd-play .sd-lane{height:8px;margin:6px 0 0}.sd-playing #sd-play .sd-road{height:5px;bottom:0}.sd-playing #sd-play .sd-lane-dots,.sd-playing #sd-play .sd-traveler,.sd-playing #sd-play .sd-lane-labels{display:none}
+.sd-playing #sd-play .sd-question{min-height:0;overflow:hidden;padding:12px 14px;justify-content:flex-start;gap:6px}
+.sd-playing #sd-play .sd-question small{flex:none;font-size:11px;margin:0;align-self:flex-start;padding:2px 8px}
+.sd-playing #sd-play .sd-question p{margin:0;line-height:1.55;font-size:20px}
+.sd-playing #sd-play .sd-confidence{margin:0;gap:10px}.sd-playing #sd-play .sd-confidence button{min-height:44px;padding:6px;font-size:15px;border-radius:12px}
+.sd-playing #sd-play .sd-answers{gap:10px}.sd-playing #sd-play .sd-answers button{min-height:0;height:64px;font-size:46px;padding:4px;border-radius:14px}
+.sd-playing #sd-play .sd-feedback,.sd-playing #sd-play .sd-live{position:absolute;width:1px;height:1px;min-height:0;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sd-playing #sd-play .sd-figure{flex:none;margin:0;padding:3px;max-height:110px}.sd-playing #sd-play .sd-figure img{max-height:85px;max-width:100%;object-fit:contain}.sd-playing #sd-play .sd-figure span{font-size:10px;padding:2px}
+.sd-copy{flex:1;min-height:0;min-width:0;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.sd-playing #sd-play .sd-copy-text{flex:1;min-height:0;overflow:hidden;white-space:pre-line;overflow-wrap:anywhere;word-break:normal;line-height:1.55;margin:0}
+.sd-copy-pages{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;height:36px}.sd-copy-pages[hidden]{display:none}.sd-copy-pages button{border:1px solid #bdcebf;background:#fff;color:#24563e;border-radius:9px;padding:6px 14px;min-height:36px;font:inherit;font-size:13px}.sd-copy-pages button:disabled{opacity:.35}.sd-copy-pages span{font-size:12px;color:#5e7764}
+.sd-playing #sd-play.sd-explained{grid-template-rows:42px minmax(0,.8fr) minmax(0,1fr) 48px}
+.sd-playing #sd-play .sd-answer-note{min-height:0;min-width:0;overflow:hidden;display:flex;flex-direction:column;padding:12px 14px;margin:0;gap:6px}
+.sd-playing #sd-play .sd-answer-note h2{flex:none;display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:18px;margin:0}.sd-playing #sd-play .sd-answer-note h2 span{font-size:13px;margin:0}
+.sd-playing #sd-play #sd-next{min-height:48px;height:48px;margin:0;padding:8px;font-size:16px}
+.sd-image-dialog[open]{max-height:calc(100dvh - 24px);max-width:calc(100vw - 24px);overflow:hidden}.sd-image-dialog img{max-height:calc(100dvh - 110px);max-width:100%;object-fit:contain}
+@media(max-height:600px){.sd-playing #sd-play{gap:6px;padding-top:4px;grid-template-rows:34px minmax(0,1fr) 44px 56px}.sd-playing #sd-play.sd-explained{grid-template-rows:34px minmax(0,.8fr) minmax(0,1fr) 44px}.sd-playing #sd-play .sd-progress-meta b{font-size:20px}.sd-playing #sd-play .sd-question,.sd-playing #sd-play .sd-answer-note{padding:8px 10px}.sd-playing #sd-play .sd-answers button{height:56px;font-size:40px}.sd-playing #sd-play #sd-next{height:44px;min-height:44px}.sd-playing #sd-play .sd-figure{max-height:84px}.sd-playing #sd-play .sd-figure img{max-height:60px}}
+@media(orientation:landscape) and (max-height:500px){.sd-playing #sd-play{grid-template-columns:minmax(0,1fr) 180px;grid-template-rows:30px minmax(44px,1fr) 64px;gap:6px}.sd-playing #sd-play .sd-progress{grid-column:1/-1;grid-row:1}.sd-playing #sd-play .sd-question{grid-column:1;grid-row:2/4}.sd-playing #sd-play .sd-confidence{grid-column:2;grid-row:2;align-self:end}.sd-playing #sd-play .sd-answers{grid-column:2;grid-row:3}.sd-playing #sd-play.sd-explained{grid-template-columns:1fr 1fr;grid-template-rows:30px minmax(0,1fr) 44px}.sd-playing #sd-play.sd-explained .sd-question{grid-column:1;grid-row:2}.sd-playing #sd-play.sd-explained .sd-answer-note{grid-column:2;grid-row:2}.sd-playing #sd-play.sd-explained #sd-next{grid-column:1/-1;grid-row:3}}
+@media(max-height:600px){.sd-playing #sd-play .sd-figure img{display:none}.sd-playing #sd-play .sd-figure{height:30px;min-height:30px;max-height:30px}.sd-playing #sd-play .sd-figure span{font-size:12px;padding:2px 6px}}
+.sd-playing #sd-play.sd-explained{grid-template-columns:minmax(0,1fr);grid-template-rows:42px 36px minmax(0,1fr) 48px}
+.sd-playing #sd-play.sd-explained .sd-progress{grid-column:1;grid-row:1}
+.sd-playing #sd-play .sd-review-tabs{grid-column:1;grid-row:2;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sd-review-tabs button{padding:4px 8px;border:1px solid #becfbd;border-radius:10px;background:#fffefa;color:#335b42;font:inherit;font-size:14px}.sd-review-tabs button[aria-selected=true]{background:#246347;color:white;border-color:#246347}
+.sd-playing #sd-play.sd-explained .sd-question,.sd-playing #sd-play.sd-explained .sd-answer-note{grid-column:1;grid-row:3}
+.sd-playing #sd-play.sd-explained #sd-next{grid-column:1;grid-row:4}
+.sd-playing #sd-play.sd-explained [role=tabpanel][hidden]{display:none!important}
+@media(max-height:600px){.sd-playing #sd-play.sd-explained{grid-template-rows:30px 36px minmax(0,1fr) 44px}}
