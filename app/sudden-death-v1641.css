@@ -60,7 +60,7 @@ body.sd-app{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Hir
 .sd-reduced .sd-sparks{display:none}.sd-reduced .sd-stage-banner{animation:none;opacity:1}
 @media(prefers-reduced-motion:reduce){.sd-sparks{display:none}.sd-stage-banner{animation:none;opacity:1}}
 
-/* v16.66: quiet reading surface, expressive mascot and milestone feedback. */
+/* v16.67: quiet reading surface, expressive mascot and milestone feedback. */
 .learning-dashboard .sd-home-entry.sd-locked .sd-card-copy{width:100%;text-align:center;align-items:center;z-index:2;pointer-events:none}
 .learning-dashboard .sd-home-entry.sd-locked{padding:4px 16px!important}
 .learning-dashboard .sd-home-entry.sd-locked .sd-card-copy strong{font-size:16px;line-height:1.15;letter-spacing:.06em;background:#e8ebe9e8;padding:0 8px;border-radius:8px}

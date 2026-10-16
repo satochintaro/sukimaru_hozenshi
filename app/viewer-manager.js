@@ -265,7 +265,7 @@
   }
   function closeDetail(){const m=document.getElementById("viewer-detail");m.classList.remove("show");m.setAttribute("aria-hidden","true");}
 
-  window.SKIMARU_SCORE_SOURCE={read:()=>({authenticated:!!viewerSession?.token,rows,roster:scoreRoster,scope:viewerSession?.site||'',annual:true,excluded:scoreExclusions})};
+  window.SKIMARU_SCORE_SOURCE={read:()=>({authenticated:!!viewerSession?.token,rows,roster:scoreRoster,scope:viewerSession?.site||'',annual:true,mistakes:(grade,type,site)=>rpc('skimaru_mistake_summary',{p_token:viewerSession?.token,p_grade:grade,p_type:type,p_site:site}),excluded:scoreExclusions})};
   for(const id of ['viewer-home-site','viewer-view-site']){const select=document.getElementById(id);select.add(new Option('拠点を選択',''));SITES.forEach(s=>select.add(new Option(s,s)));}
   let player={};try{player=JSON.parse(localStorage.getItem('skimaruData')||'{}');}catch{}
   document.getElementById('viewer-home-site').value=identity?.home_site||player.site||'';

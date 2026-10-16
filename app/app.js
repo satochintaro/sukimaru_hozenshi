@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.66",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.67",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -564,6 +564,7 @@ function again(){ if(S.quick)startQuick();else startQuiz("normal", S.subject||un
    分析
    ============================================================ */
 function showAnalysis(){
+  document.querySelector('#sc-an .ml-personal')?.remove();
   document.getElementById("a-t").textContent=U.total;
   document.getElementById("a-a").textContent=U.total>0?Math.round(U.correct/U.total*100)+"%":"–";
   document.getElementById("a-d").textContent=U.streak+"日";

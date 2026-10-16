@@ -38,10 +38,7 @@
   }catch{/* Keep the local choice and all learning data; retry on reconnect. */}finally{clearTimeout(timer);running=null;if(rev!==revision&&snapshot()?.pending)setTimeout(sync,0);}})();return running;
  }
  function badge(){
-  const host=document.querySelector('#sc-home.active .player-home-pad,#main #sc-home .player-home-pad,#pt-home.active .practical-pad,#main > .pad.years');if(!host)return;
-  let button=host.querySelector('[data-enrollment-edit]');if(!button){button=document.createElement('button');button.type='button';button.className='enrollment-status';button.dataset.enrollmentEdit='';button.onclick=()=>ensure(true);host.append(button);}
-  const e=snapshot(),text=e?year()+'年：'+labels[e.kind]+(e.pending?' · 同期待ち':''):'今年の受講区分を設定';if(button.textContent!==text)button.textContent=text;
-  const anchor=host.querySelector('.member-bar')||host.querySelector('.learning-footer');if(anchor&&button.nextElementSibling!==anchor)anchor.before(button);
+  document.querySelectorAll('[data-enrollment-edit]').forEach(button=>button.remove());
  }
  function boot(){ready=true;badge();if(window.SKIMARU_MEMBER?.valid()){ensure();sync();}let scheduled=false;new MutationObserver(()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;badge();if(!snapshot()&&window.SKIMARU_MEMBER?.valid())ensure();});}}).observe(document.body,{childList:true,subtree:true});}
  window.SKIMARU_ENROLLMENT={year,labels,snapshot,ensure,edit:()=>ensure(true),sync};
