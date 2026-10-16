@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.64",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.65",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -296,6 +296,7 @@ function rec(qs){
   U.recentIds=r; save();
 }
 function launch(queue,title,isMock){
+  if(window.SKIMARU_ENROLLMENT&&!window.SKIMARU_ENROLLMENT.ensure())return;
   S.quick=false; S.queue=queue; S.i=0; S.ok=0; S.wrong=[]; S.isMock=!!isMock;
   document.getElementById("q-ttl").textContent=title;
   renderQ(); show("sc-quiz");
@@ -877,6 +878,7 @@ function importBackup(event){
   };
   reader.onerror=()=>{notify("ファイルを読み込めませんでした");input.value="";};reader.readAsText(file);
 }
+window.SKIMARU_LAB_ENGINE={questions:()=>QUESTIONS,everWrong:q=>(Number(U.stats[q.id]?.w)||0)>0||U.wrongIds.includes(q.id),start:(qs,title)=>{if(!window.SKIMARU_MEMBER?.valid()){window.SKIMARU_MEMBER?.startRegistration();return;}S.mode='review';S.subject=null;rec(qs);launch(qs,title);}};
 /* 起動 */
 applyPreferences();
 renderHome();

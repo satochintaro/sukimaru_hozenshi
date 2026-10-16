@@ -6,7 +6,7 @@
   const requested = params.get('task');
   const selectedTask = info.tasks.find((t,i)=>requested===String(i+1));
   if(requested&&!selectedTask){location.replace(location.pathname);return;}
-  const review=['wrong','marked','random'].includes(params.get('review'))?params.get('review'):null;
+  const review=['wrong','marked','random','lab'].includes(params.get('review'))?params.get('review'):null;
   const reviewRun=review?review+':'+(params.get('run')||'latest'):null;
   const $ = id => document.getElementById(id);
   let state;
@@ -17,7 +17,7 @@
     showTaskMenu();return;
   }
   if(selectedTask){fullState.taskSessions ||= {};state=fullState.taskSessions[requested] ||= {answers:{},branch:'A',finished:false};}
-  if(review){fullState.reviewSessions ||= {};let nums;if(review==='random'){nums=info.questions.map(q=>q.number);for(let i=nums.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}nums=nums.slice(0,5);}else nums=window.SKIMARU_PRACTICAL_PROGRESS.numbers(info,review);state=fullState.reviewSessions[reviewRun] ||= {answers:{},branch:'A',finished:false,questionNumbers:nums};}
+  if(review){fullState.reviewSessions ||= {};let nums;if(review==='lab'){const valid=new Set(info.questions.map(q=>q.number));nums=[...new Set((params.get('numbers')||'').split(',').filter(n=>/^\d+$/.test(n)).map(Number))].filter(n=>valid.has(n)).slice(0,10);}else if(review==='random'){nums=info.questions.map(q=>q.number);for(let i=nums.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}nums=nums.slice(0,5);}else nums=window.SKIMARU_PRACTICAL_PROGRESS.numbers(info,review);state=fullState.reviewSessions[reviewRun] ||= {answers:{},branch:'A',finished:false,questionNumbers:nums};}
   document.body.classList.add('practical-quiz');
   const progressCard=document.querySelector('.wrap>.card');progressCard.className='q-bar';
   const footer=document.createElement('div');footer.className='quiz-footer';const pause=document.createElement('button');pause.textContent='中断してホームへ';pause.onclick=()=>location.href='./practical.html';const grade=document.createElement('button');grade.textContent='終了・採点';grade.onclick=()=>finish();footer.append(pause,grade);document.querySelector('.wrap').append(footer);document.getElementById('exam').append(document.getElementById('oneqDots'));
@@ -149,13 +149,14 @@
     current = n; render(); $('oneqPanel').scrollIntoView({behavior:'auto',block:'start'});
   }
   function recordHistory() {
+    fullState.everWrong||={};let changed=false;for(const q of questions)if(picked(q.number)!==info.jitugi[q.number]&&!fullState.everWrong[q.number]){fullState.everWrong[q.number]=true;changed=true;}if(changed)save();
     let history;
     try { history = JSON.parse(localStorage.getItem('skimaruExamHistory_v1') || '[]'); } catch {}
     if (!Array.isArray(history)) history = [];
     const good = questions.filter(q => picked(q.number) === info.jitugi[q.number]).length;
     const id = state.attemptId || (state.attemptId = `${YEAR}-jitugi-${selectedTask?requested:'all'}-${crypto.randomUUID()}`);
     if (!history.some(r => r.id === id)) {
-      history.push({elapsedSeconds:window.SKIMARU_TIME?.seconds(KEY,state.measurementId),timeMeasured:!!state.measurementId,id,year:YEAR,kind:'jitugi',scope:review?'review':selectedTask?'task':'year',taskNumber:selectedTask?info.tasks.indexOf(selectedTask)+1:null,title:review?`${YEAR}年度 ${review==='random'?'ランダム5問':review==='wrong'?'復習':'重点学習'}`:selectedTask?selectedTask.title:`${YEAR}年度 全課題`,total:TOTAL,correct:good,rate:Math.round(good/TOTAL*100),completedAt:state.completedAt,branch:'A',answers:info.modern ? Object.fromEntries(Object.entries(state.answers).map(([n,a])=>[n,a.picked])) : {...state.answers}});
+      history.push({elapsedSeconds:window.SKIMARU_TIME?.seconds(KEY,state.measurementId),timeMeasured:!!state.measurementId,id,year:YEAR,kind:'jitugi',scope:review?'review':selectedTask?'task':'year',taskNumber:selectedTask?info.tasks.indexOf(selectedTask)+1:null,title:review?`${YEAR}年度 ${review==='random'?'ランダム5問':review==='lab'?(params.get('lab')==='revenge'?'リベンジ復習':'ヨコモジ攻略'):review==='wrong'?'復習':'重点学習'}`:selectedTask?selectedTask.title:`${YEAR}年度 全課題`,total:TOTAL,correct:good,rate:Math.round(good/TOTAL*100),completedAt:state.completedAt,branch:'A',answers:info.modern ? Object.fromEntries(Object.entries(state.answers).map(([n,a])=>[n,a.picked])) : {...state.answers}});
       localStorage.setItem('skimaruExamHistory_v1',JSON.stringify(history)); save();
     }
   }
@@ -212,14 +213,14 @@
     if (!confirm(review?'この復習・重点学習の回答を消去して解き直しますか？課題別と全課題の回答は残ります。':selectedTask?'この課題の回答を消去して解き直しますか？他の課題と全課題の回答は残ります。':'全課題モードの回答を消去して解き直しますか？課題別の回答と成績履歴は残ります。')) return;
     const taskSessions=fullState.taskSessions;
     state={answers:{},branch:'A',finished:false,completedAt:null,synced:false,version:'16.9',startedAt:new Date().toISOString()};
-    if(!selectedTask&&!review){const bookmarks=fullState.bookmarks,reviewSessions=fullState.reviewSessions;Object.keys(fullState).forEach(k=>delete fullState[k]);Object.assign(fullState,state);fullState.taskSessions=taskSessions;fullState.bookmarks=bookmarks;fullState.reviewSessions=reviewSessions;state=fullState;}
+    if(!selectedTask&&!review){const bookmarks=fullState.bookmarks,reviewSessions=fullState.reviewSessions,everWrong=fullState.everWrong;Object.keys(fullState).forEach(k=>delete fullState[k]);Object.assign(fullState,state);fullState.taskSessions=taskSessions;fullState.bookmarks=bookmarks;fullState.reviewSessions=reviewSessions;fullState.everWrong=everWrong;state=fullState;}
     if(review){state.questionNumbers=questions.map(q=>q.number);fullState.reviewSessions[reviewRun]=state;}
     startClock(); save(); current=FIRST;
     $('results').classList.add('hidden'); $('exam').classList.remove('hidden'); render();
   };
   const originalViewer=window.SKIMARU_IMAGE_VIEWER.create({year:YEAR,imagePath});
   const openOriginal=(page,trigger)=>originalViewer.open(page,trigger);
-  const back=document.createElement('a');back.className='pt-task-back';back.href=review?(review==='random'?'./practical.html':'./practical.html#'+(review==='wrong'?'review':'bookmark')):location.pathname;back.textContent=review?'‹ 実技トップへ戻る':'‹ 課題選択へ戻る';document.querySelector('.wrap').prepend(back);
+  const back=document.createElement('a');back.className='pt-task-back';back.href=review?(review==='random'||review==='lab'?'./practical.html':'./practical.html#'+(review==='wrong'?'review':'bookmark')):location.pathname;back.textContent=review?'‹ 実技トップへ戻る':'‹ 課題選択へ戻る';document.querySelector('.wrap').prepend(back);
   $('reset').textContent=review?'この演習を解き直す':selectedTask?'この課題を解き直す':'全課題を解き直す';
   save();render();
   if(state.finished && answered()===TOTAL){recordHistory();syncLegacy();showResults();}

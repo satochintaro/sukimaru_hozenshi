@@ -13,7 +13,7 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const pct=(c,t)=>t?Math.round(c/t*100):0,kind=t=>t==='academic'?'学科':'実技',min=n=>Math.round(n/60)+'分',rate=v=>pct(v.correct,v.total)+'%';
 function save(){try{const fresh=read(KEY);if(Number(fresh.suddenDeath?.revision||0)>Number(s.suddenDeath?.revision||0))s.suddenDeath=fresh.suddenDeath;localStorage.setItem(KEY,JSON.stringify(s));return true;}catch{notice('端末に保存できません。空き容量を確認して、この画面を閉じずに成績を提出してください。');return false;}}
 function notice(t){const el=document.getElementById('notice');el.textContent=t;clearTimeout(timer);timer=setTimeout(()=>el.textContent='',6500);}
-function guard(){if(window.SKIMARU_MEMBER?.valid())return true;window.SKIMARU_MEMBER?.startRegistration();return false;}
+function guard(){if(window.SKIMARU_MEMBER?.valid())return window.SKIMARU_ENROLLMENT?window.SKIMARU_ENROLLMENT.ensure():true;window.SKIMARU_MEMBER?.startRegistration();return false;}
 function metrics(){const m={};TYPES.forEach(t=>m[t]={total:s.stats[t].total,correct:s.stats[t].correct,seconds:Math.round(s.stats[t].seconds),timeMeasured:true});return m;}
 function show(view='home'){screen=view;render();window.scrollTo(0,0);}
  function go(url){if(window.SKIMARU_PAGE_LOADING)window.SKIMARU_PAGE_LOADING.navigate(url);else location.assign(url);}
@@ -33,6 +33,7 @@ function pool(){return all.filter(q=>q.type===s.activeMode);}
 function marked(q){return !!s.questionStats[q.id]?.bm;}
 function follow(q){const st=s.questionStats[q.id];return st?.lastWrong||st?.guess||s.settings.useSRS&&st?.due&&st.due<=today();}
 function practice(qs,title){if(!qs.length)return notice('該当する問題はまだありません。');start(qs,qs[0].type==='practical'?'exam':'practice',title);}
+window.SKIMARU_LAB_ENGINE={questions:()=>pool(),everWrong:q=>{const v=s.questionStats[q.id];return !!v&&(Number(v.total)>Number(v.correct)||v.lastWrong===true);},start:(qs,title)=>practice(qs,title)};
 window.SKIMARU_HOME_ACTION=name=>{if(name==='random')practice(shuffle(pool()).slice(0,5),'ランダム5問');else if(name==='years')show(s.activeMode==='practical'?'practical-years':'mock');else show(name);};
 function practicalYears(){setHeader('年度別過去問');main.innerHTML='<div class="pad"><div id="practical-years"></div><button id="home" class="btn-g">ホームへ</button></div>';window.SKIMARU_STUDY_SCREEN.years(document.getElementById('practical-years'),Object.keys(DATA).reverse().map(year=>({year:+year,count:DATA[year].tasks.reduce((n,t)=>n+Object.keys(t.answers).length,0),detail:'全課題・課題別'})),false,row=>{s.year=row.year;save();show('practical-year');});bind('home',()=>show());}
 function tabs(){return `<nav class="learning-mode-switch"><button data-mode="academic" class="${s.activeMode==='academic'?'active':''}">学科</button><button data-mode="practical" class="${s.activeMode==='practical'?'active':''}">実技</button></nav>`;}

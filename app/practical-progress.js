@@ -9,6 +9,12 @@
   if(Array.isArray(history))history.filter(h=>h.kind==='jitugi'&&h.year===info.year&&h.completedAt).forEach(h=>take(h.answers,h.completedAt));
   return out;
  }
- function numbers(info,mode){const state=read(info.key);if(mode==='marked')return info.questions.filter(q=>state.bookmarks?.[q.number]).map(q=>q.number);const answers=latest(info);return info.questions.filter(q=>answers[q.number]&&!answers[q.number].correct).map(q=>q.number);}
+ function everWrong(info){
+  const state=read(info.key),out=new Set(Object.keys(state.everWrong||{}).filter(n=>state.everWrong[n]).map(Number));
+  const sessions=[state,...Object.values(state.taskSessions||{}),...Object.values(state.reviewSessions||{}),...read('skimaruExamHistory_v1',[]).filter(h=>h.kind==='jitugi'&&h.year===info.year)];
+  for(const s of sessions){if(!s.completedAt&&!s.finished)continue;for(const [n,v] of Object.entries(s.answers||{})){const q=info.questions.find(q=>q.number===+n);if(!q)continue;const letter=typeof v==='string'?v:q.options[typeof v==='number'?v:v?.picked]?.letter;if(q.options.some(o=>o.letter===letter)&&letter!==info.jitugi[n])out.add(+n);}}
+  return [...out].filter(n=>info.questions.some(q=>q.number===n));
+ }
+ function numbers(info,mode){const state=read(info.key);if(mode==='everwrong')return everWrong(info);if(mode==='marked')return info.questions.filter(q=>state.bookmarks?.[q.number]).map(q=>q.number);const answers=latest(info);return info.questions.filter(q=>answers[q.number]&&!answers[q.number].correct).map(q=>q.number);}
  window.SKIMARU_PRACTICAL_PROGRESS={read,latest,numbers};
 })();
