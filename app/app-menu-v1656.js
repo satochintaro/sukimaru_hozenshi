@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.66';
+ const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.67';
  const read=(k,f={})=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch{return f;}};
  const grade=()=>document.body.classList.contains('grade1-app')?1:/player|practical/.test(location.pathname)?2:Number(read('skimaru-last-grade-v1634',2));
  const svg=key=>key==='close'?(window.SKIMARU_CONTACT_UI?.svg(key)||''):window.SKIMARU_ICONS?.svg(key)||window.SKIMARU_CONTACT_UI?.svg(key)||'';
@@ -59,6 +59,7 @@
   const row=document.createElement('label');row.className='um-toggle';const text=document.createElement('span');text.textContent=label;if(note){const small=document.createElement('small');small.textContent=note;text.append(small);}const input=document.createElement('input');input.type='checkbox';input.checked=!!checked;input.onchange=()=>{if(fn(input.checked)===false){input.checked=!input.checked;dialog.querySelector('[data-setting-error]').textContent='設定を保存できませんでした。端末の空き容量を確認してください。';}};row.append(text,input);body.append(row);
  }
  function settings(body){
+  const enrollment=window.SKIMARU_ENROLLMENT?.snapshot();if(window.SKIMARU_ENROLLMENT){body.append(paragraph('今年の受講区分：'+(enrollment?window.SKIMARU_ENROLLMENT.labels[enrollment.kind]:'未設定')));body.append(action('受講区分を変更','people',()=>external(()=>window.SKIMARU_ENROLLMENT.edit())));}
   body.append(paragraph(grade()+'級の学習設定'));
   const p=preferenceGet();for(const [key,label,note] of [['largeText','文字を大きく',''],['highContrast','文字・枠線をくっきり',''],['showWarn','過去の誤答に印をつける',''],['useSRS','忘れかけた問題を復習する','']])toggle(body,label,p[key],value=>preferenceSet(key,value),note);
   toggle(body,'動きを控えめにする',read('skimaru-title-preferences-v1634').reducedMotion,value=>{try{localStorage.setItem('skimaru-title-preferences-v1634',JSON.stringify({...read('skimaru-title-preferences-v1634'),reducedMotion:value}));document.body.classList.toggle('reduced-motion',value);return true;}catch{return false;}});
