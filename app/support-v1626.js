@@ -4,7 +4,7 @@
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'{}')||{};}catch{return {};}};
  const date=x=>new Date(x).toLocaleString('ja-JP');let launcher,dialog,polling=false,refreshAgain=false;
- function actor(){const dev=window.SKIMARU_SUPPORT_DEVELOPER?.();if(dev)return {role:'developer',identity:'',token:'',bearer:dev};
+ function actor(){const dev=window.SKIMARU_SUPPORT_DEVELOPER?.();if(dev||location.pathname.endsWith('/admin.html'))return {role:'developer',identity:'',token:'',bearer:dev||''};
   const manager=read('skimaru-manager-identity-v1613'),player=read('skimaru-registration-v13');
   if((location.pathname.endsWith('/viewer.html')||readRole()==='manager')&&manager.manager_no&&manager.token)return {role:'manager',identity:manager.manager_no,token:manager.token};
   if(player.playerNo&&player.token&&player.confirmed)return {role:'player',identity:player.playerNo,token:player.token};
@@ -12,7 +12,13 @@
  }
  function readRole(){try{return localStorage.getItem('skimaru-role');}catch{return '';}}
  async function rpc(action,data={},a=actor()){if(!config.url||!config.publishableKey)throw Error('接続設定がありません。');const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
-  try{const res=await fetch(config.url+'/rest/v1/rpc/skimaru_support',{method:'POST',headers:{apikey:config.publishableKey,'Content-Type':'application/json',...(a.bearer?{Authorization:'Bearer '+a.bearer}:{})},body:JSON.stringify({p_action:action,p_role:a.role,p_identity:a.identity,p_token:a.token,p_data:data}),signal:controller.signal,cache:'no-store'});const j=await res.json();if(!res.ok)throw Error(j.message==='rate_limited'?'送信回数が多いため、少し待ってお試しください。':'取得・保存できませんでした。通信とログイン状態を確認してください。');return j;}catch(e){if(e.name==='AbortError')throw Error('通信が時間切れになりました。再度お試しください。');throw e;}finally{clearTimeout(timer);}}
+  try{
+   let bearer=a.bearer;
+   if(a.role==='developer'&&typeof window.ensureSession==='function'){if(!await window.ensureSession()){const e=Error('開発者としてログインし直してください。');e.code='developer_required';throw e;}bearer=window.SKIMARU_SUPPORT_DEVELOPER?.();}
+   if(a.role==='developer'&&!bearer){const e=Error('開発者としてログインし直してください。');e.code='developer_required';throw e;}
+   const res=await fetch(config.url+'/rest/v1/rpc/skimaru_support',{method:'POST',headers:{apikey:config.publishableKey,'Content-Type':'application/json',...(bearer?{Authorization:'Bearer '+bearer}:{})},body:JSON.stringify({p_action:action,p_role:a.role,p_identity:a.identity,p_token:a.token,p_data:data}),signal:controller.signal,cache:'no-store'});const j=await res.json();
+   if(!res.ok){const auth=res.status===401||res.status===403||/authentication|registration|developer_required|manager_required/.test(j.message||'');const e=Error(auth?(a.role==='developer'?'開発者としてログインし直してください。':a.role==='manager'?'マネージャーとしてログインし直してください。':'登録情報を確認できません。復元済みのサイトから開くか、設定で復旧コードを確認してください。'):j.message==='rate_limited'||res.status===429?'送信回数が多いため、少し待ってお試しください。':'取得・保存できませんでした。時間をおいて再度お試しください。');e.code=auth?'registration':'support_failed';throw e;}return j;
+  }catch(e){window.SKIMARU_USAGE?.reportError?.(e,{stage:'send',filename:new URL('./support-v1626.js',location.href).href,handled:true,action:'support_request'});if(e.name==='AbortError')throw Error('通信が時間切れになりました。再度お試しください。');throw e;}finally{clearTimeout(timer);}}
  function open(title){dialog?.close();const d=document.createElement('dialog');d.className='support-dialog';d.innerHTML=`<header><h2>${esc(title)}</h2><button type="button" class="contact-close" aria-label="閉じる">${window.SKIMARU_CONTACT_UI?.svg('close')||'×'}</button></header><div class="support-content"></div><p class="support-status" role="status" aria-live="polite"></p>`;document.body.append(d);dialog=d;d.querySelector('header button').onclick=()=>d.close();d.addEventListener('close',()=>{d.remove();if(dialog===d)dialog=null;});d.showModal();return d;}
  function error(d,e){if(d.isConnected)d.querySelector('.support-status').textContent=e.message||'処理できませんでした。';}
  async function mailbox(){const a=actor(),d=open('お知らせ');d.querySelector('.support-status').textContent='読み込み中…';try{const messages=await rpc('mail',{},a);if(!d.isConnected)return;const host=d.querySelector('.support-content');host.innerHTML=messages.length?messages.map(m=>`<article><h3>${esc(m.title)}</h3><small>${esc(date(m.created_at))}</small><p>${esc(m.body)}</p>${a.role==='developer'?`<button data-hide="${esc(m.id)}">公開を終了</button>`:''}</article>`).join(''):'<p>メッセージはありません。</p>';d.querySelector('.support-status').textContent='';if(a.role!=='guest')await rpc('read_mail',{},a);else try{localStorage.setItem('skimaru-mail-seen-v1626',new Date().toISOString());}catch{}
@@ -54,3 +60,4 @@
  function init(){mount();let queued=false;new MutationObserver(()=>{if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;mount();});}}).observe(document.body,{childList:true,subtree:true});setInterval(refresh,60000);document.addEventListener('visibilitychange',refresh);window.addEventListener('skimaru-profile',refresh);window.addEventListener('online',refresh);window.addEventListener('storage',e=>{if(['skimaru-registration-v13','skimaru-role','skimaru-unread-state-v1654','skimaru-mail-seen-v1626'].includes(e.key)||e.key===null){window.SKIMARU_BADGES?.setIdentity(actorKey(actor()));refresh();}});document.getElementById('login-btn')?.addEventListener('click',()=>setTimeout(refresh,5000));}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+

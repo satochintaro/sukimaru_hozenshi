@@ -14,12 +14,13 @@
   c.root.querySelector('#sd-resume')?.addEventListener('click',c.resume);c.root.querySelector('#sd-new')?.addEventListener('click',()=>c.start(active));
   c.root.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{if(tab===b.dataset.tab)return;tab=b.dataset.tab;renderPanel();});
   renderPanel();
-  if(attempts&&window.SKIMARU_SYNC)window.SKIMARU_SYNC.flush().catch(()=>{});
+  if(!c.developerMode&&attempts&&window.SKIMARU_SYNC)window.SKIMARU_SYNC.flush().catch(()=>{});
  }
  function renderPanel(){
   if(!mounted())return;const panel=document.getElementById('cl-panel');context.root.querySelectorAll('[data-tab]').forEach(b=>{const selected=b.dataset.tab===tab;b.setAttribute('aria-selected',selected);b.tabIndex=selected?0:-1;});panel.setAttribute('aria-labelledby',tab==='record'?'cl-record-tab':'cl-ranking-tab');
   if(tab==='record'){controller?.abort();revision++;renderRecord(panel);return;}
   panel.innerHTML='<div class="cl-ranking-toolbar"><h3>最高連続正解ランキング</h3><select aria-label="ランキングの範囲" id="cl-scope"><option value="all">全拠点</option><option value="site">自分の拠点</option></select></div><p class="cl-network" role="status">ランキングを読み込み中…</p><div class="cl-ranking-content"></div><button class="cl-refresh" type="button">ランキングを更新</button><p class="cl-footnote">同期済み記録・上位100人まで。同じ記録は同順位。</p>';
+  if(context.developerMode){scope='all';panel.querySelector('#cl-scope').querySelector('[value="site"]').remove();}
   panel.querySelector('#cl-scope').value=scope;panel.querySelector('#cl-scope').onchange=e=>{scope=e.target.value;fetchRanking();};panel.querySelector('.cl-refresh').onclick=()=>fetchRanking(true);fetchRanking();
  }
  function renderRecord(panel){
@@ -28,24 +29,24 @@
   if(context.current&&['failed','complete'].includes(context.current.phase)){const last=document.createElement('button');last.type='button';last.className='cl-refresh';last.id='sd-last';last.textContent='前回の結果・間違えた問題を確認';last.onclick=context.result;panel.append(last);}
  }
  async function fetchRanking(flush=false){
-  if(!mounted()||tab!=='ranking')return;const id=++revision,grade=context.grade,currentScope=scope,panel=document.getElementById('cl-panel'),state=panel.querySelector('.cl-network'),button=panel.querySelector('.cl-refresh'),content=panel.querySelector('.cl-ranking-content'),r=read('skimaru-registration-v13'),profileNo=read('skimaruData').playerNo;
+  if(!mounted()||tab!=='ranking')return;const id=++revision,grade=context.grade,currentScope=context.developerMode?'all':scope,panel=document.getElementById('cl-panel'),state=panel.querySelector('.cl-network'),button=panel.querySelector('.cl-refresh'),content=panel.querySelector('.cl-ranking-content'),r=read('skimaru-registration-v13'),profileNo=read('skimaruData').playerNo;
   controller?.abort();controller=new AbortController();const signal=controller.signal,timer=setTimeout(()=>controller?.signal===signal&&controller.abort(),10000);button.disabled=true;state.textContent='ランキングを読み込み中…';content.replaceChildren();const rankPreview=document.querySelector('[data-my-rank]');if(rankPreview){rankPreview.innerHTML='―<em>位</em>';rankPreview.previousElementSibling.textContent=currentScope==='site'?'拠点内の順位':'全拠点の順位';}
   try{
-   if(flush&&window.SKIMARU_SYNC)await Promise.race([window.SKIMARU_SYNC.flush(),new Promise(resolve=>setTimeout(resolve,1800))]);
+   if(flush&&!context.developerMode&&window.SKIMARU_SYNC)await Promise.race([window.SKIMARU_SYNC.flush(),new Promise(resolve=>setTimeout(resolve,1800))]);
    if(id!==revision||signal.aborted)return;
    const cloud=window.SKIMARU_SUPABASE;if(!cloud?.url||!cloud.publishableKey)throw Error('ランキング接続を準備できません。');
    const headers={apikey:cloud.publishableKey,'Content-Type':'application/json'},body={p_grade:grade,p_scope:currentScope};
-   if(r.playerNo&&r.token&&r.playerNo===profileNo){body.p_player_no=r.playerNo;body.p_token=r.token;}
-   else if(context.developerMode){const session=(()=>{try{return JSON.parse(sessionStorage.getItem('skimaru-supabase-manager-session-v1')||'null');}catch{return null;}})();if(!session?.access_token)throw Error('開発者としてログインし直してください。');headers.Authorization='Bearer '+session.access_token;}
+   if(context.developerMode){const auth=await window.SKIMARU_DEMO_ACCESS?.headers();if(!auth){const e=Error('開発者としてログインし直してください。');e.code='developer_required';throw e;}Object.assign(headers,auth);}
+   else if(r.playerNo&&r.token&&r.playerNo===profileNo){body.p_player_no=r.playerNo;body.p_token=r.token;}
    else throw Error('拠点と名前を登録するとランキングを確認できます。');
    const response=await fetch(cloud.url+'/rest/v1/rpc/skimaru_challenge_leaderboard',{method:'POST',headers,body:JSON.stringify(body),cache:'no-store',signal});const data=await response.json();
-   if(!response.ok||!Array.isArray(data.rows))throw Error('ランキングを取得できませんでした。');
+   if(!response.ok||!Array.isArray(data.rows)){const authError=response.status===401||response.status===403||/authentication|registration|developer_required/.test(data.message||'');const message=authError?(context.developerMode?'開発者の認証が切れています。開発者画面からログインし直してください。':'登録情報を確認できません。復元済みのサイトから開くか、設定で復旧コードを確認してください。'):response.status===429||data.message==='rate_limited'?'アクセスが集中しています。少し待って更新してください。':'ランキングを取得できませんでした。時間をおいて更新してください。';const e=Error(message);e.code=authError?'registration':response.status===429?'rate_limited':'ranking_failed';e.displayMessage=message;throw e;}
    if(id!==revision||!mounted()||tab!=='ranking'||read('skimaruData').playerNo!==profileNo)return;
    const rows=data.rows.filter(x=>Number.isInteger(x.rank)&&x.rank>0&&num(x.best)>0).slice(0,100);
    const mine=data.mine&&Number.isInteger(data.mine.rank)?data.mine:null,rank=document.querySelector('[data-my-rank]');if(rank)rank.innerHTML=mine?String(mine.rank)+'<em>位</em>':'―<em>未記録</em>';
    const top=rows.slice(0,3),featured=rows.slice(3,5),rest=rows.slice(5);content.innerHTML=(top.length?'<div class="cl-podium">'+top.map((x,i)=>'<article class="cl-podium-card cl-medal-'+Math.min(x.rank,4)+' cl-place-'+i+' '+(x.isSelf?'is-self':'')+'"><span class="cl-crown">'+crown+'</span><strong class="cl-rank">'+x.rank+'<small>位</small></strong><p class="cl-ranker-name">'+esc(x.name)+(x.isSelf?'<span>あなた</span>':'')+'</p><small class="cl-site">'+esc(x.site)+'</small><p class="cl-ranker-score">'+num(x.best)+'<small>問連続正解</small></p></article>').join('')+'</div>':'<p class="cl-empty">まだ同期済みの記録がありません。<br>最初のランカーを目指そう。</p>')+(featured.length?'<ol class="cl-featured-followers" aria-label="上位ランカー">'+featured.map(x=>rankRow(x)).join('')+'</ol>':'')+(rest.length?'<details class="cl-ranking-more"><summary>続きのランキングを見る<span>'+rest.length+'人 <i aria-hidden="true">⌄</i></span></summary><ol class="cl-rank-list">'+rest.map(x=>rankRow(x)).join('')+'</ol></details>':'')+(mine&&!rows.some(x=>x.isSelf)?'<div class="cl-outside"><p>あなたの順位</p>'+rankRow(mine)+'</div>':'');
-   const pending=mine?num(context.ledger.best)>num(mine.best):num(context.ledger.best)>0;state.textContent=(currentScope==='site'?'拠点内':'全拠点')+' '+Number(data.total||rows.length)+'人'+(pending?' ／ この端末の最新ベストは反映待ちです。':' ／ '+date(data.generatedAt)+' 更新');
-  }catch(e){if(id===revision&&mounted()&&tab==='ranking'){state.textContent=e.message?.includes('登録')||e.message?.includes('ログイン')?e.message:'通信できませんでした。ランキングを更新して再度お試しください。端末の成績は残っています。';}}
+   const pending=!context.developerMode&&(mine?num(context.ledger.best)>num(mine.best):num(context.ledger.best)>0);state.textContent=(currentScope==='site'?'拠点内':'全拠点')+' '+Number(data.total||rows.length)+'人'+(pending?' ／ この端末の最新ベストは反映待ちです。':' ／ '+date(data.generatedAt)+' 更新');
+  }catch(e){if(id===revision&&mounted()&&tab==='ranking'){state.textContent=e.displayMessage||((e.message?.includes('登録')||e.message?.includes('ログイン'))?e.message:e.name==='AbortError'?'読み込みに時間がかかっています。ランキングを更新してください。':'通信できませんでした。ランキングを更新して再度お試しください。端末の成績は残っています。');window.SKIMARU_USAGE?.reportError?.(e,{stage:'send',filename:new URL('./challenge-lobby-v1657.js',location.href).href,handled:true,action:'challenge_ranking'});}}
   finally{clearTimeout(timer);if(id===revision&&button.isConnected)button.disabled=false;}
  }
  function rankRow(x){return '<li class="cl-rank-row '+(x.isSelf?'is-self':'')+' '+(x.rank<=5?'cl-high-ranker':'')+'"><strong>'+x.rank+'<small>位</small></strong><div><b>'+esc(x.name)+(x.isSelf?' <em>あなた</em>':'')+'</b><small>'+esc(x.site)+'</small></div><p>'+num(x.best)+'<small>問連続正解</small></p></li>';}
@@ -54,3 +55,4 @@
  window.addEventListener('pagehide',()=>{controller?.abort();clearTimeout(refreshTimer);});
  window.SKIMARU_CHALLENGE_LOBBY={mount,leave:()=>{revision++;controller?.abort();clearTimeout(refreshTimer);document.body.classList.remove('sd-lobby-view');},refresh:()=>fetchRanking(true)};
 })();
+
