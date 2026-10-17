@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.71';
+ const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.72';
  const read=(k,f={})=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch{return f;}};
  const grade=()=>document.body.classList.contains('grade1-app')?1:/player|practical/.test(location.pathname)?2:Number(read('skimaru-last-grade-v1634',2));
  const svg=key=>key==='close'?(window.SKIMARU_CONTACT_UI?.svg(key)||''):window.SKIMARU_ICONS?.svg(key)||window.SKIMARU_CONTACT_UI?.svg(key)||'';
@@ -42,7 +42,7 @@
   if(!dialog.open)dialog.showModal();window.SKIMARU_CONTACT_UI?.decorate();status();
  }
  function menu(body){
-  const p=read('skimaruData'),profile=action(p.name?p.site+' ／ '+p.name:'拠点・名前を登録','people',()=>external(()=>window.SKIMARU_MEMBER?window.SKIMARU_MEMBER.edit():location.assign(new URL(grade()===1?'grade1.html':'player.html',base))));profile.className='um-profile';body.append(profile);
+  const p=read('skimaruData'),profile=action(p.name?p.site+' ／ '+p.name:'氏名・ニックネームを登録','people',()=>external(()=>window.SKIMARU_MEMBER?window.SKIMARU_MEMBER.edit():location.assign(new URL(grade()===1?'grade1.html':'player.html',base))));profile.className='um-profile';body.append(profile);
   const grid=document.createElement('div');grid.className='game-menu-grid';grid.dataset.sharedMenuGrid='';
   for(const [label,key,fn,tag] of [
    ['お知らせ','mail',()=>external(()=>window.SKIMARU_SUPPORT?.mailbox()),'mail'],
@@ -52,13 +52,14 @@
    ['不具合を報告','report',()=>external(()=>window.SKIMARU_SUPPORT?.report()),'report'],
    ['管理画面','people',()=>open('manager'),'manager']])grid.append(action(label,key,fn,tag));
   body.append(grid);
-  const links=document.createElement('div');links.className='um-links';links.append(action('更新を確認','restore',()=>open('update')),action('使い方','book',()=>external(()=>window.SKIMARU_ROLLOUT?.guide('player'))));body.append(links);
+  const links=document.createElement('div');links.className='um-links';links.append(action('利用規約','file',()=>external(()=>window.SKIMARU_LEGAL?.open('terms'))),action('プライバシーポリシー','file',()=>external(()=>window.SKIMARU_LEGAL?.open('privacy'))),action('更新を確認','restore',()=>open('update')),action('使い方','book',()=>external(()=>window.SKIMARU_ROLLOUT?.guide('player'))));body.append(links);
   const version=document.createElement('small');version.className='um-version';version.textContent='スキマル保全士　Ver '+VERSION;body.append(version);
  }
  function toggle(body,label,checked,fn,note=''){
   const row=document.createElement('label');row.className='um-toggle';const text=document.createElement('span');text.textContent=label;if(note){const small=document.createElement('small');small.textContent=note;text.append(small);}const input=document.createElement('input');input.type='checkbox';input.checked=!!checked;input.onchange=()=>{if(fn(input.checked)===false){input.checked=!input.checked;dialog.querySelector('[data-setting-error]').textContent='設定を保存できませんでした。端末の空き容量を確認してください。';}};row.append(text,input);body.append(row);
  }
  function settings(body){
+  const profile=read('skimaruData');body.append(paragraph('氏名：'+(profile.name||'未設定')+' ／ ニックネーム：'+(profile.nickname||'未設定')),action('氏名・ニックネームを変更','people',()=>external(()=>window.SKIMARU_MEMBER?.edit())));
   const enrollment=window.SKIMARU_ENROLLMENT?.snapshot();if(window.SKIMARU_ENROLLMENT){body.append(paragraph('今年の受講区分：'+(enrollment?window.SKIMARU_ENROLLMENT.labels[enrollment.kind]:'未設定')));body.append(action('受講区分を変更','people',()=>external(()=>window.SKIMARU_ENROLLMENT.edit())));}
   body.append(paragraph(grade()+'級の学習設定'));
   const p=preferenceGet();for(const [key,label,note] of [['largeText','文字を大きく',''],['highContrast','文字・枠線をくっきり',''],['showWarn','過去の誤答に印をつける',''],['useSRS','忘れかけた問題を復習する','']])toggle(body,label,p[key],value=>preferenceSet(key,value),note);

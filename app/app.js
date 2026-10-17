@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.71",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.72",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -904,4 +904,4 @@ window.addEventListener("load",()=>{
   if("serviceWorker" in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
 });
 
-window.addEventListener("skimaru-profile",e=>{U.name=e.detail.name||"";U.site=e.detail.site||"";U.playerNo=e.detail.playerNo||U.playerNo;const n=document.getElementById("h-name");if(n)n.textContent=U.site+" ／ "+U.name;});
+window.addEventListener("skimaru-profile",e=>{U.name=e.detail.name||"";U.nickname=e.detail.nickname||"";U.site=e.detail.site||"";U.playerNo=e.detail.playerNo||U.playerNo;const n=document.getElementById("h-name");if(n)n.textContent=U.site+" ／ "+U.name;});
