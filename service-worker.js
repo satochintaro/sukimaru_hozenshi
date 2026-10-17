@@ -1,4 +1,5 @@
-const RELEASE='1672',CACHE='skimaru-live-20261017-v16-72-profile-policies';
+const RELEASE='1673',CACHE='skimaru-live-20261017-v16-73-tokyo';
+const TOKYO_KEY="sb_publishable_6pf2rthxEBIw11NhsApnEQ_WjogJYif";
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
 function isHome(url){return [ROOT.pathname,home.pathname,new URL('app/',ROOT).pathname,appHome.pathname].includes(url.pathname);}
@@ -20,7 +21,16 @@ self.addEventListener('activate',event=>{event.waitUntil((async()=>{
 })());});
 self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});
 self.addEventListener('fetch',event=>{
- if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==ROOT.origin)return;
+ const incoming=new URL(event.request.url);
+ // Keep already-open pages sending to the former project on the Tokyo backend.
+ // Registered player tokens and request bodies are preserved. No learning storage is changed.
+ if(incoming.origin==='https://kuioqlwpkvdpudollhpz.supabase.co'&&/^\/(?:rest|auth|storage)\/v1(?:\/|$)/.test(incoming.pathname)){
+  const destination=new URL(incoming.pathname+incoming.search,'https://awhcmcnquugxtpbvwhnb.supabase.co');
+  const headers=new Headers(event.request.headers);headers.set('apikey',TOKYO_KEY);
+  if(headers.get('authorization')==='Bearer sb_publishable_LE2Gis6s88006SiYtqSpcg_gwKS8ZG4')headers.delete('authorization');
+  event.respondWith((async()=>{const method=event.request.method;const body=method==='GET'||method==='HEAD'?undefined:await event.request.clone().arrayBuffer();const response=await fetch(destination,{method,headers,body,mode:'cors',credentials:'omit',cache:'no-store'});return new Response(response.body,{status:response.status,statusText:response.statusText,headers:response.headers});})());return;
+ }
+ if(event.request.method!=='GET')return;const url=incoming;if(url.origin!==ROOT.origin)return;
  if(event.request.mode==='navigate'||url.pathname.endsWith('.html')||url.pathname.endsWith('/')){
   event.respondWith((async()=>{try{const response=await fetch(event.request,{cache:'no-store'});if(await usable(response,true)){await remember(event.request,response);return response;}if(response.status>=400)return response;}catch{}
    try{const hit=await cachedPage(event.request);if(hit)return hit;}catch{}return recoveryPage();
