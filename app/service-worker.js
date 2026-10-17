@@ -1,4 +1,4 @@
-const RELEASE='1671',CACHE='skimaru-live-20261016-v16-71-fixed-challenge';
+const RELEASE='1672',CACHE='skimaru-live-20261017-v16-72-profile-policies';
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
 function isHome(url){return [ROOT.pathname,home.pathname,new URL('app/',ROOT).pathname,appHome.pathname].includes(url.pathname);}

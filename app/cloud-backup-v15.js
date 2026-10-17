@@ -20,6 +20,6 @@
  function mount(){const gate=document.querySelector('.member-gate:not(.cloud-dialog) .member-card');if(gate&&!gate.querySelector('[data-cloud-restore]')){const b=document.createElement('button');b.type='button';b.className='member-guide';b.dataset.cloudRestore='';b.textContent='以前の登録・学習データを復元';b.onclick=restore;gate.append(b);}}
 
  function boot(){mount();new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});if(document.body.classList.contains('game-title'))return;if(meta().confirmed&&!read(REG).legacy&&!read(REG).recoveryShown){showCode();const r=meta();r.recoveryShown=true;localStorage.setItem(REG,JSON.stringify(r));}}
- window.SKIMARU_BACKUP={submit,showCode,restore,snapshot,allowed};window.addEventListener('skimaru-sync-status',refresh);document.addEventListener('DOMContentLoaded',boot);window.addEventListener('skimaru-registered',()=>{const r=meta();r.recoveryShown=true;localStorage.setItem(REG,JSON.stringify(r));setTimeout(showCode,0);});
+ window.SKIMARU_BACKUP={submit,showCode,restore,snapshot,allowed};window.addEventListener('skimaru-sync-status',refresh);document.addEventListener('DOMContentLoaded',boot);window.addEventListener('skimaru-registered',e=>{if(e.detail?.profileUpdate)return;const r=meta();r.recoveryShown=true;localStorage.setItem(REG,JSON.stringify(r));setTimeout(showCode,0);});
 })();
 
