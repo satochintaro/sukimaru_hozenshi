@@ -6,7 +6,7 @@
  const svg=key=>key==='close'?(window.SKIMARU_CONTACT_UI?.svg(key)||''):window.SKIMARU_ICONS?.svg(key)||window.SKIMARU_CONTACT_UI?.svg(key)||'';
  let dialog,opener,view='menu',checking=false;
  function close(){dialog?.close();}
- function action(label,key,fn,attrs=''){const b=document.createElement('button');b.type='button';b.innerHTML=svg(key)+'<span></span>';b.querySelector('span:last-child').textContent=label;b.onclick=fn;if(attrs)b.dataset.titleAction=attrs;return b;}
+ function action(label,key,fn,attrs=''){const b=document.createElement('button');b.type='button';b.innerHTML=svg(key)+'<span class="um-label"></span>';b.querySelector('.um-label').textContent=label;b.onclick=fn;if(attrs)b.dataset.titleAction=attrs;return b;}
  function external(fn){close();fn?.();}
  function preferenceGet(){if(window.SKIMARU_MENU_PREFERENCES)return window.SKIMARU_MENU_PREFERENCES.get();const d=grade()===1?read('skimaru-grade1-v16').settings:read('skimaruData');return {showWarn:true,useSRS:true,largeText:false,highContrast:false,...d};}
  function preferenceSet(key,value){if(window.SKIMARU_MENU_PREFERENCES)return window.SKIMARU_MENU_PREFERENCES.set(key,value);const k=grade()===1?'skimaru-grade1-v16':'skimaruData',d=read(k);if(grade()===1){d.settings={...preferenceGet(),[key]:value};}else d[key]=value;try{localStorage.setItem(k,JSON.stringify(d));return true;}catch{return false;}}
@@ -30,7 +30,7 @@
   if(!dialog.open)opener=document.activeElement;
   document.querySelectorAll('dialog[open]').forEach(d=>{if(d!==dialog)d.close();});
   dialog.replaceChildren();
-  const header=document.createElement('header'),h=document.createElement('h2');h.id='um-heading';h.textContent=({menu:'メニュー',settings:'表示・出題設定',data:'データ管理',update:'アプリの更新',manager:'管理画面'})[next]||'メニュー';
+  const header=document.createElement('header'),h=document.createElement('h2');h.id='um-heading';h.textContent=({menu:'メニュー',settings:'学習設定',data:'データ管理',update:'アプリの更新',manager:'管理画面'})[next]||'メニュー';
   if(next!=='menu'){const back=action('戻る','back',()=>open());back.className='um-back';header.append(back);}header.append(h);
   const x=action('閉じる','close',close);x.className='um-close';x.setAttribute('aria-label','閉じる');header.append(x);dialog.append(header);
   const body=document.createElement('div');body.className='um-content';dialog.append(body);
@@ -47,7 +47,7 @@
   for(const [label,key,fn,tag] of [
    ['お知らせ','mail',()=>external(()=>window.SKIMARU_SUPPORT?.mailbox()),'mail'],
    ['対応状況','clipboard',()=>external(()=>window.SKIMARU_SUPPORT?.reports()),'reports'],
-   ['表示・出題設定','gear',()=>open('settings'),'settings'],
+   ['学習設定','gear',()=>open('settings'),'settings'],
    ['データ管理','restore',()=>open('data'),'data'],
    ['不具合を報告','report',()=>external(()=>window.SKIMARU_SUPPORT?.report()),'report'],
    ['管理画面','people',()=>open('manager'),'manager']])grid.append(action(label,key,fn,tag));
@@ -59,17 +59,17 @@
   const row=document.createElement('label');row.className='um-toggle';const text=document.createElement('span');text.textContent=label;if(note){const small=document.createElement('small');small.textContent=note;text.append(small);}const input=document.createElement('input');input.type='checkbox';input.checked=!!checked;input.onchange=()=>{if(fn(input.checked)===false){input.checked=!input.checked;dialog.querySelector('[data-setting-error]').textContent='設定を保存できませんでした。端末の空き容量を確認してください。';}};row.append(text,input);body.append(row);
  }
  function settings(body){
-  const profile=read('skimaruData');body.append(paragraph('氏名：'+(profile.name||'未設定')+' ／ ニックネーム：'+(profile.nickname||'未設定')),action('氏名・ニックネームを変更','people',()=>external(()=>window.SKIMARU_MEMBER?.edit())));
+  const profile=read('skimaruData');body.append(paragraph('氏名：'+(profile.name||'未設定')),paragraph('ニックネーム：'+(profile.nickname||'未設定')),action('登録情報を変更','people',()=>external(()=>window.SKIMARU_MEMBER?.edit())));
   const enrollment=window.SKIMARU_ENROLLMENT?.snapshot();if(window.SKIMARU_ENROLLMENT){body.append(paragraph('今年の受講区分：'+(enrollment?window.SKIMARU_ENROLLMENT.labels[enrollment.kind]:'未設定')));body.append(action('受講区分を変更','people',()=>external(()=>window.SKIMARU_ENROLLMENT.edit())));}
   body.append(paragraph(grade()+'級の学習設定'));
-  const p=preferenceGet();for(const [key,label,note] of [['largeText','文字を大きく',''],['highContrast','文字・枠線をくっきり',''],['showWarn','過去の誤答に印をつける',''],['useSRS','忘れかけた問題を復習する','']])toggle(body,label,p[key],value=>preferenceSet(key,value),note);
+  const p=preferenceGet();for(const [key,label,note] of [['largeText','文字を大きく',''],['highContrast','文字をくっきり',''],['showWarn','過去の誤答に印',''],['useSRS','忘れかけを復習','']])toggle(body,label,p[key],value=>preferenceSet(key,value),note);
   toggle(body,'動きを控えめにする',read('skimaru-title-preferences-v1634').reducedMotion,value=>{try{localStorage.setItem('skimaru-title-preferences-v1634',JSON.stringify({...read('skimaru-title-preferences-v1634'),reducedMotion:value}));document.body.classList.toggle('reduced-motion',value);return true;}catch{return false;}});
   const error=paragraph('');error.dataset.settingError='';error.setAttribute('role','status');body.append(error);
-  body.append(action('通知・アイコンのバッジ','gear',()=>external(()=>window.SKIMARU_BADGES?.settings())));
+  body.append(action('通知とバッジ','gear',()=>external(()=>window.SKIMARU_BADGES?.settings())));
  }
  function data(body){
   const p=read('skimaruData');body.append(paragraph('プレイヤーNo.　'+(p.playerNo||'未登録')));const state=paragraph('');state.dataset.saveStatus='';state.setAttribute('role','status');body.append(state);
-  body.append(action('復旧コードを確認・控える','book',()=>{if(!read('skimaru-registration-v13').token){state.textContent='級を選び、拠点と名前を登録してください。';return;}external(()=>window.SKIMARU_BACKUP?.showCode());}),action('以前の登録・学習データを復元','restore',()=>external(()=>window.SKIMARU_BACKUP?.restore())),action('学習データをファイル保存','clipboard',()=>{try{if(window.SKIMARU_SYNC?.exportBackup){window.SKIMARU_SYNC.exportBackup();state.textContent='保存用ファイルを作成しました。';return;}const entries={};for(const k of Object.keys(localStorage)){if(window.SKIMARU_BACKUP?.allowed(k)){let value=localStorage.getItem(k);if(['skimaruData','skimaruDataAutoBackup'].includes(k)){const d=JSON.parse(value);delete d.registrationV13;delete d.registrationV15;value=JSON.stringify(d);}entries[k]=value;}}const url=URL.createObjectURL(new Blob([JSON.stringify({schema:1,entries,savedAt:new Date().toISOString()})],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='skimaru-learning-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);state.textContent='保存用ファイルを作成しました。';}catch{state.textContent='保存用ファイルを作成できませんでした。';}}));
+  body.append(action('復旧コードを確認','book',()=>{if(!read('skimaru-registration-v13').token){state.textContent='級を選び、拠点と名前を登録してください。';return;}external(()=>window.SKIMARU_BACKUP?.showCode());}),action('データを復元','restore',()=>external(()=>window.SKIMARU_BACKUP?.restore())),action('学習データを保存','clipboard',()=>{try{if(window.SKIMARU_SYNC?.exportBackup){window.SKIMARU_SYNC.exportBackup();state.textContent='保存用ファイルを作成しました。';return;}const entries={};for(const k of Object.keys(localStorage)){if(window.SKIMARU_BACKUP?.allowed(k)){let value=localStorage.getItem(k);if(['skimaruData','skimaruDataAutoBackup'].includes(k)){const d=JSON.parse(value);delete d.registrationV13;delete d.registrationV15;value=JSON.stringify(d);}entries[k]=value;}}const url=URL.createObjectURL(new Blob([JSON.stringify({schema:1,entries,savedAt:new Date().toISOString()})],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='skimaru-learning-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);state.textContent='保存用ファイルを作成しました。';}catch{state.textContent='保存用ファイルを作成できませんでした。';}}));
   const more=document.createElement('details');more.innerHTML='<summary>保存するデータについて</summary>';more.append(paragraph('成績・途中の回答・学習時間・設定を進捗共有と復旧のために自動保存します。改善のため閲覧・操作回数・滞在時間・端末の種類も記録します。利用分析にはパスワード・フォーム入力内容・解答内容を含めません。'));body.append(more);
  }
  function manager(body){for(const [label,file,key] of [['管理者','viewer.html','people'],['開発者','admin.html','chart']])body.append(action(label,key,()=>{try{localStorage.setItem('skimaru-role','manager');}catch{}if(window.SKIMARU_PAGE_LOADING)window.SKIMARU_PAGE_LOADING.navigate(new URL(file,base).href);else location.assign(new URL(file,base).href);}));}
@@ -89,7 +89,7 @@
    }catch{state.textContent='通信できませんでした。学習記録は端末に残っています。通信が戻ってから再度お試しください。';}finally{clearTimeout(timer);checking=false;check.disabled=false;}
   });body.append(check,paragraph('iPhoneの追加済みアイコンは、Webアプリから強制変更できません。AndroidはChromeが更新を管理するため、即時反映は保証できません。古いアイコン・アプリ・サイトデータは先に削除しないでください。'));
   body.append(action('先に復旧コード・バックアップを確認','clipboard',()=>open('data')));
-  const iconGuide=document.createElement('details');iconGuide.innerHTML='<summary>iPhoneで新しいアイコンを追加する手順</summary><ol><li>今のアプリで復旧コードを控え、学習データをファイル保存します。</li><li>Safariで最新版を開き、共有 → ホーム画面に追加を選びます。</li><li>新しいアイコンから開き、プレイヤーNo.と学習成績を確認します。</li><li>新規登録画面や0問が出たら登録し直さず、元のアイコンに戻ってください。必要に応じて復旧コードで復元します。</li></ol><p>新しい入口で記録を確認するまで、古いアイコンは残してください。</p>';body.append(iconGuide);
+  const iconGuide=document.createElement('details');iconGuide.innerHTML='<summary>iPhoneで新しいアイコンを追加する手順</summary><ol><li>今のアプリで復旧コードを控え、学習データを保存します。</li><li>Safariで最新版を開き、共有 → ホーム画面に追加を選びます。</li><li>新しいアイコンから開き、プレイヤーNo.と学習成績を確認します。</li><li>新規登録画面や0問が出たら登録し直さず、元のアイコンに戻ってください。必要に応じて復旧コードで復元します。</li></ol><p>新しい入口で記録を確認するまで、古いアイコンは残してください。</p>';body.append(iconGuide);
   body.append(action('新しいアイコンをホーム画面に追加','plus',()=>external(()=>window.SKIMARU_ROLLOUT?.install())));
  }
  document.addEventListener('click',e=>{const b=e.target.closest('#title-menu-open,#grade-menu,#settings,#sc-home .hd-ico,.practical-hd .member-gear');if(!b)return;e.preventDefault();e.stopImmediatePropagation();open();},true);
