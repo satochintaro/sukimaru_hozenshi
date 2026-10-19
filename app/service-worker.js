@@ -1,4 +1,4 @@
-const RELEASE='1675',CACHE='skimaru-live-20261019-v16-75-summary-challenge';
+const RELEASE='1676',CACHE='skimaru-live-20261019-v16-76-cumulative-sort';
 const TOKYO_KEY="sb_publishable_6pf2rthxEBIw11NhsApnEQ_WjogJYif";
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
