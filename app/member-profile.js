@@ -34,6 +34,19 @@
 
   const identityComplete=()=>{const r=read(REG),p=read(KEY),i=r.identity;return r.playerNo===p.playerNo&&!!p.nickname&&i?.nickname===p.nickname&&i?.termsVersion===POLICY&&i?.privacyVersion===POLICY&&!!i.acceptedAt&&!!i.fullNameConfirmedAt;};
   function storeProfile(data,registration){const oldData=localStorage.getItem(KEY),oldReg=localStorage.getItem(REG);try{write(KEY,data);write(REG,registration);}catch(error){try{if(oldData!==null)localStorage.setItem(KEY,oldData);else localStorage.removeItem(KEY);if(oldReg!==null)localStorage.setItem(REG,oldReg);else localStorage.removeItem(REG);}catch{}throw error;}}
+  let repairing=null;
+  async function repairConnection(){
+    if(repairing)return repairing;
+    const owner=read(REG),profile=read(KEY),cooldown='skimaru-auth-repair-v1681:'+owner.playerNo;
+    if(!navigator.onLine||owner.playerNo!==profile.playerNo||!/^[a-f0-9]{64}$/.test(owner.token||'')||!/^[a-f0-9]{32}$/.test(owner.recoveryCode||''))return false;
+    try{if(Date.now()-Number(sessionStorage.getItem(cooldown)||0)<300000)return false;sessionStorage.setItem(cooldown,String(Date.now()));}catch{}
+    repairing=(async()=>{try{
+      const result=await rpc('skimaru_reconnect_player',{p_player_no:owner.playerNo,p_token:owner.token,p_recovery:owner.recoveryCode}),latest=read(REG),data=read(KEY);
+      if(result.state!=='active'||result.playerNo!==owner.playerNo||latest.playerNo!==owner.playerNo||latest.token!==owner.token||data.playerNo!==owner.playerNo||typeof result.name!=='string'||!SITES.includes(result.site))return false;
+      storeProfile({...data,name:result.name,site:result.site},{...latest,name:result.name,site:result.site,confirmed:true,needsRecovery:false});
+      sync();window.dispatchEvent(new Event('skimaru-auth-repaired'));return true;
+    }catch{return false;}finally{repairing=null;}})();return repairing;
+  }
   let identitySyncing=null;
   async function refreshIdentity(){
     if(identitySyncing)return identitySyncing;if(!navigator.onLine||!valid())return;
@@ -54,7 +67,7 @@
       // Preserve changes and all learning keys while the network request was pending.
       const latest=read(REG);if(latest.playerNo!==p.playerNo||latest.token!==r.token)return false;
       write(REG,{...latest,confirmed:true,registeredAt:latest.registeredAt||new Date().toISOString()});return true;
-    }catch(e){if(e.message.includes('registration_revoked')){clearRemovedPlayer();return false;}if(e.message.includes('registration_token_mismatch')){write(REG,{...read(REG),needsRecovery:true});}return false;}finally{migrating=null;}})();return migrating;
+    }catch(e){if(e.message.includes('registration_revoked')){clearRemovedPlayer();return false;}if(e.message.includes('registration_token_mismatch')){if(await repairConnection())return true;write(REG,{...read(REG),needsRecovery:true});}return false;}finally{migrating=null;}})();return migrating;
   }
   async function rpc(name,body){const c=window.SKIMARU_SUPABASE||{};if(!c.url||!c.publishableKey)throw Error("接続設定がありません。展開担当者へ連絡してください。");const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);try{const r=await nativeFetch(`${c.url}/rest/v1/rpc/${name}`,{method:"POST",headers:{apikey:c.publishableKey,"Content-Type":"application/json"},body:JSON.stringify(body),signal:controller.signal,cache:"no-store"});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.message||"通信に失敗しました");return j;}finally{clearTimeout(timer);}}
   function clearRemovedPlayer(){for(const k of Object.keys(localStorage)){if(["skimaru-grade1-v16",KEY,"skimaruDataAutoBackup",REG,LEDGER,QUEUE,"skimaru-manager-inbox-v1","skimaru-study-time-v12","skimaruExamHistory_v1","skimaru-cloud-backup-v15"].includes(k)||/^skimaru(Early_|Practical|Coach)/.test(k)||k==="skimaru-coach-v1")localStorage.removeItem(k);}sessionStorage.setItem("skimaru-registration-notice","開発者が登録と成績を削除しました。利用を再開する場合は、新しく拠点と名前を登録してください。");location.reload();}
@@ -70,6 +83,7 @@
       const j=await rpc('skimaru_player_status',{p_player_no:p.playerNo,p_token:r.token});
       if(j.state==='revoked'){clearRemovedPlayer();return false;}
       if(j.state!=='active'){
+        if(j.state==='invalid'&&await repairConnection()){await refreshIdentity();return true;}
         if(r.legacy){write(REG,{...r,confirmed:false,needsRecovery:j.state==='invalid'});if(j.state==='missing'&&await migrateExisting())return true;if(force)throw Error('登録情報の引き継ぎが必要です。歯車から復旧コードで復元してください。');return true;}
         r.confirmed=false;write(REG,r);register();return false;
       }
@@ -149,13 +163,13 @@
     try{if(!c.url)throw Error();const r=await fetch(`${c.url}/rest/v1/${encodeURIComponent(c.table||"exam_results")}`,{method:"POST",headers:{apikey:c.publishableKey,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(row)});if(!r.ok)throw Error();alert((examType==="practical"?"実技":"学科過去問")+"の成績を提出しました。");}catch{try{const q=read(QUEUE,[]);q.push(record);write(QUEUE,q);alert("通信できないため成績を保存しました。オンラインで再送します。");}catch{alert("保存できませんでした。通信が戻ってからもう一度提出してください。");}}finally{busy=false;btn.disabled=false;btn.textContent="成績提出へ";refresh();}
   }
   async function retry(){if(!valid()||busy||typeof window.retryPendingSubmissions==="function")return;const q=read(QUEUE,[]),c=window.SKIMARU_SUPABASE||{};if(!q.length||!c.url)return;busy=true;for(const record of q){try{const t=record.total||0,n=record.correct||0,r=await fetch(`${c.url}/rest/v1/${encodeURIComponent(c.table||"exam_results")}`,{method:"POST",headers:{apikey:c.publishableKey,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({submission_id:record.id,player_no:record.playerNo,user_name:record.name,score:n,total_questions:t,correct_count:n,correct_rate:t?Math.round(n/t*100):0,elapsed_seconds:Number(record.elapsedSeconds)||0,exam_version:"13.0",submitted_at:record.sentAt,streak:record.streak||0,mastered_count:record.mastered||0,wrong_count:record.wrongCount||0,category_results:record.cats||{},weak_questions:record.alerts||[],raw_result:record})});if(r.ok)write(QUEUE,read(QUEUE,[]).filter(x=>x.id!==record.id));}catch{break;}}busy=false;refresh();}
-  window.SKIMARU_MEMBER={sites:SITES,report:submit,edit:()=>register(true),refresh,outstanding,valid,checkRegistration,identityComplete,refreshIdentity,requestProfile,backupRegistration:()=>read(REG),restoreRegistration:r=>{if(r?.playerNo&&r?.token)write(REG,r);},startRegistration:()=>register()};
+  window.SKIMARU_MEMBER={sites:SITES,report:submit,edit:()=>register(true),refresh,outstanding,valid,checkRegistration,repairConnection,identityComplete,refreshIdentity,requestProfile,backupRegistration:()=>read(REG),restoreRegistration:r=>{if(r?.playerNo&&r?.token)write(REG,r);},startRegistration:()=>register()};
   function boot(){bar=document.createElement("div");bar.className="member-bar";bar.innerHTML='<div class="member-alert" role="status" aria-live="polite" hidden><span></span><br><button type="button">成績提出へ</button></div>';const home=document.querySelector("#sc-home .pad,#pt-home .pad,.wrap,main")||document.body;home.prepend(bar);bar.querySelector(".member-alert button").onclick=submit;if(!document.querySelector("#sc-home")&&!document.body.classList.contains("grade1-app")){const head=document.querySelector(".early-top,.practical-hd,header");if(head){const gear=document.createElement("button");gear.type="button";gear.className="member-gear";gear.textContent="⚙";gear.setAttribute("aria-label","登録設定");gear.onclick=()=>register(true);head.append(gear);}}sync();if(!valid())register();else{checkRegistration().then(requestProfile).catch(()=>{});}setInterval(()=>{refresh();if(!valid())register();},2000);setInterval(()=>checkRegistration(),60000);if(valid())retry();if(location.hash==="#submit"&&valid()&&typeof window.showSend==="function")window.showSend();}
   document.readyState==="loading"?document.addEventListener("DOMContentLoaded",boot):boot();window.addEventListener("online",async()=>{if(await checkRegistration())retry();});document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkRegistration();});window.addEventListener("storage",()=>{sync();if(!valid())register();});
 })();
 
 
-if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.73';document.head.append(usage);}
+if(!window.SKIMARU_USAGE&&!document.querySelector('script[src*="player-usage-v1631.js"]')){const usage=document.createElement('script');usage.src='./player-usage-v1631.js?v=16.81';document.head.append(usage);}
 
 
 if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-follow-v1632.js"]')){const follow=document.createElement("script");follow.src="./player-follow-v1632.js?v=16.32";document.head.append(follow);}
@@ -172,7 +186,7 @@ if(!window.SKIMARU_PLAYER_FOLLOW&&!document.querySelector('script[src*="player-f
    const script=document.createElement('script');let done=false;
    const finish=error=>{if(done)return;done=true;clearTimeout(timeout);script.onload=script.onerror=null;if(error){script.remove();reject(error);}else resolve();};
    const timeout=setTimeout(()=>finish(new DOMException('script timeout','TimeoutError')),20000);
-   script.src=new URL(file+'?v=16.73'+(attempt>1?'&retry='+attempt:''),base).href;
+   script.src=new URL(file+'?v=16.81'+(attempt>1?'&retry='+attempt:''),base).href;
    script.onload=()=>finish(ready()?null:new Error('script_not_ready'));script.onerror=()=>finish(new Error('script_load_failed'));
    document.head.append(script);
   });

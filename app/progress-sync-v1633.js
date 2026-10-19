@@ -89,6 +89,7 @@
    await withLock(()=>{const s=read(storageKey);s.queue=(s.queue||[]).filter(x=>x.id!==snap.id);s.savedAt=j.savedAt;s.ackedId=snap.id;put(storageKey,s);});
    error='';errorKind='';failures=0;retryAt=0;
   }catch(e){
+   if(/authentication|registration/.test(e.message)&&await window.SKIMARU_MEMBER?.repairConnection?.()){error='';errorKind='';failures=0;retryAt=0;return;}
    errorKind=/authentication|registration/.test(e.message)?'registration':'network';
    error=errorKind==='registration'?'登録情報を確認できません。設定から復旧コードで復元してください。端末の記録は残っています。':timedOut?'通信に時間がかかっています。学習記録は端末に保存済みです。時間をおいて自動で再送します。':'通信できません。学習記録は端末に保存済みです。通信の回復を待って自動で再送します。';
    failures=Math.min(failures+1,3);retryAt=Date.now()+Math.min(120000,Math.round(30000*2**(failures-1)*(0.9+Math.random()*0.2)));
@@ -102,6 +103,7 @@
  Storage.prototype.setItem=function(k,v){const result=originalSet.call(this,k,v);if(this===localStorage&&!capturing&&(allowed(String(k))||k===REG))schedule(k==='skimaru-study-time-v12'?30000:800);return result;};
  Storage.prototype.removeItem=function(k){const result=originalRemove.call(this,k);if(this===localStorage&&!capturing&&allowed(String(k)))schedule();return result;};
  function resetRetry(){failures=0;retryAt=0;if(errorKind!=='capture'){error='';errorKind='';}}
+ window.addEventListener('skimaru-auth-repaired',()=>{resetRetry();schedule();notify();});
  function exportBackup(){capturing=true;try{const b=backup();b.savedAt=new Date().toISOString();const url=URL.createObjectURL(new Blob([JSON.stringify(b)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='skimaru-learning-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}finally{capturing=false;}}
  window.SKIMARU_SYNC={status,exportBackup,flush:async()=>{resetRetry();await capture();await send();},pause:()=>{paused=true;clearTimeout(timer);timer=null;},resume:()=>{paused=false;schedule();},capture};
  window.addEventListener('online',()=>{resetRetry();schedule();notify();});window.addEventListener('offline',notify);

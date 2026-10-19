@@ -27,5 +27,6 @@
   }catch{/* Offline: keep all existing records and retry when online. */}finally{clearTimeout(timer);busy=false;}
  }
  document.addEventListener('DOMContentLoaded',recover,{once:true});window.addEventListener('online',recover);
+ window.addEventListener('skimaru-auth-repaired',recover);
  window.SKIMARU_TIME_RECOVERY={recover};
 })();

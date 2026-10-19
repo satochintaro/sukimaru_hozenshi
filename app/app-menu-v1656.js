@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.80';
+ const base=new URL('./',document.currentScript.src),root=new URL('../',base),VERSION='16.81';
  const read=(k,f={})=>{try{return JSON.parse(localStorage.getItem(k)||'null')||f;}catch{return f;}};
  const grade=()=>document.body.classList.contains('grade1-app')?1:/player|practical/.test(location.pathname)?2:Number(read('skimaru-last-grade-v1634',2));
  const svg=key=>key==='close'?(window.SKIMARU_CONTACT_UI?.svg(key)||''):window.SKIMARU_ICONS?.svg(key)||window.SKIMARU_CONTACT_UI?.svg(key)||'';
@@ -9,10 +9,12 @@
  function action(label,key,fn,attrs=''){const b=document.createElement('button');b.type='button';b.innerHTML=svg(key)+'<span class="um-label"></span>';b.querySelector('.um-label').textContent=label;b.onclick=fn;if(attrs)b.dataset.titleAction=attrs;return b;}
  function external(fn){close();fn?.();}
  function preferenceGet(){if(window.SKIMARU_MENU_PREFERENCES)return window.SKIMARU_MENU_PREFERENCES.get();const d=grade()===1?read('skimaru-grade1-v16').settings:read('skimaruData');return {showWarn:true,useSRS:true,largeText:false,highContrast:false,...d};}
- function preferenceSet(key,value){if(window.SKIMARU_MENU_PREFERENCES)return window.SKIMARU_MENU_PREFERENCES.set(key,value);const k=grade()===1?'skimaru-grade1-v16':'skimaruData',d=read(k);if(grade()===1){d.settings={...preferenceGet(),[key]:value};}else d[key]=value;try{localStorage.setItem(k,JSON.stringify(d));return true;}catch{return false;}}
+ function applyPreferences(){const p=preferenceGet();document.body.classList.toggle('large-text',!!p.largeText);document.body.classList.toggle('high-contrast',!!p.highContrast);}
+ function preferenceSet(key,value){if(window.SKIMARU_MENU_PREFERENCES)return window.SKIMARU_MENU_PREFERENCES.set(key,value);const k=grade()===1?'skimaru-grade1-v16':'skimaruData',d=read(k);if(grade()===1){d.settings={...preferenceGet(),[key]:value};}else d[key]=value;try{localStorage.setItem(k,JSON.stringify(d));applyPreferences();return true;}catch{return false;}}
  function status(){const sync=window.SKIMARU_SYNC?.status(),latest=sync?.savedAt||read('skimaru-cloud-backup-v15').savedAt;const el=dialog?.querySelector('[data-save-status]');if(el)el.textContent=sync?.pending||sync?.error?sync.text:latest?'最終同期：'+new Date(latest).toLocaleString('ja-JP'):'学習記録は端末に保存され、オンライン時に自動同期します。';}
  function paragraph(text){const p=document.createElement('p');p.className='um-note';p.textContent=text;return p;}
  function boot(){
+  applyPreferences();
   // Replace the two title-only dialogs; all entry points now share this implementation.
   for(const id of ['game-menu-dialog','title-settings-dialog'])document.getElementById(id)?.remove();
   dialog=document.createElement('dialog');dialog.id='game-menu-dialog';dialog.className='unified-menu';dialog.setAttribute('aria-labelledby','um-heading');document.body.append(dialog);

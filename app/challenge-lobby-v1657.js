@@ -41,6 +41,10 @@
    else throw Error('拠点と名前を登録するとランキングを確認できます。');
    const request=async payload=>{const response=await fetch(cloud.url+'/rest/v1/rpc/skimaru_challenge_leaderboard',{method:'POST',headers,body:JSON.stringify(payload),cache:'no-store',signal});return {response,data:await response.json()};};
    let {response,data}=await request(body);
+   if(!context.developerMode&&!response.ok&&data.message==='player_authentication_required'&&await window.SKIMARU_MEMBER?.repairConnection?.()){
+    if(signal.aborted||id!==revision||r.playerNo!==read('skimaruData').playerNo)return;
+    ({response,data}=await request(body));
+   }
    const recovery=String(r.recoveryCode||'').trim().toLowerCase();
    if(!context.developerMode&&!response.ok&&data.message==='player_authentication_required'&&/^[a-f0-9]{32}$/.test(recovery)&&r.playerNo===read('skimaruData').playerNo&&!signal.aborted&&id===revision){
     state.textContent='保存済みの登録情報を再確認しています…';
