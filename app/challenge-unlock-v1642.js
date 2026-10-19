@@ -5,11 +5,16 @@
  const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')||{};}catch{return {};}};
  const key=grade=>grade===1?'skimaru-grade1-v16':'skimaruData';
  const owner=()=>String(read('skimaruData').playerNo||'');
- const answerCount=r=>Math.max(0,Number(r.stats?.academic?.total??r.total)||0);
+ const answerCount=(r,grade=r.stats?.academic?1:2)=>{
+  const count=v=>Number.isFinite(Number(v))?Math.max(0,Number(v)):0;
+  let total=count(grade===1?r.stats?.academic?.total:r.total);
+  if(grade===2){const seen=new Set(),history=read('skimaruExamHistory_v1');for(const h of Array.isArray(history)?history:[]){if(!h?.completedAt||h.kind!=='gakka'||seen.has(h.id))continue;seen.add(h.id);total+=count(h.total);}}
+  return window.SKIMARU_RECENT?.totals(r,'academic',{total,correct:0}).total??total+count(r.suddenDeath?.totalAnswers);
+ };
  const eligible=r=>answerCount(r)>=200||(r.suddenDeath?.unlocked===true&&(r.suddenDeath?.unlockRank===3||r.suddenDeath?.unlockAnswers===200));
  const lockIcon='<svg viewBox="0 0 64 72" aria-hidden="true"><path class="sd-unlock-shackle" d="M18 32V20a14 14 0 0 1 28 0v12" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><rect x="8" y="30" width="48" height="36" rx="10" fill="currentColor"/><circle cx="32" cy="44" r="5" fill="#fff9e9"/><path d="M32 48v8" stroke="#fff9e9" stroke-width="5" stroke-linecap="round"/></svg>';
  function observe(record,grade,persist){
-  if(answerCount(record)>=200){
+  if(answerCount(record,grade)>=200){
    const latest=read(key(grade));if(Number(latest.suddenDeath?.revision||0)>Number(record.suddenDeath?.revision||0))record.suddenDeath=latest.suddenDeath;
    const l=record.suddenDeath?.schema===1?record.suddenDeath:{schema:1,best:0,totalAnswers:0,correctAnswers:0,history:[],reviewIds:[],unlocked:false,current:null};
    if(l.unlocked!==true){l.unlockAnswers=200;l.unlocked=true;l.unlockNoticePending=true;l.unlockNoticeShown=false;l.revision=(Number(l.revision)||0)+1;l.updatedAt=new Date().toISOString();record.suddenDeath=l;try{persist();}catch{}}
