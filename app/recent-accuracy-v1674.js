@@ -29,11 +29,16 @@
     const base={...normal},sd=type==='academic'&&!normal?.includesChallenge?challenge(record):{total:0,correct:0};
     return {...base,total:number(base.total)+sd.total,correct:Math.min(number(base.total)+sd.total,number(base.correct)+sd.correct),includesChallenge:true,challengeTotal:sd.total};
   }
+  function recoveredSeconds(grade,type,entries){
+    const get=k=>{try{return entries?JSON.parse(entries[k]||'{}'):read(k);}catch{return {};}};
+    const record=get(grade===1?'skimaru-grade1-v16':'skimaruData'),clock=get('skimaru-study-time-v12'),item=clock['recovered-grade'+grade+'-'+type];
+    return item?.owner===get('skimaruData').playerNo&&Number(item.epoch||0)===Number(record.progressEpoch||0)?number(item.totalMs)/1000:0;
+  }
   function studySeconds(grade,type,entries){
     const get=(k,f={})=>{if(!entries)return read(k,f);try{return JSON.parse(entries[k]||'null')||f;}catch{return f;}};
     const clock=get('skimaru-study-time-v12');
-    if(grade===1)return number(get('skimaru-grade1-v16').stats?.[type]?.seconds)+(type==='academic'?number(clock['sudden-death-grade1']?.totalMs)/1000:0);
-    return Object.entries(clock).filter(([key])=>type==='academic'?key==='core'||key.includes('_gakka_')||key==='sudden-death-grade2':key.includes('_jitugi_')||key.startsWith('skimaruPractical')).reduce((n,[,v])=>n+number(v.totalMs)/1000,0);
+    if(grade===1)return recoveredSeconds(grade,type,entries)+number(get('skimaru-grade1-v16').stats?.[type]?.seconds)+(type==='academic'?number(clock['sudden-death-grade1']?.totalMs)/1000:0);
+    return recoveredSeconds(grade,type,entries)+Object.entries(clock).filter(([key])=>type==='academic'?key==='core'||key.includes('_gakka_')||key==='sudden-death-grade2':key.includes('_jitugi_')||key.startsWith('skimaruPractical')).reduce((n,[,v])=>n+number(v.totalMs)/1000,0);
   }
   function localTotals(grade,type){
     const r=read(grade===1?'skimaru-grade1-v16':'skimaruData');
@@ -52,7 +57,7 @@
   }
   function summary(grade,type,streak){
     const m=local(grade,type),all=localTotals(grade,type),rate=all.total?Math.round(all.correct/all.total*100)+'%':'—';
-    return '<div class="ls-summary" role="region" aria-label="学習の記録"><div class="ls-summary-rates"><div><span>直近正答率</span><strong>'+text(m)+'</strong><small>'+(m.total?'直近'+m.total+'回答':'回答すると表示')+'</small></div><div><span>累計正答率</span><strong>'+rate+'</strong><small>今までの全回答</small></div></div><div class="ls-summary-details"><div><span>合計回答数</span><b>'+number(all.total).toLocaleString('ja-JP')+'<small>問</small></b></div><div><span>累計学習時間</span><b>'+duration(all.seconds)+'</b></div><div><span>連続学習日数</span><b>'+number(streak)+'<small>日</small></b></div><div><span>今回の学習時間</span><b>'+duration(sessionSeconds(grade))+'</b></div></div></div>';
+    return '<div class="ls-summary" data-grade="'+grade+'" data-exam-type="'+type+'" role="region" aria-label="学習の記録"><div class="ls-summary-rates"><div><span>直近正答率</span><strong>'+text(m)+'</strong><small>'+(m.total?'直近'+m.total+'回答':'回答すると表示')+'</small></div><div><span>累計正答率</span><strong>'+rate+'</strong><small>今までの全回答</small></div></div><div class="ls-summary-details"><div><span>合計回答数</span><b>'+number(all.total).toLocaleString('ja-JP')+'<small>問</small></b></div><div><span>累計学習時間</span><b>'+duration(all.seconds)+'</b></div><div><span>連続学習日数</span><b>'+number(streak)+'<small>日</small></b></div><div><span>今回の学習時間</span><b>'+duration(sessionSeconds(grade))+'</b></div></div></div>';
   }
   function fromEntries(entries,grade,type){
     const get=(k,f={})=>{if(!entries)return read(k,f);try{return JSON.parse(entries[k]||'null')||f;}catch{return f;}};
@@ -78,6 +83,6 @@
     const c=cumulativeRate==null?'—':cumulativeRate+'%';
     return '<div class="recent-rate-card"><div><span>直近の正答率</span><strong>'+text(m)+'</strong><small>'+(m.total?'直近'+m.total+'回答':'更新後の回答から集計')+'</small></div><div><span>累計正答率</span><strong>'+c+'</strong><small>今までの全回答</small></div></div>';
   }
-  window.SKIMARU_RECENT={sample,append,batch,fromEntries,local,text,card,challenge,totals,studySeconds,localTotals,sessionSeconds,duration,markDay,summary};
+  window.SKIMARU_RECENT={sample,append,batch,fromEntries,local,text,card,challenge,totals,studySeconds,recoveredSeconds,localTotals,sessionSeconds,duration,markDay,summary};
   if(typeof document!=='undefined')document.addEventListener('DOMContentLoaded',()=>{const grade=document.body?.classList.contains('grade1-app')||/grade1\.html/.test(location.pathname)||new URLSearchParams(location.search).get('grade')==='1'?1:2;sessionSeconds(grade);},{once:true});
 })();
