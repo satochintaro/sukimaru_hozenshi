@@ -1,4 +1,4 @@
-const RELEASE='1679',CACHE='skimaru-live-20261019-v16-79-ranking-auth';
+const RELEASE='1680',CACHE='skimaru-live-20261019-v16-80-startup-fix';
 const TOKYO_KEY="sb_publishable_6pf2rthxEBIw11NhsApnEQ_WjogJYif";
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
