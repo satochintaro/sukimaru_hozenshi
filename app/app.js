@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.73",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.75",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -566,7 +566,7 @@ function again(){ if(S.quick)startQuick();else startQuiz("normal", S.subject||un
    ============================================================ */
 function showAnalysis(){
   document.querySelector('#sc-an .ml-personal')?.remove();
-  document.getElementById("a-t").textContent=U.total;
+  document.getElementById("a-t").textContent=window.SKIMARU_RECENT?.localTotals(2,"academic").total??U.total;
   const recentHost=document.getElementById("a-a")?.closest(".g2");if(recentHost){let card=document.getElementById("recent-analysis");if(!card){card=document.createElement("div");card.id="recent-analysis";recentHost.before(card);}card.innerHTML=window.SKIMARU_RECENT?.card(2,"academic",U.total?Math.round(U.correct/U.total*100):null)||"";}
   document.getElementById("a-a").parentElement.hidden=true;
   document.getElementById("a-a").textContent=U.total>0?Math.round(U.correct/U.total*100)+"%":"–";

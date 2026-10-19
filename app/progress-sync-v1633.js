@@ -26,7 +26,7 @@
    const history=hs.filter(h=>h.kind===(type==='academic'?'gakka':'jitugi')).sort((a,b)=>String(a.completedAt).localeCompare(String(b.completedAt))),cats={},weak=new Map();let alerts=type==='academic'?(u.wrongIds||[]).slice(0,30).map(id=>({id,cat:meta.academic?.[id]||'',text:meta.academicText?.[id]||'問題 '+id})):[];
    let total=history.reduce((s,h)=>s+n(h.total),0)+(type==='academic'?n(u.total):0);
    let correct=history.reduce((s,h)=>s+Math.min(n(h.total),n(h.correct)),0)+(type==='academic'?Math.min(n(u.total),n(u.correct)):0);
-   const scopes=Object.entries(clock).filter(([k])=>type==='academic'?k==='core'||k.includes('_gakka_'):k.includes('_jitugi_')||k.startsWith('skimaruPractical'));
+   const scopes=Object.entries(clock).filter(([k])=>type==='academic'?k==='core'||k.includes('_gakka_')||k==='sudden-death-grade2':k.includes('_jitugi_')||k.startsWith('skimaruPractical'));
    let seconds=n(scopes.reduce((s,[,v])=>s+(Number(v.totalMs)||0),0)/1000,31536000),pendingAnswers=0;
    if(type==='academic')for(const [id,v]of Object.entries(u.stats||{}))add(cats,meta.academic?.[id],n(v.c)+n(v.w),v.c);
    if(type==='practical'){
@@ -39,12 +39,12 @@
     const full=get(k),sessions=[full,...Object.values(full.taskSessions||{}),...Object.values(full.reviewSessions||{})];
     for(const s of sessions)if(!s.finished&&!s.completedAt)pendingAnswers+=Object.keys(s.answers||{}).length;
    }
-   summary[type]={recent:window.SKIMARU_RECENT?.fromEntries(entries,2,type),total:n(total),correct:Math.min(n(total),n(correct)),seconds,timeMeasured:scopes.length>0,measuredSince:scopes.map(([,v])=>v.startedAt).filter(Boolean).sort()[0]||null};
+   summary[type]={recent:window.SKIMARU_RECENT?.fromEntries(entries,2,type),...(window.SKIMARU_RECENT?.totals(u,type,{total:n(total),correct:Math.min(n(total),n(correct))})||{total:n(total),correct:Math.min(n(total),n(correct))}),seconds,timeMeasured:scopes.length>0,measuredSince:scopes.map(([,v])=>v.startedAt).filter(Boolean).sort()[0]||null};
    if(entries.skimaruData||history.length||pendingAnswers||seconds||total)out.push({grade:2,examType:type,...summary[type],pendingAnswers:n(pendingAnswers),cats,alerts,progressEpoch:u.progressEpoch||0,pastYearHistory:history.slice(-100).map(({answers,...h})=>h)});
   }
   for(const row of out)row.studyMetricsV12=summary;
   if(g.schema===1){
-   const m={};for(const type of ['academic','practical']){const v=g.stats?.[type]||{};m[type]={recent:window.SKIMARU_RECENT?.fromEntries(entries,1,type),total:n(v.total),correct:Math.min(n(v.total),n(v.correct)),seconds:n(v.seconds,31536000),timeMeasured:true};}
+   const m={};for(const type of ['academic','practical']){const v=g.stats?.[type]||{};m[type]={recent:window.SKIMARU_RECENT?.fromEntries(entries,1,type),...(window.SKIMARU_RECENT?.totals(g,type,{total:n(v.total),correct:Math.min(n(v.total),n(v.correct))})||{total:n(v.total),correct:Math.min(n(v.total),n(v.correct))}),seconds:n(window.SKIMARU_RECENT?.studySeconds(1,type,entries)??v.seconds,31536000),timeMeasured:true};}
    for(const type of ['academic','practical']){
     const v=g.stats?.[type]||{},cats={};for(const [c,x]of Object.entries(v.cats||{}))add(cats,c,x.total??x.t,x.correct??x.c);
     const pending=g.activeMode===type?Object.keys(g.current?.answers||{}).filter(id=>!(g.current?.recorded||[]).includes(id)).length:0;
@@ -60,7 +60,7 @@
   }
   return {schema:1,entries};
  }
- const fingerprint=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(b.entries))))).map(x=>x.toString(16).padStart(2,'0')).join('');
+ const fingerprint=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify({metricVersion:1675,entries:b.entries}))))).map(x=>x.toString(16).padStart(2,'0')).join('');
  function regressed(old,fresh){return old.metrics.some(m=>!fresh.metrics.some(x=>x.grade===m.grade&&x.examType===m.examType&&x.total>=m.total))||Object.keys(old.backup.entries).some(k=>!Object.hasOwn(fresh.backup.entries,k));}
  async function capture(){
   const r=reg();if(paused||departing||!r.confirmed||!r.playerNo||!r.token)return;

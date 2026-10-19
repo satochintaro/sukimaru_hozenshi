@@ -18,7 +18,7 @@
 
   const history=(practical?s.practicalYearHistory:s.yearHistory)||[],best=practical?window.SKIMARU_COACH.bestPastScore(history):s.bestPast;
   const icon=name=>window.SKIMARU_ICONS?.svg(name)||'';
-  const metrics=`${window.SKIMARU_RECENT?.card(sdGrade,practical?"practical":"academic",rate)||""}<div class="learning-metrics learning-volume"><div><span>${icon('file')}回答数</span><b>${practical?s.practicalTotal:s.academicTotal}<small>問</small></b></div><div><span>${icon('calendar')}連続学習</span><b>${s.streak||0}<small>日</small></b></div></div>`;
+  const metrics=window.SKIMARU_RECENT?.summary(sdGrade,practical?"practical":"academic",s.streak)||"";
   return `<div class="learning-dashboard" role="region" aria-label="学習の概要"><div class="learning-dashboard-top"><div class="learning-exam">${icon('calendar')}<div><span>試験まで</span><b>${big}</b><small>${sub}</small></div></div><div class="learning-coach"><span>今日のコーチ</span><h3>${esc(c.title)}</h3><p>${esc(c.action)}</p></div></div>${metrics}<button class="learning-achievements" type="button" data-achievements><span>${icon('diamond')}${esc(career[0])}</span><small>${n} / ${achievements.length} 解放</small>${icon('arrow')}</button>${sdEntry}<p class="learning-past-best">${practical?'実技':'学科'}過去問ベスト <b>${best==null?'—':best+'%'}</b></p></div>`;
 
  }
