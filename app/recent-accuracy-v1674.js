@@ -32,7 +32,7 @@
   function recoveredSeconds(grade,type,entries){
     const get=k=>{try{return entries?JSON.parse(entries[k]||'{}'):read(k);}catch{return {};}};
     const record=get(grade===1?'skimaru-grade1-v16':'skimaruData'),clock=get('skimaru-study-time-v12'),item=clock['recovered-grade'+grade+'-'+type];
-    return item?.owner===get('skimaruData').playerNo&&Number(item.epoch||0)===Number(record.progressEpoch||0)?number(item.totalMs)/1000:0;
+    return item&&item.owner===get('skimaruData').playerNo&&Number(item.epoch||0)===Number(record.progressEpoch||0)?number(item.totalMs)/1000:0;
   }
   function studySeconds(grade,type,entries){
     const get=(k,f={})=>{if(!entries)return read(k,f);try{return JSON.parse(entries[k]||'null')||f;}catch{return f;}};

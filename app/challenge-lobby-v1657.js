@@ -39,7 +39,13 @@
    if(context.developerMode){const auth=await window.SKIMARU_DEMO_ACCESS?.headers();if(!auth){const e=Error('開発者としてログインし直してください。');e.code='developer_required';throw e;}Object.assign(headers,auth);}
    else if(r.playerNo&&r.token&&r.playerNo===profileNo){body.p_player_no=r.playerNo;body.p_token=r.token;}
    else throw Error('拠点と名前を登録するとランキングを確認できます。');
-   const response=await fetch(cloud.url+'/rest/v1/rpc/skimaru_challenge_leaderboard',{method:'POST',headers,body:JSON.stringify(body),cache:'no-store',signal});const data=await response.json();
+   const request=async payload=>{const response=await fetch(cloud.url+'/rest/v1/rpc/skimaru_challenge_leaderboard',{method:'POST',headers,body:JSON.stringify(payload),cache:'no-store',signal});return {response,data:await response.json()};};
+   let {response,data}=await request(body);
+   const recovery=String(r.recoveryCode||'').trim().toLowerCase();
+   if(!context.developerMode&&!response.ok&&data.message==='player_authentication_required'&&/^[a-f0-9]{32}$/.test(recovery)&&r.playerNo===read('skimaruData').playerNo&&!signal.aborted&&id===revision){
+    state.textContent='保存済みの登録情報を再確認しています…';
+    ({response,data}=await request({...body,p_token:'recovery:'+recovery}));
+   }
    if(!response.ok||!Array.isArray(data.rows)){const authError=response.status===401||response.status===403||/authentication|registration|developer_required/.test(data.message||'');const message=authError?(context.developerMode?'開発者の認証が切れています。開発者画面からログインし直してください。':'登録情報を確認できません。復元済みのサイトから開くか、設定で復旧コードを確認してください。'):response.status===429||data.message==='rate_limited'?'アクセスが集中しています。少し待って更新してください。':'ランキングを取得できませんでした。時間をおいて更新してください。';const e=Error(message);e.code=authError?'registration':response.status===429?'rate_limited':'ranking_failed';e.displayMessage=message;throw e;}
    if(id!==revision||!mounted()||tab!=='ranking'||read('skimaruData').playerNo!==profileNo)return;
    const rows=data.rows.filter(x=>Number.isInteger(x.rank)&&x.rank>0&&num(x.best)>0).slice(0,100);
