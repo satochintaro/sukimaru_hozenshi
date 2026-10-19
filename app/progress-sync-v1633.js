@@ -39,12 +39,12 @@
     const full=get(k),sessions=[full,...Object.values(full.taskSessions||{}),...Object.values(full.reviewSessions||{})];
     for(const s of sessions)if(!s.finished&&!s.completedAt)pendingAnswers+=Object.keys(s.answers||{}).length;
    }
-   summary[type]={total:n(total),correct:Math.min(n(total),n(correct)),seconds,timeMeasured:scopes.length>0,measuredSince:scopes.map(([,v])=>v.startedAt).filter(Boolean).sort()[0]||null};
+   summary[type]={recent:window.SKIMARU_RECENT?.fromEntries(entries,2,type),total:n(total),correct:Math.min(n(total),n(correct)),seconds,timeMeasured:scopes.length>0,measuredSince:scopes.map(([,v])=>v.startedAt).filter(Boolean).sort()[0]||null};
    if(entries.skimaruData||history.length||pendingAnswers||seconds||total)out.push({grade:2,examType:type,...summary[type],pendingAnswers:n(pendingAnswers),cats,alerts,progressEpoch:u.progressEpoch||0,pastYearHistory:history.slice(-100).map(({answers,...h})=>h)});
   }
   for(const row of out)row.studyMetricsV12=summary;
   if(g.schema===1){
-   const m={};for(const type of ['academic','practical']){const v=g.stats?.[type]||{};m[type]={total:n(v.total),correct:Math.min(n(v.total),n(v.correct)),seconds:n(v.seconds,31536000),timeMeasured:true};}
+   const m={};for(const type of ['academic','practical']){const v=g.stats?.[type]||{};m[type]={recent:window.SKIMARU_RECENT?.fromEntries(entries,1,type),total:n(v.total),correct:Math.min(n(v.total),n(v.correct)),seconds:n(v.seconds,31536000),timeMeasured:true};}
    for(const type of ['academic','practical']){
     const v=g.stats?.[type]||{},cats={};for(const [c,x]of Object.entries(v.cats||{}))add(cats,c,x.total??x.t,x.correct??x.c);
     const pending=g.activeMode===type?Object.keys(g.current?.answers||{}).filter(id=>!(g.current?.recorded||[]).includes(id)).length:0;

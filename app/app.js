@@ -456,6 +456,7 @@ function answer(a){
 
   touchDate();
   U.total++;
+  window.SKIMARU_RECENT?.append(U,"academic",ok);
   const s=st(q.id);
   S.everOK=s.everOK;
 
@@ -566,6 +567,8 @@ function again(){ if(S.quick)startQuick();else startQuiz("normal", S.subject||un
 function showAnalysis(){
   document.querySelector('#sc-an .ml-personal')?.remove();
   document.getElementById("a-t").textContent=U.total;
+  const recentHost=document.getElementById("a-a")?.closest(".g2");if(recentHost){let card=document.getElementById("recent-analysis");if(!card){card=document.createElement("div");card.id="recent-analysis";recentHost.before(card);}card.innerHTML=window.SKIMARU_RECENT?.card(2,"academic",U.total?Math.round(U.correct/U.total*100):null)||"";}
+  document.getElementById("a-a").parentElement.hidden=true;
   document.getElementById("a-a").textContent=U.total>0?Math.round(U.correct/U.total*100)+"%":"–";
   document.getElementById("a-d").textContent=U.streak+"日";
   document.getElementById("a-m").textContent=masteredCount()+"問";

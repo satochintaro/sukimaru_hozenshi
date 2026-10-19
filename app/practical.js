@@ -105,7 +105,7 @@ function judgePracticalTask(){
   if(missing){notifyPractical("すべての空欄を選んでください");return;}
   R.judged=true;let correct=0;const details=[];
   task.blanks.forEach(blank=>{
-    const picked=R.answers[blank.id],ok=picked===blank.answer;if(ok)correct++;
+    const picked=R.answers[blank.id],ok=picked===blank.answer;if(ok)correct++;window.SKIMARU_RECENT?.append(P,"practical",ok);
     const field=document.getElementById(`pt-blank-${blank.id}`);field.classList.add(ok?"correct":"wrong");
     [...field.querySelectorAll(".pt-choice")].forEach(button=>{button.disabled=true;if(Number(button.dataset.choiceIndex)===blank.answer)button.classList.add("answer");});
     details.push(`<div class="pt-feedback-item ${ok?"ok":"ng"}"><b>${escPractical(blank.label)} ${ok?"正解":"不正解"}</b><span>正答：${escPractical(blank.choices[blank.answer])}</span><p>${escPractical(blank.explanation)}</p></div>`);
