@@ -53,6 +53,7 @@
   const profile=(()=>{try{return JSON.parse(localStorage.getItem(document.body.classList.contains('grade1-app')?'skimaru-grade1-v16':'skimaruData')||'{}');}catch{return {};}})(),now=new Date(),date=new Date(now.getTime()+9*3600000).toISOString().slice(0,10);
   let daily=Number(profile.daily?.[date])||0;
   if(practical&&!document.body.classList.contains('grade1-app')){try{const hs=JSON.parse(localStorage.getItem('skimaruExamHistory_v1')||'[]');daily=hs.filter(h=>h.kind==='jitugi'&&h.completedAt&&new Date(new Date(h.completedAt).getTime()+9*3600000).toISOString().slice(0,10)===date).reduce((n,h)=>n+(Number(h.total)||0),0);}catch{}}
+  window.SKIMARU_TODAY?.enhance(quick,{grade:document.body.classList.contains('grade1-app')?1:2,practical,profile});
   const goal=quick.querySelector('[data-daily-count]'),goalText=Math.min(daily,5)+' / 5問';if(goal&&goal.textContent!==goalText)goal.textContent=goalText;const track=quick.querySelector('.quick-track i'),width=Math.min(daily,5)*20+'%';if(track&&track.style.width!==width)track.style.width=width;
   const items=[...menu.children].filter(e=>e.classList.contains('mi'));
   const order=e=>{const label=(e.querySelector('.mi-n')?.textContent||'').replace(/\s/g,'').replace('提出','報告'),index=rank.indexOf(label);return index<0?99:index;};
@@ -74,4 +75,5 @@
  new MutationObserver(()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;normalize();});}}).observe(document.documentElement,{childList:true,subtree:true});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',normalize);else normalize();
 })();
+
 
