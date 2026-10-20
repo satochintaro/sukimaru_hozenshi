@@ -1,4 +1,4 @@
-const RELEASE='1681',CACHE='skimaru-live-20261019-v16-81-audit-fixes';
+const RELEASE='1682',CACHE='skimaru-live-20261020-v16-82-final-mock';
 const TOKYO_KEY="sb_publishable_6pf2rthxEBIw11NhsApnEQ_WjogJYif";
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
@@ -46,3 +46,4 @@ self.addEventListener('fetch',event=>{
  }
  if(/\.(?:png|jpg|jpeg|webp|svg)$/.test(url.pathname))event.respondWith((async()=>{try{const hit=await caches.match(event.request);if(hit?.ok)return hit;}catch{}const response=await fetch(event.request);if(response.ok)await remember(event.request,response);return response;})());
 });
+
