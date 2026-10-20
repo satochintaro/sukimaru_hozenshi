@@ -26,13 +26,14 @@
    const history=hs.filter(h=>h.kind===(type==='academic'?'gakka':'jitugi')).sort((a,b)=>String(a.completedAt).localeCompare(String(b.completedAt))),cats={},weak=new Map();let alerts=type==='academic'?(u.wrongIds||[]).slice(0,30).map(id=>({id,cat:meta.academic?.[id]||'',text:meta.academicText?.[id]||'問題 '+id})):[];
    let total=history.reduce((s,h)=>s+n(h.total),0)+(type==='academic'?n(u.total):0);
    let correct=history.reduce((s,h)=>s+Math.min(n(h.total),n(h.correct)),0)+(type==='academic'?Math.min(n(u.total),n(u.correct)):0);
-   const scopes=Object.entries(clock).filter(([k])=>type==='academic'?k==='core'||k.includes('_gakka_')||k==='sudden-death-grade2':k.includes('_jitugi_')||k.startsWith('skimaruPractical'));
+   const scopes=Object.entries(clock).filter(([k])=>type==='academic'?k==='core'||k.includes('_gakka_')||k==='sudden-death-grade2'||k==='final-mock-grade2':k.includes('_jitugi_')||k.startsWith('skimaruPractical'));
    let seconds=n(scopes.reduce((s,[,v])=>s+(Number(v.totalMs)||0),0)/1000+(window.SKIMARU_RECENT?.recoveredSeconds(2,type,entries)||0),31536000),pendingAnswers=0;
    if(type==='academic')for(const [id,v]of Object.entries(u.stats||{}))add(cats,meta.academic?.[id],n(v.c)+n(v.w),v.c);
    if(type==='practical'){
     const legacy=get('skimaruPracticalDataTestV1');if(n(legacy.totalBlanks)>total){total=n(legacy.totalBlanks);correct=Math.min(total,n(legacy.correctBlanks));}
     for(const h of history){const info=meta.practical?.[h.year];if(!info)continue;for(const [id,v]of Object.entries(h.answers||{})){const q=info.questions[id];if(!q)continue;const letter=typeof v==='string'?v:q.options[typeof v==='number'?v:v?.picked];if(letter){add(cats,catName(q.category),1,+(letter===q.answer));weak.set(h.year+'-'+id,{id:h.year+'-'+id,year:h.year,cat:catName(q.category),text:q.text||'問題 '+id,correct:letter===q.answer,at:h.completedAt});}}}
    }
+   if(type==='academic')for(const [cat,v]of Object.entries(u.finalMock?.cats||{}))add(cats,cat,v.total,v.correct);
    if(type==='practical')alerts=[...weak.values()].filter(x=>!x.correct).sort((a,b)=>b.at.localeCompare(a.at)).slice(0,30);
    for(const k of Object.keys(entries)){
     if(type==='academic'?!/^skimaruEarly_.*_gakka_/.test(k):!Object.values(meta.practical||{}).some(v=>v.key===k))continue;
@@ -47,6 +48,7 @@
    const m={};for(const type of ['academic','practical']){const v=g.stats?.[type]||{};m[type]={recent:window.SKIMARU_RECENT?.fromEntries(entries,1,type),...(window.SKIMARU_RECENT?.totals(g,type,{total:n(v.total),correct:Math.min(n(v.total),n(v.correct))})||{total:n(v.total),correct:Math.min(n(v.total),n(v.correct))}),seconds:n(window.SKIMARU_RECENT?.studySeconds(1,type,entries)??v.seconds,31536000),timeMeasured:true};}
    for(const type of ['academic','practical']){
     const v=g.stats?.[type]||{},cats={};for(const [c,x]of Object.entries(v.cats||{}))add(cats,c,x.total??x.t,x.correct??x.c);
+    if(type==='academic')for(const [cat,x]of Object.entries(g.finalMock?.cats||{}))add(cats,cat,x.total,x.correct);
     const pending=g.activeMode===type?Object.keys(g.current?.answers||{}).filter(id=>!(g.current?.recorded||[]).includes(id)).length:0;
     out.push({grade:1,examType:type,...m[type],pendingAnswers:n(pending),cats,alerts:Object.entries(g.questionStats||{}).filter(([id,x])=>x.lastWrong&&meta.grade1?.[id]?.type===type).slice(0,30).map(([id])=>({id,cat:meta.grade1[id].category,text:meta.grade1[id].text,year:meta.grade1[id].year,number:meta.grade1[id].number})),studyMetricsV12:m,pastYearHistory:(g.history||[]).filter(h=>h.type===type).slice(-100).map(({answers,ids,...h})=>({...h,kind:type==='academic'?'gakka':'jitugi'}))});
    }
@@ -60,7 +62,7 @@
   }
   return {schema:1,entries};
  }
- const fingerprint=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify({metricVersion:1675,entries:b.entries}))))).map(x=>x.toString(16).padStart(2,'0')).join('');
+ const fingerprint=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify({metricVersion:1682,entries:b.entries}))))).map(x=>x.toString(16).padStart(2,'0')).join('');
  function regressed(old,fresh){return old.metrics.some(m=>!fresh.metrics.some(x=>x.grade===m.grade&&x.examType===m.examType&&x.total>=m.total))||Object.keys(old.backup.entries).some(k=>!Object.hasOwn(fresh.backup.entries,k));}
  async function capture(){
   const r=reg();if(paused||departing||!r.confirmed||!r.playerNo||!r.token)return;
@@ -119,3 +121,4 @@
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>schedule());else schedule();
  setInterval(()=>{if(!document.hidden)schedule(800);},30000);notify();
 })();
+

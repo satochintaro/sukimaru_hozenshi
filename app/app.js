@@ -4,7 +4,7 @@ const QUESTIONS = window.QUESTIONS;
 /* ============================================================
    データ
    ============================================================ */
-const APP={id:"skimaru-hozenshi",version:"16.81",schema:7};
+const APP={id:"skimaru-hozenshi",version:"16.82",schema:7};
 const CLOUD=window.SKIMARU_SUPABASE||{};
 const KEY="skimaruData";
 const AUTO_BACKUP_KEY="skimaruDataAutoBackup";
@@ -86,7 +86,7 @@ function save(){
   try{
     const current=localStorage.getItem(KEY);
     // A separate challenge tab may have saved newer progress while this page was open.
-    if(current){try{const fresh=JSON.parse(current);if(fresh.playerNo===U.playerNo&&Number(fresh.suddenDeath?.revision||0)>Number(U.suddenDeath?.revision||0))U.suddenDeath=fresh.suddenDeath;}catch{}}
+    if(current){try{const fresh=JSON.parse(current);if(fresh.playerNo===U.playerNo&&Number(fresh.suddenDeath?.revision||0)>Number(U.suddenDeath?.revision||0))U.suddenDeath=fresh.suddenDeath;if(fresh.playerNo===U.playerNo&&Number(fresh.finalMock?.revision||0)>Number(U.finalMock?.revision||0))U.finalMock=fresh.finalMock;}catch{}}
     if(current) localStorage.setItem(AUTO_BACKUP_KEY,current);
     U.schemaVersion=APP.schema; U.updatedAt=new Date().toISOString();
     localStorage.setItem(KEY,JSON.stringify(U));
@@ -908,3 +908,4 @@ window.addEventListener("load",()=>{
 });
 
 window.addEventListener("skimaru-profile",e=>{U.name=e.detail.name||"";U.nickname=e.detail.nickname||"";U.site=e.detail.site||"";U.playerNo=e.detail.playerNo||U.playerNo;const n=document.getElementById("h-name");if(n)n.textContent=U.site+" ／ "+U.name;});
+

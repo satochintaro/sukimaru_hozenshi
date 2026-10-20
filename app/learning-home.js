@@ -19,7 +19,7 @@
   const history=(practical?s.practicalYearHistory:s.yearHistory)||[],best=practical?window.SKIMARU_COACH.bestPastScore(history):s.bestPast;
   const icon=name=>window.SKIMARU_ICONS?.svg(name)||'';
   const metrics=window.SKIMARU_RECENT?.summary(sdGrade,practical?"practical":"academic",s.streak)||"";
-  return `<div class="learning-dashboard" role="region" aria-label="学習の概要"><div class="learning-dashboard-top"><div class="learning-exam">${icon('calendar')}<div><span>試験まで</span><b>${big}</b><small>${sub}</small></div></div><div class="learning-coach"><span>今日のコーチ</span><h3>${esc(c.title)}</h3><p>${esc(c.action)}</p></div></div>${metrics}<button class="learning-achievements" type="button" data-achievements><span>${icon('diamond')}${esc(career[0])}</span><small>${n} / ${achievements.length} 解放</small>${icon('arrow')}</button>${sdEntry}<p class="learning-past-best">${practical?'実技':'学科'}過去問ベスト <b>${best==null?'—':best+'%'}</b></p></div>`;
+  return `<div class="learning-dashboard" role="region" aria-label="学習の概要"><div class="learning-dashboard-top"><div class="learning-exam">${icon('calendar')}<div><span>試験まで</span><b>${big}</b><small>${sub}</small></div></div><div class="learning-coach"><span>今日のコーチ</span><h3>${esc(c.title)}</h3><p>${esc(c.action)}</p></div></div>${metrics}<button class="learning-achievements" type="button" data-achievements><span>${icon('diamond')}${esc(career[0])}</span><small>${n} / ${achievements.length} 解放</small>${icon('arrow')}</button>${sdEntry}${practical?'':'<a class="fm-home-entry" href="./final-mock.html?grade='+sdGrade+'" data-usage-action="final_mock_open"><span aria-hidden="true">○×</span><span><strong>直前模試</strong><small>100問 × 3パターン · 最後の総仕上げ</small></span><em aria-hidden="true">→</em></a>'}<p class="learning-past-best">${practical?'実技':'学科'}過去問ベスト <b>${best==null?'—':best+'%'}</b></p></div>`;
 
  }
  function open(){
@@ -74,3 +74,4 @@
  new MutationObserver(()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;normalize();});}}).observe(document.documentElement,{childList:true,subtree:true});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',normalize);else normalize();
 })();
+
