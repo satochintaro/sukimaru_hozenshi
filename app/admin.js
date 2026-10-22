@@ -14,6 +14,7 @@ const EDUCATION={
  "設備保全の基礎":{title:"保全方式と劣化の理解",practice:"予防保全・事後保全・予知保全の使い分け、故障モードと点検基準を設備事例で整理する。"}
 };
 let rows=[],groups=[],excludedGroups=[],serverAvailable=false,timer,authenticated=false,session=readSession(),hiddenPlayers=readHiddenPlayers(),analysisMode="academic";
+let rowLoad=null,authRevision=0,lastRowsAt=null,sessionRefresh=null;
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function notify(m){const e=document.getElementById("toast");e.textContent=m;e.classList.add("show");clearTimeout(timer);timer=setTimeout(()=>e.classList.remove("show"),2400);}
 function configured(){return /^https:\/\//.test(CLOUD.url||"")&&String(CLOUD.publishableKey||"").startsWith("sb_publishable_");}
@@ -33,13 +34,24 @@ function normalize(x){
  const total=Number(x.total_questions??raw.total)||0,correct=Number(x.correct_count??x.score??raw.correct)||0;
  return {id:x.submission_id||x.id,examType:raw.examType==="practical"?"practical":"academic",playerNo:String(x.player_no||raw.playerNo||"").trim(),name:x.user_name||raw.name||"(未記入)",site:raw.site||x.location||"四日市",total,correct,rate:total?Math.round(correct/total*100):0,mastered:Number(x.mastered_count??raw.mastered)||0,streak:Number(x.streak??raw.streak)||0,alerts:Array.isArray(alerts)?alerts:[],cats:cats&&typeof cats==="object"?cats:{},raw,elapsedSeconds:raw.studyMetricsV12?Number(x.elapsed_seconds)||0:null,sentAt:x.submitted_at||raw.sentAt||x.created_at,receivedAt:x.created_at||x.submitted_at||raw.sentAt};
 }
-function showLogin(message=""){authenticated=false;document.getElementById("manager-login").classList.add("show");document.getElementById("login-message").textContent=message;}
+function showLogin(message=""){authRevision++;authenticated=false;document.getElementById("manager-login").classList.add("show");document.getElementById("login-message").textContent=message;}
 function hideLogin(){document.activeElement?.blur();authenticated=true;document.getElementById("manager-login").classList.remove("show");document.getElementById("manager-password").value="";document.getElementById("login-message").textContent="";window.dispatchEvent(new Event("skimaru-developer-open"));}
-async function refreshSession(){if(!session?.refresh_token)return false;try{const r=await fetch(`${CLOUD.url}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{apikey:CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token}),cache:"no-store"});if(!r.ok)throw new Error();const j=await r.json();saveSession({...j,expires_at_ms:Date.now()+(Number(j.expires_in)||3600)*1000});return true;}catch(e){saveSession(null);return false;}}
+async function refreshSession(){
+ if(!session?.refresh_token)return false;
+ if(sessionRefresh?.source===session)return sessionRefresh.promise;
+ const job={source:session,revision:authRevision,promise:null};sessionRefresh=job;
+ job.promise=(async()=>{const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);try{
+  const r=await fetch(`${CLOUD.url}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{apikey:CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:job.source.refresh_token}),cache:"no-store",signal:controller.signal});
+  if(session!==job.source||authRevision!==job.revision)return false;
+  if(!r.ok){if(r.status===400||r.status===401){saveSession(null);return false;}throw Error('認証を更新できません。通信が戻ってから再試行してください。');}
+  const j=await r.json();if(session!==job.source||authRevision!==job.revision)return false;
+  saveSession({...j,expires_at_ms:Date.now()+(Number(j.expires_in)||3600)*1000});return true;
+ }finally{clearTimeout(timeout);if(sessionRefresh===job)sessionRefresh=null;}})();return job.promise;
+}
 async function ensureSession(){if(!session?.access_token)return false;if((session.expires_at_ms||0)>Date.now()+60000)return true;return refreshSession();}
-async function checkAuth(){if(!configured()){showLogin("Supabase接続設定がありません。");return;}if(await ensureSession()){try{if(await window.SKIMARU_SECURITY.mfa()){hideLogin();await loadRows(true);}else showLogin();}catch(e){saveSession(null);showLogin(e.message);}}else showLogin();}
+async function checkAuth(){if(!configured()){showLogin("Supabase接続設定がありません。");return;}try{if(await ensureSession()){if(await window.SKIMARU_SECURITY.mfa()){hideLogin();await loadRows(true);}else showLogin();}else showLogin();}catch(e){showLogin("通信または認証を確認できませんでした。通信を確認して再試行してください。");}}
 async function login(){const email=document.getElementById("manager-email").value.trim(),password=document.getElementById("manager-password").value,btn=document.getElementById("login-btn");if(!email||!password){showLogin("メールアドレスとパスワードを入力してください。");return;}btn.disabled=true;btn.textContent="確認中…";try{const r=await fetch(`${CLOUD.url}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:CLOUD.publishableKey,"Content-Type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error_description||j.msg||j.message||"ログインできませんでした");saveSession({...j,expires_at_ms:Date.now()+(Number(j.expires_in)||3600)*1000});if(!(await window.SKIMARU_SECURITY.mfa())){showLogin();return;}hideLogin();await loadRows(true);notify("ログインしました");}catch(e){showLogin(e.message||"ログインできませんでした");}finally{btn.disabled=false;btn.textContent="開発者としてログイン";}}
-async function logout(){window.SKIMARU_SECURITY?.clearSecrets();if(session?.access_token){try{await fetch(`${CLOUD.url}/auth/v1/logout`,{method:"POST",headers:authHeaders(session.access_token)});}catch{}}closeDetail();saveSession(null);rows=[];groups=[];render();showLogin("ログアウトしました。");}
+async function logout(){authRevision++;authenticated=false;window.SKIMARU_SECURITY?.clearSecrets();if(session?.access_token){try{await fetch(`${CLOUD.url}/auth/v1/logout`,{method:"POST",headers:authHeaders(session.access_token)});}catch{}}closeDetail();saveSession(null);rows=[];groups=[];excludedGroups=[];lastRowsAt=null;window.SKIMARU_PROGRESS_VIEW?.clear();render();showLogin("ログアウトしました。");}
 function fmtDate(v){if(!v)return"–";const d=new Date(v);return Number.isNaN(d.getTime())?esc(v):d.toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});}
 function signed(n){return `${n>0?"+":""}${n}pt`;}
 function buildGroups(){
@@ -49,9 +61,40 @@ function buildGroups(){
  groups=allGroups.filter(g=>!hiddenPlayers.has(g.key));excludedGroups=allGroups.filter(g=>hiddenPlayers.has(g.key));
  const nameCounts={};groups.forEach(g=>nameCounts[g.name]=(nameCounts[g.name]||0)+1);groups.forEach(g=>g.sameName=nameCounts[g.name]>1);
 }
-function setConnection(){document.getElementById("connection-dot").classList.toggle("online",serverAvailable);document.getElementById("connection-text").textContent=serverAvailable?`Supabaseクラウド接続中・${modeLabel()}`:"クラウド未接続";document.getElementById("submission-count").textContent=`分析 ${groups.length}人／除外 ${excludedGroups.length}人`;}
+function setConnection(){document.getElementById("connection-dot").classList.toggle("online",serverAvailable);document.getElementById("connection-text").textContent=serverAvailable?`Supabaseクラウド接続中・${modeLabel()}`:lastRowsAt?`更新失敗・前回取得分を表示中（${lastRowsAt.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}）`:"データを取得できません。更新して再試行してください。";document.getElementById("submission-count").textContent=`分析 ${groups.length}人／除外 ${excludedGroups.length}人`;}
 function setAnalysisMode(mode){analysisMode=mode==="practical"?"practical":"academic";document.querySelectorAll("[data-analysis-mode]").forEach(button=>button.classList.toggle("active",button.dataset.analysisMode===analysisMode));closeDetail();buildGroups();setConnection();render();}
-async function loadRows(silent=false){if(!authenticated)return;serverAvailable=false;if(!(await ensureSession())){showLogin("認証の有効期限が切れました。");return;}try{const endpoint=`${CLOUD.url}/rest/v1/rpc/skimaru_developer_progress_rows`;const res=await fetch(endpoint,{method:"POST",headers:authHeaders(session.access_token),body:"{}",cache:"no-store"});if(!res.ok)throw new Error(await res.text());rows=(await res.json()).map(normalize);await window.SKIMARU_PROGRESS_VIEW?.load(async name=>{const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+name,{method:'POST',headers:authHeaders(session.access_token),body:'{}',cache:'no-store'});if(!r.ok)throw Error();return r.json();},true);buildGroups();serverAvailable=true;}catch(e){rows=[];groups=[];if(!silent)notify("学習データを取得できません");}setConnection();render();if(!silent&&serverAvailable)notify("更新しました");}
+async function loadRows(silent=false){
+ if(!authenticated)return;
+ if(rowLoad&&rowLoad.revision===authRevision)return rowLoad.promise;
+ const job={revision:authRevision,promise:null};rowLoad=job;
+ job.promise=(async()=>{
+  const current=()=>authenticated&&job.revision===authRevision;
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);
+  try{
+   if(!(await ensureSession())){if(current())showLogin("認証の有効期限が切れました。");return;}
+   if(!current())return;
+   const res=await fetch(`${CLOUD.url}/rest/v1/rpc/skimaru_developer_progress_rows`,{method:"POST",headers:authHeaders(session.access_token),body:"{}",cache:"no-store",signal:controller.signal});
+   if(!res.ok)throw Error('progress_fetch_failed');
+   const data=await res.json();if(!Array.isArray(data))throw Error('invalid_progress');
+   const next=data.map(normalize);if(!current())return;
+   const changed=!lastRowsAt||JSON.stringify(next)!==JSON.stringify(rows);
+   rows=next;buildGroups();serverAvailable=true;lastRowsAt=new Date();setConnection();
+   // A background refresh must not rebuild an unchanged screen or clear it on failure.
+   if(changed||!silent)render();
+   if(!silent)notify("更新しました");
+   const statusChanged=await window.SKIMARU_PROGRESS_VIEW?.load(async name=>{
+    const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+name,{method:'POST',headers:authHeaders(session.access_token),body:'{}',cache:'no-store',signal:controller.signal});
+    if(!r.ok)throw Error('status_fetch_failed');const status=await r.json();if(!current())throw Error('stale_session');return status;
+   },true);
+   if(current()&&statusChanged)render();
+  }catch(e){
+   if(!current())return;
+   serverAvailable=false;setConnection();
+   if(!silent)notify(lastRowsAt?"更新できませんでした。前回取得分を表示しています。":"学習データを取得できません。再試行してください。");
+  }finally{clearTimeout(timeout);if(rowLoad===job)rowLoad=null;}
+ })();
+ return job.promise;
+}
 function pct(n,d){return d?Math.round(n/d*100):null;}
 function median(values){if(!values.length)return 0;const sorted=[...values].sort((a,b)=>a-b),middle=Math.floor(sorted.length/2);return sorted.length%2?sorted[middle]:(sorted[middle-1]+sorted[middle])/2;}
 function stddev(values){if(!values.length)return 0;const mean=values.reduce((a,b)=>a+b,0)/values.length;return Math.sqrt(values.reduce((sum,value)=>sum+(value-mean)**2,0)/values.length);}
@@ -111,8 +154,9 @@ function closeDetail(){const m=document.getElementById('player-detail');m.classL
 function downloadCsv(){const targetRows=visibleRows();if(!targetRows.length){notify("分析対象の学習データがありません");return;}const lines=[["試験区分","拠点","プレイヤーNo.","表示名","提出日時","正解数","回答数","正答率"]];targetRows.forEach(r=>lines.push([modeLabel(),r.site,r.playerNo||"旧データ",r.name,r.receivedAt||r.sentAt,r.correct,r.total,r.rate]));const body=lines.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(',')).join('\r\n');const b=new Blob(["\ufeff"+body],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`skimaru_${analysisMode}_history_${new Date().toISOString().slice(0,10)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 // 削除は登録者単位の専用画面で実施します。
 document.querySelectorAll("[data-analysis-mode]").forEach(button=>button.addEventListener("click",()=>setAnalysisMode(button.dataset.analysisMode)));document.getElementById("login-btn").addEventListener("click",login);document.getElementById("manager-password").addEventListener("keydown",e=>{if(e.key==="Enter")login();});document.getElementById("logout").addEventListener("click",logout);document.getElementById("refresh").addEventListener("click",()=>loadRows());document.getElementById("csv-learners").addEventListener("click",downloadCsv);document.getElementById("player-detail-close").addEventListener("click",closeDetail);document.getElementById("player-detail").addEventListener("click",e=>{if(e.target.id==="player-detail")closeDetail();});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDetail();});
-checkAuth();setInterval(()=>{if(authenticated)loadRows(true);},15000);
+checkAuth();setInterval(()=>{if(authenticated&&!document.hidden)loadRows(true);},15000);
 
 ["site-filter","manager-grade"].forEach(id=>document.getElementById(id)?.addEventListener("change",()=>{closeDetail();buildGroups();setConnection();render();}));
 
 window.SKIMARU_SUPPORT_DEVELOPER=()=>authenticated&&session?.access_token&&(session.expires_at_ms||0)>Date.now()?session.access_token:null;
+

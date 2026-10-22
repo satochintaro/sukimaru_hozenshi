@@ -4,12 +4,12 @@
  const base=new URL('./',document.currentScript.src),home=new URL('../index.html#grades',base);
  const optional=new Set(['page-loading-v1651.js','progress-metadata-v1633.js','progress-sync-v1633.js','player-usage-v1631.js','player-follow-v1632.js']);
  const finished=new WeakSet(),pending=new Set(),failed=new Set(),decoded=new WeakMap(),backgrounds=new Map(),holds=new Set();
- let active=true,departing=false,shown=true,checking=false,initial=true,loaded=document.readyState==='complete',revision=1,lastChange=performance.now(),started=performance.now(),showTimer=null,hideTimer=null,watchdog=null,pollTimer=null,marker=null,target=null;
+ let active=true,departing=false,shown=false,checking=false,initial=true,loaded=document.readyState==='complete',revision=1,lastChange=performance.now(),started=performance.now(),showTimer=null,hideTimer=null,watchdog=null,pollTimer=null,marker=null,target=null;
  const gear=(filled=false)=>{const points=[];for(let i=0;i<64;i++){const a=i*Math.PI/32,r=[43,43,35,35][i%4];points.push((50+Math.cos(a)*r).toFixed(2)+','+(50+Math.sin(a)*r).toFixed(2));}return '<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="'+points.join(' ')+'" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><circle cx="50" cy="50" r="19" fill="'+(filled?'#f7f6f1':'none')+'" stroke="currentColor" stroke-width="1.25"/></svg>';};
  const gate=document.createElement('div');gate.id='skimaru-page-loading';gate.dataset.state='loading';gate.setAttribute('role','status');gate.setAttribute('aria-live','polite');gate.setAttribute('aria-label','画面を準備しています');gate.style.cssText='position:fixed;inset:0;z-index:2147483000;background:#f7f6f1;color:#174b3e;display:grid;place-items:center;';gate.style.setProperty('--pl-robot','url("'+new URL('loading-robot-v1651.png?v=16.73',base).href+'")');
  gate.innerHTML='<div class="pl-gears">'+Array.from({length:4},()=>'<span class="pl-bg-gear">'+gear()+'</span>').join('')+'</div><div class="pl-center" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center"><span class="pl-spinner" style="display:block;width:44px;height:44px;margin:0 auto 16px" aria-hidden="true">'+gear(true)+'</span><p>NOW LOADING</p></div><div class="pl-brand">スキマル保全士</div><div class="pl-content"><div class="pl-scene" aria-hidden="true"><div class="pl-floor"></div><div class="pl-mover"><div class="pl-shadow"></div><div class="pl-robot"><span class="pl-fallback">⚙</span></div></div><span class="pl-work-gear">'+gear(true)+'</span></div><div class="pl-track" aria-hidden="true"><i></i></div><h2>画面を準備しています</h2><p class="pl-message">もう少しお待ちください</p><div class="pl-actions" hidden><button type="button" data-load-retry>再読み込み</button><button type="button" data-load-back>前の画面へ</button></div></div>';
  // Outside body so existing registration dialogs never make this overlay inert.
- document.documentElement.append(gate);
+ gate.hidden=true;gate.style.display='none';document.documentElement.append(gate);
  try{gate.classList.toggle('pl-reduced',JSON.parse(localStorage.getItem('skimaru-title-preferences-v1634')||'{}').reducedMotion===true);}catch{}
  const art=new Image();art.onerror=()=>gate.classList.add('pl-no-art');art.src=new URL('loading-robot-v1651.png?v=16.73',base).href;
  function busy(value){if(document.body){if(value)document.body.setAttribute('aria-busy','true');else document.body.removeAttribute('aria-busy');}}
@@ -17,7 +17,7 @@
  function begin(options={}){
   revision++;active=true;departing=options.departing===true;target=options.target||null;started=performance.now();lastChange=started;clearTimeout(showTimer);clearTimeout(hideTimer);clearTimeout(watchdog);
   gate.dataset.state='loading';gate.setAttribute('role','status');gate.setAttribute('aria-label','画面を準備しています');gate.querySelector('h2').textContent='画面を準備しています';gate.querySelector('.pl-message').textContent='もう少しお待ちください';gate.querySelector('.pl-actions').hidden=true;
-  if(options.immediate||shown)present();else showTimer=setTimeout(present,250);
+  if(shown)present();else showTimer=setTimeout(present,650);
   watchdog=setTimeout(()=>{if(active)error();},25000);poll();check();return revision;
  }
  function error(){if(!active)return;clearTimeout(showTimer);gate.dataset.state='error';present();gate.setAttribute('role','alert');gate.setAttribute('aria-label','読み込みを確認してください');gate.querySelector('h2').textContent='読み込みを確認してください';gate.querySelector('.pl-message').textContent=(navigator.onLine?'読み込みを完了できませんでした。':'オフラインです。通信が戻ってから再試行してください。')+' 学習記録は端末に残っています。';gate.querySelector('.pl-actions').hidden=false;gate.querySelector('[data-load-retry]').focus({preventScroll:true});}
@@ -64,7 +64,9 @@
  // header must not be treated as page navigation; first load and real navigation
  // still use the normal resource/image checks and explicit navigation gate.
  function signature(){return [location.hash,document.body?.dataset.titleView,document.querySelector('body > section.active')?.id,document.querySelector('#header-title')?.textContent,document.querySelector('#main')?.firstElementChild,document.querySelector('#sc-quiz .q-card')?.firstElementChild||document.getElementById('sd-root'),document.querySelector('[data-workspace][aria-current="page"]')?.dataset.workspace,document.querySelector('#sc-quiz .q-text,#sc-quiz .qt,#oneqPrompt')?.textContent,document.getElementById('results')?.classList.contains('hidden')];}
- function changed(){const next=signature();if(marker&&next.some((v,i)=>v!==marker[i])&&!initial&&!departing){if(!active)begin();else lastChange=performance.now();}marker=next;}
+ // In-memory question changes, answers, hash routes and tabs are not page loads.
+ // Only initial loading, real navigation and an explicit async task may open the gate.
+ function changed(){marker=signature();}
  new MutationObserver(records=>{
   let relevant=false;for(const r of records){if(gate.contains(r.target)||r.target===gate)continue;relevant=true;for(const node of r.addedNodes||[])if(node.nodeType===1){watch(node);for(const el of node.querySelectorAll?.('script[src],link[rel="stylesheet"]')||[])watch(el);}}
   if(relevant){lastChange=performance.now();changed();check();}
@@ -73,18 +75,18 @@
  const originalFetch=window.fetch.bind(window);
  function displayRequest(input){try{const url=new URL(typeof input==='string'?input:input.url,location.href);if(url.origin===location.origin)return /\.(json|js)$/.test(url.pathname);return /\/auth\/v1\/(user|token)|\/rest\/v1\/(coach_settings|exam_results)|\/rpc\/skimaru_(developer_(progress_rows|progress_status|players|registrations|achievements|challenges)|manager_(rows|progress_status|enter|password|comparison|radar|accounts|access_history)|usage_(summary|error_details)|follow_context|audit_rows|challenge_leaderboard)/.test(url.pathname);}catch{return false;}}
  function hold(){const key={};holds.add(key);return ()=>{holds.delete(key);lastChange=performance.now();check();};}
- window.fetch=async function(input,init){if(!displayRequest(input))return originalFetch(input,init);const release=hold();try{const response=await originalFetch(input,init);await response.clone().arrayBuffer();return response;}finally{release();}};
+ window.fetch=async function(input,init){if(!displayRequest(input))return originalFetch(input,init);const release=hold();try{return await originalFetch(input,init);}finally{release();}};
  async function task(fn){const release=hold();if(!active)begin();try{return await fn();}finally{release();}}
- function navigate(url){const dest=new URL(url,location.href);begin({departing:true,target:dest.href,immediate:true});requestAnimationFrame(()=>requestAnimationFrame(()=>location.assign(dest.href)));}
+ function navigate(url){const dest=new URL(url,location.href);begin({departing:true,target:dest.href});location.assign(dest.href);}
  gate.querySelector('[data-load-retry]').onclick=()=>{if(target&&target!==location.href){navigate(target);return;}location.reload();};
  gate.querySelector('[data-load-back]').onclick=()=>{if(departing){hide();return;}if(history.length>1)history.back();else location.assign(home.href);};
  document.addEventListener('click',e=>{if(e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;const a=e.target.closest?.('a[href]');if(!a||a.hasAttribute('download')||a.target&&a.target!=='_self'||gate.contains(a)||a.hasAttribute('data-learning-link'))return;try{const url=new URL(a.href,location.href);if(url.origin!==location.origin||!/^https?:$/.test(url.protocol)||url.pathname===location.pathname&&url.search===location.search)return;if(!/\.html$|\/$/.test(url.pathname))return;for(const d of document.querySelectorAll('dialog[open]'))d.close();e.preventDefault();navigate(url.href);}catch{}},true);
  document.addEventListener('keydown',e=>{if(active&&shown&&!gate.contains(e.target))e.preventDefault();},true);
  window.addEventListener('hashchange',()=>{changed();check();});window.addEventListener('popstate',()=>{changed();check();});
- document.addEventListener('skimaru-workspace',()=>{if(!active)begin();check();});
- document.addEventListener('change',e=>{if(['usage-view-select','usage-days','usage-site','usage-grade','manager-grade','site-filter'].includes(e.target.id)){if(!active)begin();check();}});
+ document.addEventListener('skimaru-workspace',()=>check());
+ document.addEventListener('change',e=>{if(['usage-view-select','usage-days','usage-site','usage-grade','manager-grade','site-filter'].includes(e.target.id))check();});
  window.addEventListener('load',()=>{loaded=true;lastChange=performance.now();check();});
- window.addEventListener('pageshow',e=>{if(e.persisted){pending.clear();failed.clear();loaded=true;initial=false;marker=null;begin({immediate:true});}check();});
+ window.addEventListener('pageshow',e=>{if(e.persisted){pending.clear();failed.clear();loaded=true;initial=false;marker=null;hide();}check();});
  document.addEventListener('DOMContentLoaded',()=>{busy(true);changed();check();});
  window.SKIMARU_PAGE_LOADING={begin:()=>begin(),task,hold,navigate,status:()=>({active,shown,state:gate.dataset.state,pendingResources:pending.size,pendingData:holds.size})};
  for(const el of document.querySelectorAll('script[src],link[rel="stylesheet"]'))watch(el);
@@ -111,6 +113,7 @@
   motionFrame=requestAnimationFrame(tick);
  }
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&shown&&active)motion();});
- motion();
+ showTimer=setTimeout(present,650);
  watchdog=setTimeout(()=>{if(active)error();},25000);poll();
 })();
+
