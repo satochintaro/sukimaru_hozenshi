@@ -1,4 +1,4 @@
-const RELEASE='1686',CACHE='skimaru-live-20261026-v16-86-self-check';
+const RELEASE='1687',CACHE='skimaru-live-20261028-v16-87-tap-answers';
 const TOKYO_KEY="sb_publishable_6pf2rthxEBIw11NhsApnEQ_WjogJYif";
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
