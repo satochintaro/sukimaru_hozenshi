@@ -7,7 +7,7 @@
  let active=true,departing=false,shown=false,checking=false,initial=true,loaded=document.readyState==='complete',revision=1,lastChange=performance.now(),started=performance.now(),showTimer=null,hideTimer=null,watchdog=null,pollTimer=null,marker=null,target=null;
  const gear=(filled=false)=>{const points=[];for(let i=0;i<64;i++){const a=i*Math.PI/32,r=[43,43,35,35][i%4];points.push((50+Math.cos(a)*r).toFixed(2)+','+(50+Math.sin(a)*r).toFixed(2));}return '<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="'+points.join(' ')+'" fill="'+(filled?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><circle cx="50" cy="50" r="19" fill="'+(filled?'#f7f6f1':'none')+'" stroke="currentColor" stroke-width="1.25"/></svg>';};
  const gate=document.createElement('div');gate.id='skimaru-page-loading';gate.dataset.state='loading';gate.setAttribute('role','status');gate.setAttribute('aria-live','polite');gate.setAttribute('aria-label','画面を準備しています');gate.style.cssText='position:fixed;inset:0;z-index:2147483000;background:#f7f6f1;color:#174b3e;display:grid;place-items:center;';gate.style.setProperty('--pl-robot','url("'+new URL('loading-robot-v1651.png?v=16.73',base).href+'")');
- gate.innerHTML='<div class="pl-gears">'+Array.from({length:4},()=>'<span class="pl-bg-gear">'+gear()+'</span>').join('')+'</div><div class="pl-center" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center"><span class="pl-spinner" style="display:block;width:44px;height:44px;margin:0 auto 16px" aria-hidden="true">'+gear(true)+'</span><p>NOW LOADING</p></div><div class="pl-brand">スキマル保全士</div><div class="pl-content"><div class="pl-scene" aria-hidden="true"><div class="pl-floor"></div><div class="pl-mover"><div class="pl-shadow"></div><div class="pl-robot"><span class="pl-fallback">⚙</span></div></div><span class="pl-work-gear">'+gear(true)+'</span></div><div class="pl-track" aria-hidden="true"><i></i></div><h2>画面を準備しています</h2><p class="pl-message">もう少しお待ちください</p><div class="pl-actions" hidden><button type="button" data-load-retry>再読み込み</button><button type="button" data-load-back>前の画面へ</button></div></div>';
+ gate.innerHTML='<div class="pl-gears">'+Array.from({length:4},()=>'<span class="pl-bg-gear">'+gear()+'</span>').join('')+'</div><div class="pl-center" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center"><span class="pl-spinner" style="display:block;width:44px;height:44px;margin:0 auto 16px" aria-hidden="true">'+gear(true)+'</span><p>NOW LOADING</p></div><div class="pl-brand">スキマル保全士</div><div class="pl-content"><div class="pl-scene" aria-hidden="true"><div class="pl-floor"></div><div class="pl-mover"><div class="pl-shadow"></div><div class="pl-robot"><span class="pl-fallback">⚙</span></div></div><span class="pl-work-gear">'+gear(true)+'</span></div><div class="pl-track" aria-hidden="true"><i></i></div><h2>画面を準備しています</h2><p class="pl-message">もう少しお待ちください</p><div class="pl-actions" hidden><button type="button" data-load-retry>再読み込み</button><button type="button" data-load-back>前の画面へ</button><button type="button" data-load-continue hidden>今の画面を表示</button></div></div>';
  // Outside body so existing registration dialogs never make this overlay inert.
  gate.hidden=true;gate.style.display='none';document.documentElement.append(gate);
  try{gate.classList.toggle('pl-reduced',JSON.parse(localStorage.getItem('skimaru-title-preferences-v1634')||'{}').reducedMotion===true);}catch{}
@@ -20,9 +20,9 @@
   if(shown)present();else showTimer=setTimeout(present,650);
   watchdog=setTimeout(()=>{if(active)error();},25000);poll();check();return revision;
  }
- function error(){if(!active)return;clearTimeout(showTimer);gate.dataset.state='error';present();gate.setAttribute('role','alert');gate.setAttribute('aria-label','読み込みを確認してください');gate.querySelector('h2').textContent='読み込みを確認してください';gate.querySelector('.pl-message').textContent=(navigator.onLine?'読み込みを完了できませんでした。':'オフラインです。通信が戻ってから再試行してください。')+' 学習記録は端末に残っています。';gate.querySelector('.pl-actions').hidden=false;gate.querySelector('[data-load-retry]').focus({preventScroll:true});}
+ function error(){if(!active)return;if(initial&&usableScreen()){finish(revision,true);return;}if(gate.dataset.state==='error')return;clearTimeout(showTimer);gate.dataset.state='error';present();gate.setAttribute('role','alert');gate.setAttribute('aria-label','読み込みを確認してください');gate.querySelector('h2').textContent='読み込みを確認してください';gate.querySelector('.pl-message').textContent=(navigator.onLine?'読み込みを完了できませんでした。':'オフラインです。通信が戻ってから再試行してください。')+' 学習記録は端末に残っています。';gate.querySelector('.pl-actions').hidden=false;gate.querySelector('[data-load-continue]').hidden=departing||!document.body?.querySelector('button,a[href],input');gate.querySelector('[data-load-retry]').focus({preventScroll:true});}
  function hide(){active=false;departing=false;target=null;shown=false;clearTimeout(showTimer);clearTimeout(watchdog);busy(false);gate.hidden=true;gate.style.display='none';}
- function finish(id){if(!active||id!==revision||departing||gate.dataset.state==='error')return;active=false;initial=false;clearTimeout(showTimer);clearTimeout(watchdog);busy(false);if(!shown){hide();return;}gate.dataset.state='done';hideTimer=setTimeout(()=>{if(!active)hide();},180);}
+ function finish(id,usable=false){if(!active||id!==revision||departing||gate.dataset.state==='error'&&!usable)return;if(usable){pending.clear();failed.clear();}active=false;initial=false;clearTimeout(showTimer);clearTimeout(watchdog);busy(false);if(!shown){hide();return;}gate.dataset.state='done';hideTimer=setTimeout(()=>{if(!active)hide();},180);}
  function resource(el){if(el.tagName==='SCRIPT')return !!el.src&&!optional.has(new URL(el.src,base).pathname.split('/').pop());return el.tagName==='LINK'&&el.rel==='stylesheet'&&!el.disabled;}
  function watch(el){if(!resource(el)||finished.has(el))return;if(el.tagName==='LINK'&&el.sheet){finished.add(el);return;}pending.add(el);}
  document.addEventListener('load',e=>{const el=e.target;if(el?.tagName==='SCRIPT'||el?.tagName==='LINK'){finished.add(el);pending.delete(el);failed.delete(el);lastChange=performance.now();check();}},true);
@@ -47,9 +47,27 @@
   const tools=document.getElementById('practical-tools-panel');if(tools&&!tools.hidden&&/読み込み中/.test(tools.querySelector('h2')?.textContent||''))return false;
   return !!document.body;
  }
+ // A complete registration or learning screen must remain usable even when a
+ // decorative image, a background request, or resource bookkeeping is delayed.
+ // Keep explicit async tasks and navigation on their normal readiness path.
+ function usableScreen(){
+  if(document.readyState!=='complete'||!document.body)return false;
+  if(document.body.classList.contains('game-title'))return window.SKIMARU_TITLE_READY===true;
+  const member=document.querySelector('.member-gate');
+  if(member&&visible(member)&&member.querySelector('button,input,a[href]'))return true;
+  const screen=document.querySelector('body > section.active,#main > section.active');
+  if(screen&&visible(screen)&&!screen.closest('#skimaru-page-loading')&&screen.querySelector('button,a[href],input'))return true;
+  return false;
+ }
  async function check(){
-  if(checking||!active||departing||gate.dataset.state==='error')return;checking=true;const id=revision;
+  if(checking||!active||departing)return;checking=true;const id=revision;
   try{
+   if(initial&&usableScreen()){
+    await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);
+    if(active&&id===revision&&!departing&&usableScreen())finish(id,true);
+    return;
+   }
+   if(gate.dataset.state==='error')return;
    for(const el of [...pending])if(!el.isConnected){pending.delete(el);failed.delete(el);}
    for(const el of [...failed])if(!el.isConnected)failed.delete(el);
    if(failed.size){error();return;}
@@ -78,6 +96,7 @@
  window.fetch=async function(input,init){if(!displayRequest(input))return originalFetch(input,init);const release=hold();try{return await originalFetch(input,init);}finally{release();}};
  async function task(fn){const release=hold();if(!active)begin();try{return await fn();}finally{release();}}
  function navigate(url){const dest=new URL(url,location.href);begin({departing:true,target:dest.href});location.assign(dest.href);}
+ gate.querySelector('[data-load-continue]').onclick=()=>{if(departing)return;initial=false;hide();};
  gate.querySelector('[data-load-retry]').onclick=()=>{if(target&&target!==location.href){navigate(target);return;}location.reload();};
  gate.querySelector('[data-load-back]').onclick=()=>{if(departing){hide();return;}if(history.length>1)history.back();else location.assign(home.href);};
  document.addEventListener('click',e=>{if(e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;const a=e.target.closest?.('a[href]');if(!a||a.hasAttribute('download')||a.target&&a.target!=='_self'||gate.contains(a)||a.hasAttribute('data-learning-link'))return;try{const url=new URL(a.href,location.href);if(url.origin!==location.origin||!/^https?:$/.test(url.protocol)||url.pathname===location.pathname&&url.search===location.search)return;if(!/\.html$|\/$/.test(url.pathname))return;for(const d of document.querySelectorAll('dialog[open]'))d.close();e.preventDefault();navigate(url.href);}catch{}},true);
@@ -88,9 +107,9 @@
  window.addEventListener('load',()=>{loaded=true;lastChange=performance.now();check();});
  window.addEventListener('pageshow',e=>{if(e.persisted){pending.clear();failed.clear();loaded=true;initial=false;marker=null;hide();}check();});
  document.addEventListener('DOMContentLoaded',()=>{busy(true);changed();check();});
- window.SKIMARU_PAGE_LOADING={begin:()=>begin(),task,hold,navigate,status:()=>({active,shown,state:gate.dataset.state,pendingResources:pending.size,pendingData:holds.size})};
+ window.SKIMARU_PAGE_LOADING={begin:()=>begin(),task,hold,navigate,status:()=>({active,shown,state:gate.dataset.state,pendingResources:pending.size,pendingData:holds.size,usableScreen:usableScreen(),pendingFiles:[...pending].map(el=>el.src||el.href),failedFiles:[...failed].map(el=>el.src||el.href)})};
  for(const el of document.querySelectorAll('script[src],link[rel="stylesheet"]'))watch(el);
- function poll(){if(pollTimer)return;pollTimer=setTimeout(()=>{pollTimer=null;if(active&&!departing&&gate.dataset.state!=='error'){changed();check();poll();}},120);}
+ function poll(){if(pollTimer)return;pollTimer=setTimeout(()=>{pollTimer=null;if(active&&!departing){changed();check();poll();}},120);}
  // Essential loading feedback must not be disabled by a page-wide animation:none rule.
  let motionFrame=null;
  const spinner=gate.querySelector('.pl-spinner'),rail=gate.querySelector('.pl-track i'),robot=gate.querySelector('.pl-robot'),mover=gate.querySelector('.pl-mover'),workGear=gate.querySelector('.pl-work-gear'),gears=[...gate.querySelectorAll('.pl-bg-gear')];
@@ -116,4 +135,5 @@
  showTimer=setTimeout(present,650);
  watchdog=setTimeout(()=>{if(active)error();},25000);poll();
 })();
+
 
