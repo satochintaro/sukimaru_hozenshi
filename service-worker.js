@@ -1,4 +1,4 @@
-const RELEASE='1692',CACHE='skimaru-live-20261028-v16-92-practical-tabs';
+const RELEASE='1693',CACHE='skimaru-live-20261028-v16-93-startup-recovery';
 const TOKYO_KEY="sb_publishable_6pf2rthxEBIw11NhsApnEQ_WjogJYif";
 const SCOPE=new URL(self.registration.scope),ROOT=SCOPE.pathname.endsWith('/app/')?new URL('../',SCOPE):SCOPE;
 const home=new URL('index.html',ROOT),appHome=new URL('app/index.html',ROOT);
