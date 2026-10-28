@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "year": 2026,
-  "revision": "provisional20261028r5",
+  "revision": "provisional20261028r6",
   "publishedAt": null,
   "source": "user-provided-exam-photos",
   "grades": {
@@ -660,7 +660,7 @@
             },
             {
               "id": "8-2",
-              "answer": "イ"
+              "answer": "ア"
             },
             {
               "id": "8-3",
