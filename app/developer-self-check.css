@@ -1,0 +1,35 @@
+#developer-self-check{height:auto;min-height:0;padding:0 0 24px;color:#174e3d;font-size:14px;line-height:1.6}
+#developer-self-check.workspace-hidden{display:none!important}
+#developer-self-check *{box-sizing:border-box}
+#developer-self-check .dsc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:8px 0 12px}
+#developer-self-check h2{margin:0;font-size:19px}
+#developer-self-check p{margin:6px 0 12px}
+#developer-self-check small,#developer-self-check .dsc-note,#developer-self-check .dsc-head p{font-size:12px;color:#61766c}
+#developer-self-check button,#developer-self-check input,#developer-self-check select{min-height:44px;max-width:100%;padding:9px 12px;border:1px solid #b8c8bd;border-radius:10px;background:#fffef9;color:#174e3d;font:inherit}
+#developer-self-check button{cursor:pointer;font-weight:700}
+#developer-self-check button:disabled{opacity:.5;cursor:default}
+#developer-self-check button[aria-pressed=true]{background:#174e3d;color:#fff}
+#developer-self-check .dsc-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+#developer-self-check label{display:block;font-size:12px}
+#developer-self-check label input,#developer-self-check label select{display:block;width:100%;font-size:16px;margin-top:4px}
+#developer-self-check .dsc-search{grid-column:1/-1}
+#developer-self-check .dsc-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#developer-self-check .dsc-counts>div{padding:10px 8px;border:1px solid #d8dfd5;border-radius:12px;background:#fffef9}
+#developer-self-check .dsc-counts b,#developer-self-check .dsc-counts small{display:block}
+#developer-self-check .dsc-counts b{font-size:22px}
+#developer-self-check .dsc-person{height:auto;margin:12px 0;padding:14px;border:1px solid #d8dfd5;border-radius:14px;background:#fffef9}
+#developer-self-check .dsc-person header{position:static;display:block;min-height:0;height:auto;padding:0;margin:0 0 12px;background:transparent;border:0}
+#developer-self-check .dsc-person header b{display:block;font-size:17px;overflow-wrap:anywhere}
+#developer-self-check .dsc-person header small{overflow-wrap:anywhere}
+#developer-self-check .dsc-scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+#developer-self-check .dsc-scores>div{min-width:0;padding:10px;background:#f2f5ee;border-radius:10px}
+#developer-self-check .dsc-scores b,#developer-self-check .dsc-scores strong,#developer-self-check .dsc-scores small{display:block;overflow-wrap:anywhere}
+#developer-self-check .dsc-scores strong{font-size:17px}
+#developer-self-check summary{padding:12px 0;min-height:44px;cursor:pointer;font-weight:700}
+#developer-self-check .dsc-detail-tabs{display:flex;gap:8px;margin-bottom:8px}
+#developer-self-check .dsc-detail-tabs button{flex:1}
+#developer-self-check .dsc-table{overflow-x:auto}
+#developer-self-check table{width:100%;border-collapse:collapse;font-size:12px}
+#developer-self-check th,#developer-self-check td{padding:8px 4px;border-bottom:1px solid #e1e6df;text-align:left}
+#developer-self-check .dsc-pages{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:12px}
+.workspace-nav button[data-workspace=selfcheck]{white-space:normal}

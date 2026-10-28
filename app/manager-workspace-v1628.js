@@ -3,7 +3,7 @@
  const pad=document.querySelector('.manager-pad');if(!pad)return;
  const developer=!document.body.classList.contains('viewer-page'),report=document.getElementById(developer?'ad-rep':'viewer-report');
  document.body.classList.add('workspace-v28');
- const menu=developer?[['overview','成績'],['people','登録者管理'],['contact','連絡'],['settings','設定']]:[['overview','成績'],['contact','連絡']];
+ const menu=developer?[['overview','成績'],['people','登録者管理'],['selfcheck','自己採点'],['contact','連絡'],['settings','設定']]:[['overview','成績'],['contact','連絡']];
  let view='overview',query='',page=0,peopleSort='latest',analysisPart='summary',scheduled=false;
  const nav=document.createElement('nav');nav.className='workspace-nav';nav.style.gridTemplateColumns=`repeat(${menu.length},minmax(0,1fr))`;nav.setAttribute('aria-label',developer?'開発者メニュー':'管理者メニュー');
  for(const [key,name] of menu){const b=document.createElement('button');b.type='button';b.dataset.workspace=key;b.textContent=name;b.onclick=()=>navigate(key);nav.append(b);}
@@ -36,7 +36,7 @@
   const legend=root.querySelector('.comparison-legend');if(legend){const d=document.createElement('details');d.className='workspace-details';d.innerHTML='<summary>推移グラフに表示する拠点</summary>';legend.before(d);d.append(legend);}
  }
  function sync(){
-  hide(scoreHost,view!=='overview');hide(heading,view==='overview');hide(document.getElementById('developer-challenge-entry'),view!=='settings');
+  hide(scoreHost,view!=='overview');hide(document.getElementById('developer-self-check'),view!=='selfcheck');hide(heading,view==='overview');hide(document.getElementById('developer-challenge-entry'),view!=='settings');
   nav.querySelectorAll('button').forEach(b=>{const active=b.dataset.workspace===view;b.setAttribute('aria-current',active?'page':'false');});
   setText(heading.querySelector('small'),developer?'DEVELOPER':'MANAGER');setText(heading.querySelector('h1'),menu.find(x=>x[0]===view)[1]);setText(heading.querySelector('.workspace-context'),developer&&['overview','usage','contact','settings'].includes(view)?'運用管理':(document.getElementById('site-filter')?.selectedOptions[0]?.textContent||'全拠点')+(view==='people'&&developer?'':' · '+(document.getElementById('manager-grade')?.value||2)+'級'));
   hide(usage,!developer||view!=='usage');hide(overview,true);hide(contact,view!=='contact');
@@ -56,4 +56,5 @@
  document.getElementById('site-filter')?.addEventListener('change',()=>{page=0;sync();});document.getElementById('manager-grade')?.addEventListener('change',()=>{page=0;sync();});
  sync();
 })();
+
 
